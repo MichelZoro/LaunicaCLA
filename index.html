@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CCV PRO - La Única</title>
+    <title>LA UNICA V3 - SISTEMA TOTAL</title>
     <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; }
-        * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 90px; }
         .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
         .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
         .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
-        .input-dark { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--gold); padding: 12px; border-radius: 10px; color: white; margin: 10px 0; text-align: center; }
+        .input-dark { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--gold); padding: 12px; border-radius: 10px; color: white; margin: 10px 0; text-align: center; font-size: 1.2rem; }
         .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; text-align: center; }
         nav { position: fixed; bottom: 0; width: 100%; background: #111; display: none; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--gold); z-index: 100; }
-        .nav-item { text-align: center; font-size: 0.6rem; color: #666; flex: 1; }
+        .nav-item { text-align: center; font-size: 0.65rem; color: #666; flex: 1; text-transform: uppercase; font-weight: bold; }
         .nav-item.active { color: var(--gold); }
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
         th, td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; }
@@ -26,8 +25,8 @@
 <body>
 
 <div id="view-login" style="display: flex; flex-direction: column; align-items: center; padding-top: 80px;">
-    <div class="glass-card" style="width: 300px; text-align: center;">
-        <h2 style="color:var(--gold)">LA ÚNICA CCV</h2>
+    <div class="glass-card" style="width: 320px; text-align: center;">
+        <h2 style="color:var(--gold); letter-spacing: 2px;">LA ÚNICA</h2>
         <input type="password" id="pin-input" class="input-dark" placeholder="PIN">
         <button onclick="handleLogin()" class="btn-gold">ENTRAR</button>
     </div>
@@ -35,41 +34,41 @@
 
 <div id="view-ventas" class="container">
     <div id="grid-productos" class="grid-pos"></div>
-    <div class="glass-card" style="margin-top:20px;">
-        <h3 style="margin:0">Total: <span id="total-val" style="color:var(--gold)">$0</span></h3>
-        <input type="number" id="paga-con" class="input-dark" placeholder="Paga con..." oninput="calcVuelto()">
-        <p style="font-size: 1.2rem; font-weight: bold;">Vuelto: <span id="vuelto-val" style="color:var(--success)">$0</span></p>
+    <div class="glass-card" style="margin-top:20px; border-left: 5px solid var(--gold);">
+        <h3 style="margin:0">Total: <span id="total-val" style="color:var(--gold); font-size: 1.8rem;">$0</span></h3>
+        <input type="number" id="paga-con" class="input-dark" placeholder="¿Paga con cuánto?" oninput="calcVuelto()">
+        <p style="font-size: 1.3rem; font-weight: 700;">Vuelto: <span id="vuelto-val" style="color:var(--success)">$0</span></p>
         <button onclick="confirmarVenta()" class="btn-gold">CONFIRMAR VENTA</button>
     </div>
 </div>
 
 <div id="view-admin" class="container">
     <div class="glass-card">
-        <h3>Historial Detallado</h3>
-        <select id="filtro-historial" class="input-dark" onchange="renderHistorial()">
+        <h3>Ventas Detalladas</h3>
+        <select id="filtro-h" class="input-dark" onchange="renderHistorial()" style="font-size: 0.9rem;">
             <option value="hoy">Ventas de Hoy</option>
-            <option value="semana">Semana</option>
-            <option value="mes">Mes</option>
+            <option value="semana">Esta Semana</option>
+            <option value="mes">Este Mes</option>
         </select>
-        <div id="historial-list" style="max-height: 250px; overflow-y: auto;"></div>
+        <div id="historial-list" style="max-height: 200px; overflow-y: auto;"></div>
     </div>
 
     <div class="glass-card">
-        <h3>Fichajes (Entradas/Salidas)</h3>
+        <h3>Fichajes (Entrada/Salida)</h3>
         <div id="fichaje-list"></div>
     </div>
 
     <div class="glass-card">
-        <h3>Gestión de Personal</h3>
+        <h3>Gestión Empleados</h3>
         <div id="staff-list"></div>
-        <button class="btn-gold" style="font-size: 0.7rem; margin-top:10px;" onclick="nuevoEmpleado()">+ AGREGAR EMPLEADO</button>
+        <button class="btn-gold" onclick="nuevoEmpleado()">+ NUEVO EMPLEADO</button>
     </div>
 </div>
 
 <nav id="navbar">
-    <div class="nav-item active" id="n-v" onclick="showView('view-ventas', 'n-v')">💰 VENTAS</div>
-    <div class="nav-item" id="n-a" onclick="showView('view-admin', 'n-a'); renderAdminAll();">📊 ADMIN</div>
-    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">🚪 SALIR</div>
+    <div class="nav-item active" id="n-v" onclick="showView('view-ventas', 'n-v')">💰 Ventas</div>
+    <div class="nav-item" id="n-a" onclick="showView('view-admin', 'n-a'); renderAdminAll();">📊 Admin</div>
+    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">🚪 Salir</div>
 </nav>
 
 <script type="module">
@@ -80,10 +79,9 @@
   const app = initializeApp(firebaseConfig);
   const db = initializeFirestore(app, { localCache: persistentLocalCache() });
 
-  let currentUser = ""; let currentTurno = ""; let cart = [];
+  let user = ""; let turno = ""; let cart = [];
   let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
 
-  // Escucha de datos en tiempo real
   onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => d.data()); renderProductos(); });
   onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); });
   onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => d.data()); });
@@ -94,16 +92,15 @@
     const s = db_local.staff.find(x => x.p === pin);
     if(!s && pin !== "0000") return alert("PIN Incorrecto");
     
-    currentUser = s ? s.n : "Admin";
-    const hora = new Date().getHours();
-    currentTurno = (hora < 14) ? "Mañana" : "Tarde";
+    user = s ? s.n : "Admin";
+    turno = (new Date().getHours() < 14) ? "Mañana" : "Tarde";
 
-    await addDoc(collection(db, "fichajes"), { u: currentUser, p: pin, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() });
+    await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() });
 
     document.getElementById('view-login').style.display = 'none';
     document.getElementById('navbar').style.display = 'flex';
     showView('view-ventas', 'n-v');
-    if(currentUser !== "Admin") document.getElementById('n-a').style.visibility = 'hidden';
+    if(user !== "Admin") document.getElementById('n-a').style.display = 'none';
   };
 
   window.renderProductos = () => {
@@ -121,9 +118,9 @@
 
   window.confirmarVenta = async () => {
     if(!cart.length) return;
-    const v = { t: cart.reduce((a,b)=>a+b,0), u: currentUser, tr: currentTurno, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() };
+    const v = { t: cart.reduce((a,b)=>a+b,0), u: user, tr: turno, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() };
     await addDoc(collection(db, "ventas"), v);
-    alert("Venta Registrada");
+    alert("Venta Ok");
     cart = []; document.getElementById('total-val').innerText = "$0"; document.getElementById('paga-con').value = ""; calcVuelto();
   };
 
@@ -131,30 +128,23 @@
     renderHistorial();
     document.getElementById('fichaje-list').innerHTML = `<table><tr><th>Emp</th><th>Día</th><th>Hora</th></tr>` + 
       db_local.fichajes.slice(0,10).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td>${f.h}</td></tr>`).join('') + `</table>`;
-    
-    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `
-      <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-        <span>${s.n} (PIN: ${s.p})</span>
-        <button onclick="eliminarEmp('${s.id}')" style="color:red; background:none; border:none;">X</button>
-      </div>
-    `).join('');
+    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div>${s.n} (PIN: ${s.p}) <button onclick="delEmp('${s.id}')">X</button></div>`).join('');
   };
 
   window.renderHistorial = () => {
-    const filtro = document.getElementById('filtro-historial').value;
+    const f = document.getElementById('filtro-h').value;
     const hoy = new Date().toLocaleDateString();
-    const filtradas = (filtro === 'hoy') ? db_local.ventas.filter(v => v.f === hoy) : db_local.ventas;
-    
-    document.getElementById('historial-list').innerHTML = `<table><tr><th>Hora</th><th>Turno</th><th>Total</th></tr>` + 
-      filtradas.map(v => `<tr><td>${v.h}</td><td>${v.tr}</td><td>$${v.t}</td></tr>`).join('') + `</table>`;
+    const vils = (f === 'hoy') ? db_local.ventas.filter(v => v.f === hoy) : db_local.ventas;
+    document.getElementById('historial-list').innerHTML = `<table><tr><th>Hora</th><th>Turno</th><th>$$</th></tr>` + 
+      vils.map(v => `<tr><td>${v.h}</td><td>${v.tr}</td><td>$${v.t}</td></tr>`).join('') + `</table>`;
   };
 
   window.nuevoEmpleado = async () => {
-    const n = prompt("Nombre:"); const p = prompt("PIN (4 dígitos):");
+    const n = prompt("Nombre:"); const p = prompt("PIN:");
     if(n && p) await addDoc(collection(db, "staff"), { n, p });
   };
 
-  window.eliminarEmp = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "staff", id)); };
+  window.delEmp = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "staff", id)); };
 
   window.showView = (id, navId) => {
     document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
