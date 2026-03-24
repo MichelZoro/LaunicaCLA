@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>La Churreria La Única - SYNC</title>
+    <title>La Churreria La Única - SISTEMA</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,8 +11,7 @@
             --gold: #C5A059; --bg-glass: rgba(255, 255, 255, 0.1);
             --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66;
         }
-        * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
-        input { user-select: text; -webkit-user-select: text; }
+        * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: radial-gradient(circle at top, var(--cactus-soft), var(--cactus-dark)); color: var(--white); margin: 0; min-height: 100vh; padding-bottom: 90px; }
         header { padding: 20px; text-align: center; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); border-bottom: 1px solid var(--gold); }
         header h1 { font-size: 0.7rem; letter-spacing: 3px; color: var(--gold); margin: 0; text-transform: uppercase; }
@@ -27,24 +26,23 @@
         nav { position: fixed; bottom: 0; width: 100%; background: rgba(15,15,15,0.98); display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--gold); z-index: 999; }
         .nav-item { color: #666; font-size: 0.6rem; text-align: center; cursor: pointer; flex: 1; }
         .nav-item.active { color: var(--gold); }
-        .tab-bar { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 15px; padding-bottom: 5px; scrollbar-width: none; }
+        .tab-bar { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 15px; padding-bottom: 5px; }
         .tab-btn { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 6px 12px; border-radius: 20px; font-size: 0.55rem; white-space: nowrap; }
         .tab-btn.active { background: var(--gold); color: black; }
-        table { width: 100%; font-size: 0.7rem; border-collapse: collapse; }
-        td { padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        #sync-status { position: fixed; top: 10px; right: 10px; font-size: 0.5rem; color: #aaa; z-index: 1001; }
-        .online { color: var(--success) !important; }
-        .offline { color: var(--danger) !important; }
+        table { width: 100%; font-size: 0.75rem; border-collapse: collapse; }
+        td { padding: 10px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        #sync-status { position: fixed; top: 10px; right: 10px; font-size: 0.5rem; z-index: 1001; }
+        .online { color: var(--success); } .offline { color: var(--danger); }
     </style>
 </head>
 <body>
 
-<div id="sync-status">●</div>
+<div id="sync-status">● Verificando...</div>
 <header><h1>La Churreria La Única</h1></header>
 
 <div id="view-login" style="display: flex; flex-direction: column; align-items: center; padding-top: 80px;">
     <div class="glass-card" style="width: 280px; text-align: center;">
-        <p style="font-size: 0.8rem; letter-spacing: 1px;">SISTEMA DE GESTIÓN</p>
+        <p style="font-size: 0.8rem;">SISTEMA DE GESTIÓN</p>
         <input type="password" id="pin-input" class="input-dark" style="text-align: center;" placeholder="PIN">
         <button onclick="handleLogin()" class="btn-gold">ENTRAR</button>
     </div>
@@ -52,22 +50,22 @@
 
 <div id="view-apertura" class="container">
     <div class="glass-card">
-        <h2>Bienvenido</h2>
-        <p style="font-size:0.8rem; opacity:0.7;">Fondo de caja hoy:</p>
+        <h2>Turno Nuevo</h2>
+        <p style="font-size:0.8rem; opacity:0.7;">Fondo inicial:</p>
         <div id="fondo-asignado" style="font-size:2.2rem; color:var(--gold); font-weight:600;">$0</div>
-        <button onclick="confirmarApertura()" class="btn-gold">ABRIR TURNO</button>
+        <button onclick="confirmarApertura()" class="btn-gold">INICIAR VENTA</button>
     </div>
 </div>
 
 <div id="view-ventas" class="container">
     <div id="grid-productos" class="grid-pos"></div>
-    <div id="cart-list" style="margin: 15px 0; min-height: 40px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:10px;"></div>
+    <div id="cart-list" style="margin: 15px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top:10px;"></div>
     <div class="glass-card">
-        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>TOTAL</span> <span id="total-val" style="font-size:1.4rem; color:var(--gold); font-weight:600;">$0</span></div>
+        <div style="display:flex; justify-content:space-between;"><span>TOTAL</span> <span id="total-val" style="font-size:1.4rem; color:var(--gold); font-weight:600;">$0</span></div>
         <input type="number" id="pago-val" class="input-dark" placeholder="Paga con..." oninput="calcVuelto()">
-        <p style="font-size:0.85rem; margin:10px 0;">Vuelto: <span id="vuelto-val" style="color:var(--success); font-weight:600;">$0</span></p>
-        <button onclick="confirmarVenta()" class="btn-gold">FINALIZAR VENTA</button>
-        <button onclick="solicitarCierreCaja()" style="margin-top:20px; background:none; border:1px solid var(--danger); color:var(--danger); width:100%; padding:10px; border-radius:10px; font-size:0.65rem; font-weight:600;">GENERAR CIERRE DE CAJA</button>
+        <p style="font-size:0.85rem;">Vuelto: <span id="vuelto-val" style="color:var(--success); font-weight:600;">$0</span></p>
+        <button onclick="confirmarVenta()" class="btn-gold">CERRAR VENTA</button>
+        <button onclick="solicitarCierreCaja()" style="margin-top:20px; background:none; border:1px solid var(--danger); color:var(--danger); width:100%; padding:10px; border-radius:10px; font-size:0.6rem;">GENERAR REPORTE CIERRE</button>
     </div>
 </div>
 
@@ -91,7 +89,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, enableNetwork, disableNetwork } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0",
@@ -103,33 +101,39 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  // ACTIVACIÓN DE MODO OFFLINE (CACHE PERSISTENTE)
   const db_fs = initializeFirestore(app, {
     localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
   });
 
   let cart = []; let currentUser = ""; let currentPin = ""; let currentAdminTab = 'ventas';
-  let db_local = { productos: [], staff: [], costos: [], receta: [], fondoCaja: 5000, ventasHoy: [] };
+  let db_local = { productos: [], staff: [], materia: [], recetas: [], fondoCaja: 5000, ventasHoy: [] };
 
+  // ESTADO DE CONEXIÓN
   const syncStatus = document.getElementById('sync-status');
-  const updateStatus = () => {
+  setInterval(() => {
     if(navigator.onLine) { syncStatus.innerText = "● Online"; syncStatus.className = "online"; }
-    else { syncStatus.innerText = "● Offline"; syncStatus.className = "offline"; }
-  };
-  window.addEventListener('online', updateStatus);
-  window.addEventListener('offline', updateStatus);
-  updateStatus();
+    else { syncStatus.innerText = "● Offline (Modo Local)"; syncStatus.className = "offline"; }
+  }, 3000);
 
-  // ESCUCHA DE DATOS EN TIEMPO REAL
+  // CARGA DE DATOS (SNAPSHOTS)
   onSnapshot(collection(db_fs, "productos"), (s) => {
     db_local.productos = s.docs.map(d => ({id_fs: d.id, ...d.data()}));
-    if(document.getElementById('view-ventas').style.display === 'block') renderBotones();
-    if(currentAdminTab === 'productos') renderAdminTabs();
+    renderBotones();
+  });
+
+  onSnapshot(collection(db_fs, "insumos"), (s) => {
+    db_local.materia = s.docs.map(d => ({id_fs: d.id, ...d.data()}));
+    if(currentAdminTab === 'materia') renderAdminTabs();
+  });
+
+  onSnapshot(collection(db_fs, "recetas"), (s) => {
+    db_local.recetas = s.docs.map(d => ({id_fs: d.id, ...d.data()}));
+    if(currentAdminTab === 'receta') renderAdminTabs();
   });
 
   onSnapshot(collection(db_fs, "staff"), (s) => {
     db_local.staff = s.docs.map(d => ({id_fs: d.id, ...d.data()}));
-    if(db_local.staff.length === 0) db_local.staff.push({n:"Admin Inicial", p:"0000"});
+    if(db_local.staff.length === 0) db_local.staff.push({n:"Admin", p:"0000"});
   });
 
   onSnapshot(collection(db_fs, "config"), (s) => {
@@ -137,25 +141,22 @@
     document.getElementById('fondo-asignado').innerText = "$" + db_local.fondoCaja;
   });
 
-  // ESCUCHA DE VENTAS (Para que el Admin vea todo al instante)
   const q_v_hoy = query(collection(db_fs, "ventas"), where("f", "==", new Date().toLocaleDateString()));
   onSnapshot(q_v_hoy, (s) => {
     db_local.ventasHoy = s.docs.map(d => d.data()).sort((a,b) => b.timestamp - a.timestamp);
     if(currentAdminTab === 'ventas') renderAdminTabs();
   });
 
+  // LOGICA LOGIN
   window.handleLogin = () => {
     const pin = document.getElementById('pin-input').value;
     const u = db_local.staff.find(e => e.p === pin);
-    if(!u) return alert("PIN incorrecto");
+    if(!u) return alert("PIN Incorrecto");
     currentUser = u.n; currentPin = pin;
-    
     document.getElementById('view-login').style.display='none';
     document.getElementById('navbar').style.display='flex';
-    
-    // SI ES ADMIN: Ocultar botón Ventas y mandar directo a Admin
     if(pin === "0000") {
-        document.getElementById('n-v').style.display = "none"; 
+        document.getElementById('n-v').style.display = "none";
         checkAdmin();
     } else {
         document.getElementById('n-v').style.display = "block";
@@ -163,7 +164,7 @@
     }
   };
 
-  window.confirmarApertura = () => { renderBotones(); showView('view-ventas', 'n-v'); };
+  window.confirmarApertura = () => { showView('view-ventas', 'n-v'); };
 
   window.renderBotones = () => {
     document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
@@ -184,14 +185,14 @@
   window.delCart = (id) => { cart = cart.filter(i=>i.id!==id); renderCart(); };
   window.renderCart = () => {
     let t = cart.reduce((a,b)=>a+b.p,0);
-    document.getElementById('cart-list').innerHTML = cart.map(i=>`<div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:5px;"><span>${i.n}</span> <span>$${i.p} <b onclick="delCart(${i.id})" style="color:red; padding-left:10px;">×</b></span></div>`).join('');
+    document.getElementById('cart-list').innerHTML = cart.map(i=>`<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${i.n}</span> <span>$${i.p} <b onclick="delCart(${i.id})" style="color:red">×</b></span></div>`).join('');
     document.getElementById('total-val').innerText = "$"+t;
   };
 
   window.calcVuelto = () => {
     let t = cart.reduce((a,b)=>a+b.p,0);
     let p = document.getElementById('pago-val').value;
-    document.getElementById('vuelto-val').innerText = (p > 0 && p >= t) ? "$" + (p - t) : "$0";
+    document.getElementById('vuelto-val').innerText = (p >= t) ? "$" + (p - t) : "$0";
   };
 
   window.confirmarVenta = async () => {
@@ -202,58 +203,59 @@
             t: total, h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
             f: new Date().toLocaleDateString(), u: currentUser, timestamp: Date.now()
         });
-        alert("¡Venta Guardada!"); cart=[]; renderCart(); document.getElementById('pago-val').value="";
-    } catch(e) { alert("Error: Se guardará localmente."); }
+        alert("¡Venta Exitosa!"); cart=[]; renderCart(); document.getElementById('pago-val').value="";
+    } catch(e) { alert("Guardado en memoria local."); }
   };
 
   window.solicitarCierreCaja = async () => {
-    const p = prompt("PIN de confirmación:");
-    if(p !== currentPin) return alert("PIN incorrecto");
-    const cont = prompt("Efectivo total en caja:");
-    if(!cont || isNaN(cont)) return;
-    
-    const ventasHoyTotal = db_local.ventasHoy.reduce((a,b) => a + b.t, 0);
-    const esperado = ventasHoyTotal + db_local.fondoCaja;
-    const dif = cont - esperado;
-
-    let txt = `*CIERRE - LA UNICA*%0A👤 ${currentUser}%0A💰 Ventas: $${ventasHoyTotal}%0A💵 Fondo: $${db_local.fondoCaja}%0A🏦 Real: $${cont}%0A📉 Dif: $${dif}`;
+    const p = prompt("PIN para reporte:");
+    if(p !== currentPin) return alert("PIN Incorrecto");
+    const cont = prompt("Efectivo en caja:");
+    const vHoy = db_local.ventasHoy.reduce((a,b)=>a+b.t,0);
+    const esp = vHoy + db_local.fondoCaja;
+    let txt = `*CIERRE LA UNICA*%0A👤 ${currentUser}%0A💰 Ventas: $${vHoy}%0A💵 Fondo: $${db_local.fondoCaja}%0A🏦 Caja: $${cont}%0A📉 Dif: $${cont-esp}`;
     window.location.href = "https://wa.me/?text=" + txt;
   };
 
   window.checkAdmin = () => { if(currentPin === "0000") { showView('view-admin', 'n-a'); renderAdminTabs(); } };
-
   window.changeAdminTab = (t) => { currentAdminTab = t; renderAdminTabs(); };
 
   function renderAdminTabs() {
     const content = document.getElementById('admin-content');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    const tabEl = document.getElementById('tab-' + currentAdminTab[0]);
-    if(tabEl) tabEl.classList.add('active');
+    document.getElementById('tab-' + currentAdminTab[0]).classList.add('active');
 
     if(currentAdminTab === 'ventas') {
-        content.innerHTML = `<h3>Hoy: $${db_local.ventasHoy.reduce((a,b)=>a+b.t,0)}</h3><table>` + 
+        content.innerHTML = `<h3>Ventas Hoy: $${db_local.ventasHoy.reduce((a,b)=>a+b.t,0)}</h3><table>` + 
         db_local.ventasHoy.map(v=>`<tr><td>${v.h}</td><td>${v.u}</td><td>$${v.t}</td></tr>`).join('') + `</table>`;
     } 
     else if(currentAdminTab === 'productos') {
-        content.innerHTML = `<h3>Productos</h3><button onclick="addP()" class="btn-gold">+ Nuevo</button><table>` + db_local.productos.map(p => `<tr><td>${p.e}</td><td>${p.n}</td><td>$${p.p}</td><td onclick="delP('${p.id_fs}')" style="color:red">×</td></tr>`).join('') + `</table>`;
+        content.innerHTML = `<h3>Productos</h3><button onclick="addP()" class="btn-gold">+ Agregar</button><table>` + db_local.productos.map(p => `<tr><td>${p.e} ${p.n}</td><td>$${p.p}</td><td onclick="delP('${p.id_fs}')" style="color:red">×</td></tr>`).join('') + `</table>`;
+    }
+    else if(currentAdminTab === 'materia') {
+        content.innerHTML = `<h3>Stock Insumos</h3><button onclick="addM()" class="btn-gold">+ Insumo</button><table>` + db_local.materia.map(m => `<tr><td>${m.n}</td><td>${m.q} unid.</td><td onclick="delM('${m.id_fs}')" style="color:red">×</td></tr>`).join('') + `</table>`;
+    }
+    else if(currentAdminTab === 'receta') {
+        content.innerHTML = `<h3>Costeo</h3><button onclick="addR()" class="btn-gold">+ Costo</button><table>` + db_local.recetas.map(r => `<tr><td>${r.n}</td><td>Costo: $${r.c}</td><td onclick="delR('${r.id_fs}')" style="color:red">×</td></tr>`).join('') + `</table>`;
     }
     else if(currentAdminTab === 'staff') {
-        content.innerHTML = `<h3>Equipo</h3><button onclick="addS()" class="btn-gold">+ Staff</button><table>` + db_local.staff.map(s => `<tr><td>${s.n}</td><td>${s.p}</td><td onclick="delS('${s.id_fs}')" style="color:red">×</td></tr>`).join('') + `</table>`;
+        content.innerHTML = `<h3>Personal</h3><button onclick="addS()" class="btn-gold">+ Miembro</button><table>` + db_local.staff.map(s => `<tr><td>${s.n}</td><td>PIN: ${s.p}</td><td onclick="delS('${s.id_fs}')" style="color:red">×</td></tr>`).join('') + `</table>`;
     }
     else if(currentAdminTab === 'fondo') {
-        content.innerHTML = `<h3>Fondo de Caja</h3><input type="number" id="nf" class="input-dark" value="${db_local.fondoCaja}"><button onclick="upF()" class="btn-gold">GUARDAR</button>`;
+        content.innerHTML = `<h3>Configurar Fondo</h3><input type="number" id="nf" class="input-dark" value="${db_local.fondoCaja}"><button onclick="upF()" class="btn-gold">ACTUALIZAR</button>`;
     }
   }
 
-  window.addP = async () => { const e=prompt("Emoji:"), n=prompt("Nombre:"), p=prompt("Precio:"); if(e&&n&&p) await addDoc(collection(db_fs, "productos"), {e,n,p:parseInt(p)}); };
-  window.delP = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db_fs, "productos", id)); };
+  // FUNCIONES CRUD
+  window.addP = async () => { const e=prompt("Emoji:"), n=prompt("Nombre:"), p=prompt("Precio:"); if(n&&p) await addDoc(collection(db_fs, "productos"), {e,n,p:parseInt(p)}); };
+  window.delP = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db_fs, "productos", id)); };
+  window.addM = async () => { const n=prompt("Nombre Insumo:"), q=prompt("Cantidad:"); if(n&&q) await addDoc(collection(db_fs, "insumos"), {n,q}); };
+  window.delM = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db_fs, "insumos", id)); };
+  window.addR = async () => { const n=prompt("Nombre Receta:"), c=prompt("Costo Total:"); if(n&&c) await addDoc(collection(db_fs, "recetas"), {n,c}); };
+  window.delR = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db_fs, "recetas", id)); };
   window.addS = async () => { const n=prompt("Nombre:"), p=prompt("PIN:"); if(n&&p) await addDoc(collection(db_fs, "staff"), {n,p}); };
-  window.delS = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db_fs, "staff", id)); };
-  window.upF = async () => { 
-    const v = parseFloat(document.getElementById('nf').value);
-    await updateDoc(doc(db_fs, "config", "general"), {fondoCaja: v});
-    alert("Fondo actualizado");
-  };
+  window.delS = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db_fs, "staff", id)); };
+  window.upF = async () => { const v=parseFloat(document.getElementById('nf').value); await updateDoc(doc(db_fs, "config", "general"), {fondoCaja:v}); alert("Hecho"); };
 
 </script>
 </body>
