@@ -1,0 +1,10 @@
+{
+  "name": "La Unica Ventas",
+  "short_name": "La Unica",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#3D4B3F",
+  "theme_color": "#C5A059",
+  "orientation": "portrait"
+}
+
