@@ -3,55 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>La Unica - Sistema de Ventas</title>
+    <title>CCV - Churrería La Única</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; }
-        body { background: var(--cactus); color: var(--white); font-family: sans-serif; margin: 0; padding-bottom: 80px; }
-        .container { padding: 15px; max-width: 500px; margin: auto; display: none; }
-        .glass-card { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; margin-bottom: 10px; border: 1px solid var(--gold); }
-        .btn-gold { background: var(--gold); color: black; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-        nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid var(--gold); z-index: 100; }
+        * { box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
+        .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(197, 160, 89, 0.3); }
+        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: black; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: none; justify-content: space-around; padding: 12px 0; border-top: 2px solid var(--gold); z-index: 100; }
         .nav-item { text-align: center; font-size: 0.7rem; color: #888; flex: 1; cursor: pointer; }
         .nav-item.active { color: var(--gold); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        th, td { padding: 8px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+        th, td { padding: 10px 5px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        #sync-status { position: fixed; top: 10px; right: 10px; font-size: 0.6rem; z-index: 101; }
     </style>
 </head>
 <body>
 
-<div id="view-login" class="container" style="display: block; text-align: center; padding-top: 50px;">
+<div id="sync-status">● Verificando...</div>
+
+<div id="view-login" class="container" style="display: block; text-align: center; padding-top: 60px;">
     <div class="glass-card">
-        <h2>INGRESO</h2>
-        <input type="password" id="pin-input" placeholder="PIN" style="width:100%; padding:15px; margin:10px 0; font-size:1.5rem; text-align:center;">
-        <button class="btn-gold" onclick="handleLogin()">ENTRAR / FICHAR</button>
+        <h2 style="color: var(--gold); letter-spacing: 2px;">LA ÚNICA</h2>
+        <p style="font-size: 0.8rem; opacity: 0.7;">INGRESO DE PERSONAL</p>
+        <input type="password" id="pin-input" placeholder="PIN" style="width:100%; padding:15px; border-radius:10px; border:none; margin:15px 0; font-size:1.5rem; text-align:center; background: rgba(0,0,0,0.3); color: white;">
+        <button class="btn-gold" onclick="handleLogin()">FICHAR Y ENTRAR</button>
     </div>
 </div>
 
 <div id="view-ventas" class="container">
     <div id="grid-productos" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
-    <div class="glass-card" style="margin-top:20px;">
-        <h3>Total: <span id="total-venta">$0</span></h3>
-        <button class="btn-gold" onclick="confirmarVenta()">CONFIRMAR VENTA</button>
+    <div class="glass-card" style="margin-top: 15px;">
+        <div style="display: flex; justify-content: space-between;"><span>TOTAL</span> <span id="total-val" style="font-size: 1.8rem; color: var(--gold); font-weight: bold;">$0</span></div>
+        <button class="btn-gold" style="margin-top: 10px;" onclick="confirmarVenta()">CONFIRMAR VENTA</button>
     </div>
 </div>
 
 <div id="view-admin" class="container">
     <div class="glass-card">
-        <h3>Reporte de Ventas</h3>
-        <select id="filtro-tiempo" onchange="renderReporte()" style="width:100%; padding:10px; margin-bottom:10px;">
-            <option value="hoy">Hoy (por Turnos)</option>
-            <option value="semana">Esta Semana</option>
-            <option value="mes">Este Mes</option>
+        <h3>Reportes Detallados</h3>
+        <select id="filtro-tiempo" onchange="renderReporte()" style="width:100%; padding:12px; border-radius:8px; margin-bottom:15px; background: #222; color: white; border: 1px solid var(--gold);">
+            <option value="hoy">Hoy (Por Turnos)</option>
+            <option value="semana">Últimos 7 Días</option>
+            <option value="mes">Últimos 30 Días</option>
         </select>
         <div id="reporte-content"></div>
     </div>
 </div>
 
-<nav id="navbar" style="display:none;">
-    <div class="nav-item active" onclick="showView('view-ventas')">💰 Ventas</div>
-    <div class="nav-item" onclick="showView('view-admin'); renderReporte();">📊 Reportes</div>
-    <div class="nav-item" onclick="marcarSalida()" style="color:var(--danger)">🚪 Salida</div>
+<nav id="nav-bar" class="nav-bar">
+    <div class="nav-item active" id="n-v" onclick="showView('view-ventas', 'n-v')">💰 Ventas</div>
+    <div class="nav-item" id="n-r" onclick="showView('view-admin', 'n-r'); renderReporte();">📊 Reportes</div>
+    <div class="nav-item" onclick="location.reload()" style="color: var(--danger);">🚪 Salir</div>
 </nav>
 
 <script type="module">
@@ -67,36 +72,54 @@
     const app = initializeApp(firebaseConfig);
     const db = initializeFirestore(app, { localCache: persistentLocalCache() });
 
-    let user = ""; let turno = ""; let cart = []; let ventasLocal = [];
-    let productos = [ {n: "Churros x12", p: 5000}, {n: "Churros x6", p: 2600}, {n: "Rellenos x1", p: 600} ];
+    let currentUser = ""; let currentTurno = ""; let cart = []; let ventasLocal = [];
+    let productos = [ {n:"Doscena Churros", p:5000, e:"🍩"}, {n:"Media Doscena", p:2600, e:"🍩"}, {n:"Rellenos x1", p:600, e:"🍯"} ];
+
+    // Sincronización
+    setInterval(() => {
+        const s = document.getElementById('sync-status');
+        s.innerText = navigator.onLine ? "● ONLINE" : "● MODO LOCAL (SIN RED)";
+        s.style.color = navigator.onLine ? "#51CF66" : "#FF6B6B";
+    }, 2000);
 
     window.handleLogin = async () => {
         const pin = document.getElementById('pin-input').value;
-        if(pin === "1234") user = "Empleado 1"; else if(pin === "0000") user = "Admin"; else return alert("PIN Incorrecto");
+        if(pin === "0000") currentUser = "Admin"; else if(pin === "1234") currentUser = "Empleado"; else return alert("PIN Incorrecto");
         
         const hora = new Date().getHours();
-        turno = (hora < 14) ? "Mañana" : "Tarde";
+        currentTurno = (hora < 14) ? "Mañana" : "Tarde";
         
+        // Registro de fichaje
+        await addDoc(collection(db, "fichajes"), { u: currentUser, t: "ENTRADA", f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() });
+
         document.getElementById('view-login').style.display = 'none';
-        document.getElementById('navbar').style.display = 'flex';
-        showView('view-ventas');
+        document.getElementById('nav-bar').style.display = 'flex';
+        showView('view-ventas', 'n-v');
         renderProductos();
     };
 
     window.renderProductos = () => {
         document.getElementById('grid-productos').innerHTML = productos.map(p => `
-            <div class="glass-card" onclick="addToCart(${p.p})">${p.n}<br><b>$${p.p}</b></div>
+            <div class="glass-card" onclick="addToCart(${p.p}, '${p.n}')" style="text-align:center; cursor:pointer;">
+                <span style="font-size:1.5rem;">${p.e}</span><br><small>${p.n}</small><br><b>$${p.p}</b>
+            </div>
         `).join('');
     };
 
-    window.addToCart = (p) => { cart.push(p); document.getElementById('total-val'); actualizarTotal(); };
-    function actualizarTotal() { document.getElementById('total-venta').innerText = "$" + cart.reduce((a,b)=>a+b,0); }
+    window.addToCart = (p, n) => { cart.push({p, n}); actualizarTotal(); };
+    function actualizarTotal() { document.getElementById('total-val').innerText = "$" + cart.reduce((a,b)=>a+b.p, 0); }
 
     window.confirmarVenta = async () => {
         if(!cart.length) return;
-        const v = { t: cart.reduce((a,b)=>a+b,0), u: user, tr: turno, f: new Date().toLocaleDateString(), ts: serverTimestamp() };
-        try { await addDoc(collection(db, "ventas"), v); alert("Venta Guardada"); } 
-        catch(e) { alert("Guardado en Memoria (Offline)"); }
+        const total = cart.reduce((a,b)=>a+b.p, 0);
+        const v = { t: total, u: currentUser, tr: currentTurno, f: new Date().toLocaleDateString(), m: (new Date().getMonth()+1), ts: serverTimestamp() };
+        
+        try { 
+            await addDoc(collection(db, "ventas"), v); 
+            alert("Venta registrada");
+        } catch(e) { 
+            alert("Venta guardada localmente"); 
+        }
         cart = []; actualizarTotal();
     };
 
@@ -107,33 +130,40 @@
     window.renderReporte = () => {
         const filtro = document.getElementById('filtro-tiempo').value;
         const hoy = new Date().toLocaleDateString();
-        let filtradas = ventasLocal;
+        let html = "";
+        let sumaTotal = 0;
 
-        if(filtro === "hoy") filtradas = ventasLocal.filter(v => v.f === hoy);
-        
-        const total = filtradas.reduce((a,b)=>a+b.t, 0);
-        const mañana = filtradas.filter(v => v.tr === "Mañana").reduce((a,b)=>a+b.t, 0);
-        const tarde = filtradas.filter(v => v.tr === "Tarde").reduce((a,b)=>a+b.t, 0);
-
-        document.getElementById('reporte-content').innerHTML = `
-            <p>🌅 Turno Mañana: <b>$${mañana}</b></p>
-            <p>🌇 Turno Tarde: <b>$${tarde}</b></p>
-            <hr>
-            <h4>TOTAL PERIODO: $${total}</h4>
-        `;
+        if(filtro === "hoy") {
+            const vHoy = ventasLocal.filter(v => v.f === hoy);
+            const m = vHoy.filter(v => v.tr === "Mañana").reduce((a,b)=>a+b.t, 0);
+            const t = vHoy.filter(v => v.tr === "Tarde").reduce((a,b)=>a+b.t, 0);
+            sumaTotal = m + t;
+            html = `<p>🌅 Mañana: <b>$${m}</b></p><p>🌇 Tarde: <b>$${t}</b></p><hr><h4>TOTAL HOY: $${sumaTotal}</h4>`;
+        } else {
+            const dias = (filtro === "semana") ? 7 : 30;
+            const agrupado = {};
+            ventasLocal.forEach(v => {
+                if(!agrupado[v.f]) agrupado[v.f] = 0;
+                agrupado[v.f] += v.t;
+                sumaTotal += v.t;
+            });
+            html = `<table><tr><th>Fecha</th><th>Total</th></tr>`;
+            Object.keys(agrupado).slice(0, dias).forEach(f => {
+                html += `<tr><td>${f}</td><td>$${agrupado[f]}</td></tr>`;
+            });
+            html += `</table><h4 style="margin-top:15px; color:var(--gold);">TOTAL ACUMULADO: $${sumaTotal}</h4>`;
+        }
+        document.getElementById('reporte-content').innerHTML = html;
     };
 
-    window.showView = (id) => {
+    window.showView = (id, navId) => {
         document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
         document.getElementById(id).style.display = 'block';
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if(navId) document.getElementById(navId).classList.add('active');
     };
 
-    window.marcarSalida = () => { location.reload(); };
-
-    // REGISTRO DEL SERVICE WORKER PARA OFFLINE
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(() => console.log("Escudo Offline Activado"));
-    }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
 </html>
