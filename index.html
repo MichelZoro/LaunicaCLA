@@ -3,206 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CCV by La Única - SISTEMA PROFESIONAL</title>
+    <title>CCV PRO - La Única</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --cactus-dark: #3D4B3F; --cactus-soft: #5B6D5E; 
-            --gold: #C5A059; --bg-glass: rgba(255, 255, 255, 0.1);
-            --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66;
-        }
+        :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; }
         * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: radial-gradient(circle at top, var(--cactus-soft), var(--cactus-dark)); color: var(--white); margin: 0; min-height: 100vh; padding-bottom: 90px; overflow-x: hidden; }
-        
-        header { padding: 20px; text-align: center; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); border-bottom: 1px solid var(--gold); }
-        header h1 { font-size: 0.8rem; letter-spacing: 3px; color: var(--gold); margin: 0; text-transform: uppercase; }
-        
-        .container { padding: 15px; display: none; max-width: 480px; margin: auto; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        .glass-card { background: var(--bg-glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 15px; border-left: 4px solid var(--gold); }
-        
-        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; box-shadow: 0 4px 15px rgba(184, 134, 11, 0.3); }
-        .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; color: white; margin: 10px 0; font-size: 1.1rem; outline: none; text-align: center; }
-        
+        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 90px; }
+        .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
+        .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
+        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
+        .input-dark { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--gold); padding: 12px; border-radius: 10px; color: white; margin: 10px 0; text-align: center; }
         .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 15px; color: white; text-align: center; transition: 0.2s; }
-        .btn-item:active { transform: scale(0.95); background: var(--gold); color: black; }
-        .btn-item span { display: block; font-size: 1.8rem; margin-bottom: 5px; }
-        
-        nav { position: fixed; bottom: 0; width: 100%; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); display: none; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--gold); z-index: 999; }
-        .nav-item { color: #666; font-size: 0.65rem; text-align: center; cursor: pointer; flex: 1; font-weight: 600; }
+        .btn-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; text-align: center; }
+        nav { position: fixed; bottom: 0; width: 100%; background: #111; display: none; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--gold); z-index: 100; }
+        .nav-item { text-align: center; font-size: 0.6rem; color: #666; flex: 1; }
         .nav-item.active { color: var(--gold); }
-        
-        table { width: 100%; font-size: 0.75rem; border-collapse: collapse; margin-top: 10px; }
-        td, th { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; }
-        
-        #sync-status { position: fixed; top: 10px; right: 15px; font-size: 0.55rem; font-weight: 700; z-index: 1001; padding: 4px 8px; border-radius: 10px; }
-        .online { background: rgba(81, 207, 102, 0.2); color: var(--success); }
-        .offline { background: rgba(255, 107, 107, 0.2); color: var(--danger); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        th, td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; }
     </style>
 </head>
 <body>
 
-<div id="sync-status" class="online">● CONECTADO</div>
-<header><h1>CHURRERÍA LA ÚNICA</h1></header>
-
-<div id="view-login" style="display: flex; flex-direction: column; align-items: center; padding-top: 70px;">
-    <div class="glass-card" style="width: 320px; text-align: center; border-left: none; border-bottom: 4px solid var(--gold);">
-        <h2 style="font-size: 1rem; color: var(--gold); margin-bottom: 20px;">SISTEMA DE GESTIÓN CCV</h2>
-        <input type="password" id="pin-input" class="input-dark" placeholder="INGRESE PIN">
-        <button onclick="handleLogin()" class="btn-gold">ENTRAR / FICHAR</button>
+<div id="view-login" style="display: flex; flex-direction: column; align-items: center; padding-top: 80px;">
+    <div class="glass-card" style="width: 300px; text-align: center;">
+        <h2 style="color:var(--gold)">LA ÚNICA CCV</h2>
+        <input type="password" id="pin-input" class="input-dark" placeholder="PIN">
+        <button onclick="handleLogin()" class="btn-gold">ENTRAR</button>
     </div>
 </div>
 
 <div id="view-ventas" class="container">
     <div id="grid-productos" class="grid-pos"></div>
-    <div class="glass-card" style="margin-top: 20px;">
-        <div style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;" id="detalle-items">Esperando productos...</div>
-        <div style="display:flex; justify-content:space-between; align-items: baseline;">
-            <span style="font-weight: 600;">TOTAL</span>
-            <span id="total-val" style="font-size: 2.2rem; color: var(--gold); font-weight: 800;">$0</span>
-        </div>
-        <button onclick="confirmarVenta()" class="btn-gold" id="btn-vender">CONFIRMAR VENTA</button>
+    <div class="glass-card" style="margin-top:20px;">
+        <h3 style="margin:0">Total: <span id="total-val" style="color:var(--gold)">$0</span></h3>
+        <input type="number" id="paga-con" class="input-dark" placeholder="Paga con..." oninput="calcVuelto()">
+        <p style="font-size: 1.2rem; font-weight: bold;">Vuelto: <span id="vuelto-val" style="color:var(--success)">$0</span></p>
+        <button onclick="confirmarVenta()" class="btn-gold">CONFIRMAR VENTA</button>
     </div>
 </div>
 
 <div id="view-admin" class="container">
     <div class="glass-card">
-        <h3>Reporte Detallado</h3>
-        <select id="filtro-tiempo" onchange="renderReporte()" class="input-dark" style="font-size: 0.9rem;">
-            <option value="hoy">Hoy (Detalle por Turnos)</option>
-            <option value="semana">Últimos 7 Días</option>
-            <option value="mes">Resumen Mensual</option>
+        <h3>Historial Detallado</h3>
+        <select id="filtro-historial" class="input-dark" onchange="renderHistorial()">
+            <option value="hoy">Ventas de Hoy</option>
+            <option value="semana">Semana</option>
+            <option value="mes">Mes</option>
         </select>
-        <div id="reporte-content"></div>
+        <div id="historial-list" style="max-height: 250px; overflow-y: auto;"></div>
+    </div>
+
+    <div class="glass-card">
+        <h3>Fichajes (Entradas/Salidas)</h3>
+        <div id="fichaje-list"></div>
+    </div>
+
+    <div class="glass-card">
+        <h3>Gestión de Personal</h3>
+        <div id="staff-list"></div>
+        <button class="btn-gold" style="font-size: 0.7rem; margin-top:10px;" onclick="nuevoEmpleado()">+ AGREGAR EMPLEADO</button>
     </div>
 </div>
 
 <nav id="navbar">
-    <div class="nav-item active" id="n-v" onclick="showView('view-ventas', 'n-v')">💰<br>VENTAS</div>
-    <div class="nav-item" id="n-a" onclick="showView('view-admin', 'n-a'); renderReporte();">📊<br>REPORTES</div>
-    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">🚪<br>SALIR</div>
+    <div class="nav-item active" id="n-v" onclick="showView('view-ventas', 'n-v')">💰 VENTAS</div>
+    <div class="nav-item" id="n-a" onclick="showView('view-admin', 'n-a'); renderAdminAll();">📊 ADMIN</div>
+    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">🚪 SALIR</div>
 </nav>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0",
-    projectId: "churrerialaunica-a2888",
-    appId: "1:721969833627:web:8c0db201407a05f82c483e"
-  };
-
+  const firebaseConfig = { apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", projectId: "churrerialaunica-a2888", appId: "1:721969833627:web:8c0db201407a05f82c483e" };
   const app = initializeApp(firebaseConfig);
   const db = initializeFirestore(app, { localCache: persistentLocalCache() });
 
-  let currentUser = ""; let currentTurno = ""; let cart = []; let db_local = { productos: [], ventas: [] };
+  let currentUser = ""; let currentTurno = ""; let cart = [];
+  let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
 
-  // Status de conexión
-  setInterval(() => {
-    const s = document.getElementById('sync-status');
-    s.innerText = navigator.onLine ? "● ONLINE" : "● MODO OFFLINE";
-    s.className = navigator.onLine ? "online" : "offline";
-  }, 3000);
-
-  // Carga de datos
-  onSnapshot(collection(db, "productos"), (s) => {
-    db_local.productos = s.docs.map(d => d.data());
-    renderBotones();
-  });
-
-  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => {
-    db_local.ventas = s.docs.map(d => d.data());
-  });
+  // Escucha de datos en tiempo real
+  onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => d.data()); renderProductos(); });
+  onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); });
+  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => d.data()); });
+  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "desc")), (s) => { db_local.fichajes = s.docs.map(d => d.data()); });
 
   window.handleLogin = async () => {
     const pin = document.getElementById('pin-input').value;
-    if(pin === "0000") currentUser = "Admin"; else if(pin === "1234") currentUser = "Empleado"; else return alert("PIN Incorrecto");
+    const s = db_local.staff.find(x => x.p === pin);
+    if(!s && pin !== "0000") return alert("PIN Incorrecto");
     
+    currentUser = s ? s.n : "Admin";
     const hora = new Date().getHours();
     currentTurno = (hora < 14) ? "Mañana" : "Tarde";
-    
-    await addDoc(collection(db, "fichajes"), { u: currentUser, tipo: "ENTRADA", f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() });
 
-    document.getElementById('view-login').style.display='none';
-    document.getElementById('navbar').style.display='flex';
+    await addDoc(collection(db, "fichajes"), { u: currentUser, p: pin, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() });
+
+    document.getElementById('view-login').style.display = 'none';
+    document.getElementById('navbar').style.display = 'flex';
     showView('view-ventas', 'n-v');
+    if(currentUser !== "Admin") document.getElementById('n-a').style.visibility = 'hidden';
   };
 
-  window.renderBotones = () => {
+  window.renderProductos = () => {
     document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
-        <div class="btn-item" onclick="addToCart('${p.n}', ${p.p})">
-            <span>${p.e || '🍩'}</span>
-            <small>${p.n}</small><br><b>$${p.p}</b>
-        </div>
+      <div class="btn-item" onclick="addCart(${p.p})"><span>${p.e || '🍩'}</span><small>${p.n}</small><br><b>$${p.p}</b></div>
     `).join('');
   };
 
-  window.addToCart = (n, p) => {
-    cart.push({n, p});
-    const total = cart.reduce((a,b)=>a+b.p, 0);
-    document.getElementById('total-val').innerText = "$" + total;
-    document.getElementById('detalle-items').innerText = cart.map(i => i.n).join(", ");
+  window.addCart = (p) => { cart.push(p); const t = cart.reduce((a,b)=>a+b,0); document.getElementById('total-val').innerText = "$"+t; calcVuelto(); };
+  window.calcVuelto = () => {
+    const t = cart.reduce((a,b)=>a+b,0);
+    const p = document.getElementById('paga-con').value || 0;
+    document.getElementById('vuelto-val').innerText = "$" + Math.max(0, p - t);
   };
 
   window.confirmarVenta = async () => {
     if(!cart.length) return;
-    const total = cart.reduce((a,b)=>a+b.p, 0);
-    const v = { t: total, u: currentUser, tr: currentTurno, f: new Date().toLocaleDateString(), m: (new Date().getMonth()+1), ts: serverTimestamp() };
+    const v = { t: cart.reduce((a,b)=>a+b,0), u: currentUser, tr: currentTurno, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() };
+    await addDoc(collection(db, "ventas"), v);
+    alert("Venta Registrada");
+    cart = []; document.getElementById('total-val').innerText = "$0"; document.getElementById('paga-con').value = ""; calcVuelto();
+  };
+
+  window.renderAdminAll = () => {
+    renderHistorial();
+    document.getElementById('fichaje-list').innerHTML = `<table><tr><th>Emp</th><th>Día</th><th>Hora</th></tr>` + 
+      db_local.fichajes.slice(0,10).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td>${f.h}</td></tr>`).join('') + `</table>`;
     
-    try {
-        await addDoc(collection(db, "ventas"), v);
-        alert("¡Venta confirmada!");
-    } catch(e) {
-        alert("Guardado en el celular (Offline)");
-    }
-    cart = []; document.getElementById('total-val').innerText = "$0"; document.getElementById('detalle-items').innerText = "Esperando productos...";
+    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `
+      <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+        <span>${s.n} (PIN: ${s.p})</span>
+        <button onclick="eliminarEmp('${s.id}')" style="color:red; background:none; border:none;">X</button>
+      </div>
+    `).join('');
   };
 
-  window.renderReporte = () => {
-    const filtro = document.getElementById('filtro-tiempo').value;
+  window.renderHistorial = () => {
+    const filtro = document.getElementById('filtro-historial').value;
     const hoy = new Date().toLocaleDateString();
-    let html = ""; let totalPeriodo = 0;
-
-    if(filtro === "hoy") {
-        const vHoy = db_local.ventas.filter(v => v.f === hoy);
-        const m = vHoy.filter(v => v.tr === "Mañana").reduce((a,b)=>a+b.t, 0);
-        const t = vHoy.filter(v => v.tr === "Tarde").reduce((a,b)=>a+b.t, 0);
-        totalPeriodo = m + t;
-        html = `
-            <div style="margin-top:10px;">
-                <p>🌅 Turno Mañana: <b>$${m}</b></p>
-                <p>🌇 Turno Tarde: <b>$${t}</b></p>
-                <hr style="opacity:0.1">
-                <h3 style="color:var(--gold)">TOTAL DEL DÍA: $${totalPeriodo}</h3>
-            </div>`;
-    } else {
-        const agrupado = {};
-        db_local.ventas.forEach(v => {
-            if(!agrupado[v.f]) agrupado[v.f] = 0;
-            agrupado[v.f] += v.t;
-            totalPeriodo += v.t;
-        });
-        html = `<table><tr><th>Fecha</th><th>Total</th></tr>`;
-        Object.keys(agrupado).sort().reverse().slice(0, (filtro === 'semana' ? 7 : 30)).forEach(f => {
-            html += `<tr><td>${f}</td><td>$${agrupado[f]}</td></tr>`;
-        });
-        html += `</table><h3 style="color:var(--gold); margin-top:15px;">TOTAL ACUMULADO: $${totalPeriodo}</h3>`;
-    }
-    document.getElementById('reporte-content').innerHTML = html;
+    const filtradas = (filtro === 'hoy') ? db_local.ventas.filter(v => v.f === hoy) : db_local.ventas;
+    
+    document.getElementById('historial-list').innerHTML = `<table><tr><th>Hora</th><th>Turno</th><th>Total</th></tr>` + 
+      filtradas.map(v => `<tr><td>${v.h}</td><td>${v.tr}</td><td>$${v.t}</td></tr>`).join('') + `</table>`;
   };
+
+  window.nuevoEmpleado = async () => {
+    const n = prompt("Nombre:"); const p = prompt("PIN (4 dígitos):");
+    if(n && p) await addDoc(collection(db, "staff"), { n, p });
+  };
+
+  window.eliminarEmp = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "staff", id)); };
 
   window.showView = (id, navId) => {
-    document.querySelectorAll('.container').forEach(c => c.style.display='none');
-    document.getElementById(id).style.display='block';
+    document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(navId).classList.add('active');
   };
-
-  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
 </html>
