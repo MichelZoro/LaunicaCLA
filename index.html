@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>La Churreria La Única - SISTEMA</title>
+    <link rel="manifest" href="manifest.json">
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -114,6 +116,13 @@
     if(navigator.onLine) { syncStatus.innerText = "● Online"; syncStatus.className = "online"; }
     else { syncStatus.innerText = "● Offline (Modo Local)"; syncStatus.className = "offline"; }
   }, 3000);
+
+  // REGISTRO DEL SERVICE WORKER PARA EL MANIFEST
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW no registrado', err));
+    });
+  }
 
   // CARGA DE DATOS (SNAPSHOTS)
   onSnapshot(collection(db_fs, "productos"), (s) => {
