@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA UNICA V3 - SISTEMA TOTAL</title>
+    <title>SISTEMA GESTIÓN LA ÚNICA V5</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; }
@@ -12,77 +12,106 @@
         .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
         .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
         .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; }
-        .input-dark { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--gold); padding: 12px; border-radius: 10px; color: white; margin: 10px 0; text-align: center; font-size: 1.2rem; }
+        .input-dark { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--gold); padding: 12px; border-radius: 10px; color: white; margin: 10px 0; text-align: center; font-size: 1.1rem; }
+        
+        /* Botones de Productos */
         .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; text-align: center; }
+        .btn-item { background: rgba(255,255,255,0.1); border: 1px solid var(--gold); border-radius: 15px; padding: 20px; text-align: center; font-weight: bold; }
+        .btn-item span { display: block; font-size: 2rem; }
+
+        /* Tabs Admin */
+        .tab-bar { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--gold); background: none; color: white; font-size: 0.7rem; min-width: 80px; }
+        .tab-btn.active { background: var(--gold); color: black; }
+
+        /* Carrito */
+        .cart-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        
         nav { position: fixed; bottom: 0; width: 100%; background: #111; display: none; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--gold); z-index: 100; }
-        .nav-item { text-align: center; font-size: 0.65rem; color: #666; flex: 1; text-transform: uppercase; font-weight: bold; }
-        .nav-item.active { color: var(--gold); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        th, td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; margin-top: 10px; }
+        th, td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; }
     </style>
 </head>
 <body>
 
 <div id="view-login" style="display: flex; flex-direction: column; align-items: center; padding-top: 80px;">
     <div class="glass-card" style="width: 320px; text-align: center;">
-        <h2 style="color:var(--gold); letter-spacing: 2px;">LA ÚNICA</h2>
-        <input type="password" id="pin-input" class="input-dark" placeholder="PIN">
+        <h2 style="color:var(--gold)">LA ÚNICA</h2>
+        <input type="password" id="pin-input" class="input-dark" placeholder="INGRESEsu PIN">
         <button onclick="handleLogin()" class="btn-gold">ENTRAR</button>
     </div>
 </div>
 
 <div id="view-ventas" class="container">
+    <h2 id="welcome-msg" style="color:var(--gold); font-size: 1rem; text-align: center;"></h2>
     <div id="grid-productos" class="grid-pos"></div>
-    <div class="glass-card" style="margin-top:20px; border-left: 5px solid var(--gold);">
-        <h3 style="margin:0">Total: <span id="total-val" style="color:var(--gold); font-size: 1.8rem;">$0</span></h3>
-        <input type="number" id="paga-con" class="input-dark" placeholder="¿Paga con cuánto?" oninput="calcVuelto()">
-        <p style="font-size: 1.3rem; font-weight: 700;">Vuelto: <span id="vuelto-val" style="color:var(--success)">$0</span></p>
+    
+    <div class="glass-card" style="margin-top:20px;">
+        <h4>Carrito</h4>
+        <div id="cart-list"></div>
+        <h3 style="text-align:right">Total: <span id="total-val" style="color:var(--gold)">$0</span></h3>
+        
+        <select id="metodo-pago" class="input-dark">
+            <option value="Efectivo">💵 Efectivo</option>
+            <option value="Transferencia">📱 Transferencia</option>
+        </select>
+        
+        <input type="number" id="paga-con" class="input-dark" placeholder="Recibido $" oninput="calcVuelto()">
+        <p style="font-weight: bold;">Vuelto: <span id="vuelto-val" style="color:var(--success)">$0</span></p>
+        
         <button onclick="confirmarVenta()" class="btn-gold">CONFIRMAR VENTA</button>
+        <button onclick="location.reload()" class="btn-gold" style="background:var(--danger); margin-top:20px; color:white;">CERRAR TURNO</button>
     </div>
 </div>
 
 <div id="view-admin" class="container">
-    <div class="glass-card">
-        <h3>Ventas Detalladas</h3>
-        <select id="filtro-h" class="input-dark" onchange="renderHistorial()" style="font-size: 0.9rem;">
-            <option value="hoy">Ventas de Hoy</option>
-            <option value="semana">Esta Semana</option>
-            <option value="mes">Este Mes</option>
-        </select>
-        <div id="historial-list" style="max-height: 200px; overflow-y: auto;"></div>
+    <div class="tab-bar">
+        <button class="tab-btn active" id="t-v" onclick="switchTab('v')">VENTAS</button>
+        <button class="tab-btn" id="t-s" onclick="switchTab('s')">STAFF</button>
+        <button class="tab-btn" id="t-p" onclick="switchTab('p')">PRODUCTOS</button>
     </div>
 
-    <div class="glass-card">
-        <h3>Fichajes (Entrada/Salida)</h3>
+    <div id="tab-v" class="admin-tab">
+        <select id="filtro-h" class="input-dark" onchange="renderHistorial()">
+            <option value="hoy">Hoy (Turnos)</option>
+            <option value="semana">Semana</option>
+            <option value="mes">Mes</option>
+        </select>
+        <div id="historial-resumen"></div>
+        <div id="historial-list" style="overflow-x:auto"></div>
+    </div>
+
+    <div id="tab-s" class="admin-tab" style="display:none">
+        <div id="staff-list"></div>
+        <button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button>
+        <h4 style="margin-top:20px">Reloj de Fichajes</h4>
         <div id="fichaje-list"></div>
     </div>
 
-    <div class="glass-card">
-        <h3>Gestión Empleados</h3>
-        <div id="staff-list"></div>
-        <button class="btn-gold" onclick="nuevoEmpleado()">+ NUEVO EMPLEADO</button>
+    <div id="tab-p" class="admin-tab" style="display:none">
+        <div id="prod-admin-list"></div>
+        <button class="btn-gold" onclick="nuevoProd()">+ AGREGAR PRODUCTO</button>
     </div>
 </div>
 
 <nav id="navbar">
-    <div class="nav-item active" id="n-v" onclick="showView('view-ventas', 'n-v')">💰 Ventas</div>
-    <div class="nav-item" id="n-a" onclick="showView('view-admin', 'n-a'); renderAdminAll();">📊 Admin</div>
-    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">🚪 Salir</div>
+    <div class="nav-item" onclick="showView('view-ventas')">💰 VENTAS</div>
+    <div id="nav-admin-btn" class="nav-item" onclick="showView('view-admin'); renderAdminAll();">⚙️ ADMIN</div>
+    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">🚪 SALIR</div>
 </nav>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", projectId: "churrerialaunica-a2888", appId: "1:721969833627:web:8c0db201407a05f82c483e" };
   const app = initializeApp(firebaseConfig);
   const db = initializeFirestore(app, { localCache: persistentLocalCache() });
 
-  let user = ""; let turno = ""; let cart = [];
+  let user = ""; let cart = [];
   let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
 
-  onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => d.data()); renderProductos(); });
+  onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); });
   onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); });
   onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => d.data()); });
   onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "desc")), (s) => { db_local.fichajes = s.docs.map(d => d.data()); });
@@ -93,64 +122,109 @@
     if(!s && pin !== "0000") return alert("PIN Incorrecto");
     
     user = s ? s.n : "Admin";
-    turno = (new Date().getHours() < 14) ? "Mañana" : "Tarde";
-
-    await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() });
+    document.getElementById('welcome-msg').innerText = "¡Bienvenido/a, " + user + "!";
+    
+    await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), t: "ENTRADA", ts: serverTimestamp() });
 
     document.getElementById('view-login').style.display = 'none';
     document.getElementById('navbar').style.display = 'flex';
-    showView('view-ventas', 'n-v');
-    if(user !== "Admin") document.getElementById('n-a').style.display = 'none';
+    showView('view-ventas');
+    if(user !== "Admin") document.getElementById('nav-admin-btn').style.display = 'none';
   };
 
+  // --- LÓGICA DE VENTAS (EMPLEADO) ---
   window.renderProductos = () => {
     document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
-      <div class="btn-item" onclick="addCart(${p.p})"><span>${p.e || '🍩'}</span><small>${p.n}</small><br><b>$${p.p}</b></div>
+      <div class="btn-item" onclick="addCart('${p.n}', ${p.p})"><span>🍩</span>${p.n}<br>$${p.p}</div>
     `).join('');
   };
 
-  window.addCart = (p) => { cart.push(p); const t = cart.reduce((a,b)=>a+b,0); document.getElementById('total-val').innerText = "$"+t; calcVuelto(); };
+  window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
+  window.delCart = (i) => { cart.splice(i, 1); renderCart(); };
+  
+  function renderCart() {
+    const list = document.getElementById('cart-list');
+    list.innerHTML = cart.map((item, i) => `
+        <div class="cart-item"><span>${item.n}</span> <span>$${item.p} <button onclick="delCart(${i})" style="color:red; background:none; border:none; margin-left:10px;">X</button></span></div>
+    `).join('');
+    const total = cart.reduce((a,b)=>a+b.p, 0);
+    document.getElementById('total-val').innerText = "$"+total;
+    calcVuelto();
+  }
+
   window.calcVuelto = () => {
-    const t = cart.reduce((a,b)=>a+b,0);
+    const t = cart.reduce((a,b)=>a+b.p, 0);
     const p = document.getElementById('paga-con').value || 0;
-    document.getElementById('vuelto-val').innerText = "$" + Math.max(0, p - t);
+    document.getElementById('vuelto-val').innerText = "$" + (p > 0 ? Math.max(0, p - t) : 0);
   };
 
   window.confirmarVenta = async () => {
     if(!cart.length) return;
-    const v = { t: cart.reduce((a,b)=>a+b,0), u: user, tr: turno, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() };
+    const metodo = document.getElementById('metodo-pago').value;
+    const v = { t: cart.reduce((a,b)=>a+b.p,0), u: user, m: metodo, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp(), tr: (new Date().getHours() < 14 ? "Mañana" : "Tarde") };
     await addDoc(collection(db, "ventas"), v);
-    alert("Venta Ok");
-    cart = []; document.getElementById('total-val').innerText = "$0"; document.getElementById('paga-con').value = ""; calcVuelto();
+    alert("Venta Confirmada");
+    cart = []; document.getElementById('paga-con').value = ""; renderCart();
+  };
+
+  // --- LÓGICA ADMIN ---
+  window.switchTab = (t) => {
+    document.querySelectorAll('.admin-tab').forEach(x => x.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+    document.getElementById('tab-'+t).style.display = 'block';
+    document.getElementById('t-'+t).classList.add('active');
   };
 
   window.renderAdminAll = () => {
     renderHistorial();
-    document.getElementById('fichaje-list').innerHTML = `<table><tr><th>Emp</th><th>Día</th><th>Hora</th></tr>` + 
-      db_local.fichajes.slice(0,10).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td>${f.h}</td></tr>`).join('') + `</table>`;
-    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div>${s.n} (PIN: ${s.p}) <button onclick="delEmp('${s.id}')">X</button></div>`).join('');
+    // Staff List
+    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `
+        <div class="glass-card" style="padding:10px; display:flex; justify-content:space-between">
+            <span>${s.n} (PIN: ${s.p})</span>
+            <div>
+                <button onclick="editEmp('${s.id}')" style="color:var(--gold); background:none; border:none;">EDIT</button>
+                <button onclick="delEmp('${s.id}')" style="color:red; background:none; border:none; margin-left:10px;">X</button>
+            </div>
+        </div>`).join('');
+    // Fichajes
+    document.getElementById('fichaje-list').innerHTML = `<table><tr><th>Emp</th><th>Fecha</th><th>Hora</th></tr>` + 
+      db_local.fichajes.slice(0,20).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td>${f.h}</td></tr>`).join('') + `</table>`;
+    // Productos
+    document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `
+        <div class="glass-card" style="padding:10px; display:flex; justify-content:space-between">
+            <span>🍩 ${p.n} ($${p.p})</span>
+            <div>
+                <button onclick="editProd('${p.id}')" style="color:var(--gold); background:none; border:none;">EDIT</button>
+                <button onclick="delProd('${p.id}')" style="color:red; background:none; border:none; margin-left:10px;">X</button>
+            </div>
+        </div>`).join('');
   };
 
   window.renderHistorial = () => {
     const f = document.getElementById('filtro-h').value;
     const hoy = new Date().toLocaleDateString();
-    const vils = (f === 'hoy') ? db_local.ventas.filter(v => v.f === hoy) : db_local.ventas;
-    document.getElementById('historial-list').innerHTML = `<table><tr><th>Hora</th><th>Turno</th><th>$$</th></tr>` + 
-      vils.map(v => `<tr><td>${v.h}</td><td>${v.tr}</td><td>$${v.t}</td></tr>`).join('') + `</table>`;
+    let lista = db_local.ventas;
+    if(f === 'hoy') lista = db_local.ventas.filter(v => v.f === hoy);
+    
+    const total = lista.reduce((a,b)=>a+b.t, 0);
+    document.getElementById('historial-resumen').innerHTML = `<h3 style="color:var(--gold)">TOTAL PERIODO: $${total}</h3>`;
+    
+    document.getElementById('historial-list').innerHTML = `<table><tr><th>Fecha/Hora</th><th>Turno</th><th>Pago</th><th>Total</th></tr>` + 
+      lista.map(v => `<tr><td>${v.f} ${v.h}</td><td>${v.tr}</td><td>${v.m}</td><td>$${v.t}</td></tr>`).join('') + `</table>`;
   };
 
-  window.nuevoEmpleado = async () => {
-    const n = prompt("Nombre:"); const p = prompt("PIN:");
-    if(n && p) await addDoc(collection(db, "staff"), { n, p });
-  };
+  // Acciones CRUD
+  window.nuevoEmp = async () => { const n = prompt("Nombre:"); const p = prompt("PIN:"); if(n && p) await addDoc(collection(db, "staff"), { n, p }); };
+  window.delEmp = async (id) => { if(confirm("¿Eliminar empleado?")) await deleteDoc(doc(db, "staff", id)); };
+  window.editEmp = async (id) => { const n = prompt("Nuevo Nombre:"); const p = prompt("Nuevo PIN:"); if(n && p) await updateDoc(doc(db, "staff", id), { n, p }); };
 
-  window.delEmp = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "staff", id)); };
+  window.nuevoProd = async () => { const n = prompt("Nombre Producto:"); const p = parseInt(prompt("Precio:")); if(n && p) await addDoc(collection(db, "productos"), { n, p }); };
+  window.delProd = async (id) => { if(confirm("¿Eliminar producto?")) await deleteDoc(doc(db, "productos", id)); };
+  window.editProd = async (id) => { const n = prompt("Nuevo Nombre:"); const p = parseInt(prompt("Nuevo Precio:")); if(n && p) await updateDoc(doc(db, "productos", id), { n, p }); };
 
-  window.showView = (id, navId) => {
+  window.showView = (id) => {
     document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
     document.getElementById(id).style.display = 'block';
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById(navId).classList.add('active');
   };
 </script>
 </body>
