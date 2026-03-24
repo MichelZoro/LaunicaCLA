@@ -3,229 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>La Unica - Gestión Total</title>
+    <title>La Unica - Sistema de Ventas</title>
     <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; }
-        * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: radial-gradient(circle at top, #5B6D5E, var(--cactus)); color: var(--white); margin: 0; min-height: 100vh; padding-bottom: 90px; }
-        header { padding: 15px; text-align: center; background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--gold); }
-        .container { padding: 15px; display: none; max-width: 480px; margin: auto; }
-        .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
-        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 10px; }
-        .input-dark { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); padding: 15px; border-radius: 12px; color: white; margin: 10px 0; font-size: 1.2rem; text-align: center; }
-        .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; color: white; text-align: center; }
-        #sync-status { position: fixed; top: 5px; right: 10px; font-size: 0.6rem; font-weight: bold; }
-        nav { position: fixed; bottom: 0; width: 100%; background: #111; display: none; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--gold); }
-        .nav-item { text-align: center; font-size: 0.7rem; color: #888; flex: 1; }
+        body { background: var(--cactus); color: var(--white); font-family: sans-serif; margin: 0; padding-bottom: 80px; }
+        .container { padding: 15px; max-width: 500px; margin: auto; display: none; }
+        .glass-card { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; margin-bottom: 10px; border: 1px solid var(--gold); }
+        .btn-gold { background: var(--gold); color: black; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
+        nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid var(--gold); z-index: 100; }
+        .nav-item { text-align: center; font-size: 0.7rem; color: #888; flex: 1; cursor: pointer; }
         .nav-item.active { color: var(--gold); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
 
-<div id="sync-status">Verificando...</div>
-<header><h1 style="font-size: 0.9rem; letter-spacing: 2px; color: var(--gold); margin: 0;">CHURRERÍA LA ÚNICA</h1></header>
-
-<div id="view-login" style="display: flex; flex-direction: column; align-items: center; padding-top: 50px;">
-    <div class="glass-card" style="width: 300px; text-align: center;">
-        <h2 style="font-size: 1rem;">INGRESO PERSONAL</h2>
-        <input type="password" id="pin-input" class="input-dark" placeholder="PIN">
-        <button onclick="handleFichaje()" class="btn-gold">FICHAJE / ENTRAR</button>
-        <p id="login-msg" style="font-size: 0.7rem; margin-top: 10px; color: var(--gold);"></p>
+<div id="view-login" class="container" style="display: block; text-align: center; padding-top: 50px;">
+    <div class="glass-card">
+        <h2>INGRESO</h2>
+        <input type="password" id="pin-input" placeholder="PIN" style="width:100%; padding:15px; margin:10px 0; font-size:1.5rem; text-align:center;">
+        <button class="btn-gold" onclick="handleLogin()">ENTRAR / FICHAR</button>
     </div>
 </div>
 
 <div id="view-ventas" class="container">
-    <div id="grid-productos" class="grid-pos"></div>
-    <div class="glass-card" style="margin-top: 20px;">
-        <div id="cart-summary" style="font-size: 0.8rem; margin-bottom: 10px; opacity: 0.8;"></div>
-        <div style="display:flex; justify-content:space-between; align-items: center;">
-            <span style="font-size: 1rem;">TOTAL</span>
-            <span id="total-val" style="font-size: 2rem; color: var(--gold); font-weight: 800;">$0</span>
-        </div>
-        <button onclick="confirmarVenta()" class="btn-gold" id="btn-confirmar">CONFIRMAR VENTA</button>
+    <div id="grid-productos" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
+    <div class="glass-card" style="margin-top:20px;">
+        <h3>Total: <span id="total-venta">$0</span></h3>
+        <button class="btn-gold" onclick="confirmarVenta()">CONFIRMAR VENTA</button>
     </div>
-    <button onclick="marcarSalida()" style="width: 100%; background: none; border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 12px; font-weight: bold; margin-top: 10px;">MARCAR SALIDA Y CERRAR TURNO</button>
 </div>
 
 <div id="view-admin" class="container">
     <div class="glass-card">
-        <h3>Reporte Consolidado</h3>
-        <div id="admin-stats"></div>
+        <h3>Reporte de Ventas</h3>
+        <select id="filtro-tiempo" onchange="renderReporte()" style="width:100%; padding:10px; margin-bottom:10px;">
+            <option value="hoy">Hoy (por Turnos)</option>
+            <option value="semana">Esta Semana</option>
+            <option value="mes">Este Mes</option>
+        </select>
+        <div id="reporte-content"></div>
     </div>
 </div>
 
-<nav id="navbar">
-    <div class="nav-item active" id="n-v" onclick="showView('view-ventas', 'n-v')">💰<br>VENTAS</div>
-    <div class="nav-item" id="n-a" onclick="showView('view-admin', 'n-a'); renderAdmin();">📊<br>ADMIN</div>
-    <div class="nav-item" onclick="location.reload()">🚪<br>SALIR</div>
+<nav id="navbar" style="display:none;">
+    <div class="nav-item active" onclick="showView('view-ventas')">💰 Ventas</div>
+    <div class="nav-item" onclick="showView('view-admin'); renderReporte();">📊 Reportes</div>
+    <div class="nav-item" onclick="marcarSalida()" style="color:var(--danger)">🚪 Salida</div>
 </nav>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, onSnapshot, query, where, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0",
-    authDomain: "churrerialaunica-a2888.firebaseapp.com",
-    projectId: "churrerialaunica-a2888",
-    storageBucket: "churrerialaunica-a2888.firebasestorage.app",
-    messagingSenderId: "721969833627",
-    appId: "1:721969833627:web:8c0db201407a05f82c483e"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
-  });
-
-  let currentUser = null;
-  let currentTurnoId = null;
-  let cart = [];
-  let db_local = { productos: [], staff: [], ventas: [] };
-
-  // Sincronización
-  setInterval(() => {
-    const s = document.getElementById('sync-status');
-    s.innerText = navigator.onLine ? "● ONLINE" : "● MODO OFFLINE";
-    s.style.color = navigator.onLine ? "#51CF66" : "#FF6B6B";
-  }, 3000);
-
-  // Carga de Datos
-  onSnapshot(collection(db, "productos"), (s) => {
-    db_local.productos = s.docs.map(d => d.data());
-    renderBotones();
-  });
-
-  onSnapshot(collection(db, "staff"), (s) => {
-    db_local.staff = s.docs.map(d => d.data());
-  });
-
-  onSnapshot(collection(db, "ventas"), (s) => {
-    db_local.ventas = s.docs.map(d => d.data());
-  });
-
-  // FICHAJE Y LOGIN
-  window.handleFichaje = async () => {
-    const pin = document.getElementById('pin-input').value;
-    const user = db_local.staff.find(u => u.p === pin);
-    
-    if(!user && pin !== "0000") return alert("PIN Incorrecto");
-    
-    currentUser = user ? user.n : "Administrador";
-    currentTurnoId = "T-" + Date.now();
-
-    // Registrar fichaje de entrada en Firebase
-    await addDoc(collection(db, "fichajes"), {
-        u: currentUser,
-        tipo: "ENTRADA",
-        f: new Date().toLocaleDateString(),
-        h: new Date().toLocaleTimeString(),
-        timestamp: serverTimestamp()
-    });
-
-    document.getElementById('view-login').style.display = 'none';
-    document.getElementById('navbar').style.display = 'flex';
-    showView('view-ventas', 'n-v');
-  };
-
-  window.marcarSalida = async () => {
-    if(!confirm("¿Cerrar turno y marcar salida?")) return;
-    
-    const vTurno = db_local.ventas.filter(v => v.turno === currentTurnoId).reduce((a,b)=>a+b.t, 0);
-
-    await addDoc(collection(db, "fichajes"), {
-        u: currentUser,
-        tipo: "SALIDA",
-        ventas_turno: vTurno,
-        timestamp: serverTimestamp()
-    });
-
-    alert("Salida registrada. Ventas del turno: $" + vTurno);
-    location.reload();
-  };
-
-  // LÓGICA DE VENTAS
-  window.renderBotones = () => {
-    document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
-        <div class="btn-item" onclick="addToCart('${p.n}', ${p.p})">
-            <span style="display:block; font-size:1.5rem;">${p.e || '🍩'}</span>
-            <small>${p.n}</small><br><b>$${p.p}</b>
-        </div>
-    `).join('');
-  };
-
-  window.addToCart = (n, p) => {
-    cart.push({n, p});
-    const total = cart.reduce((a,b)=>a+b.p, 0);
-    document.getElementById('total-val').innerText = "$" + total;
-    document.getElementById('cart-summary').innerText = cart.map(i => i.n).join(", ");
-  };
-
-  window.confirmarVenta = async () => {
-    if(!cart.length) return;
-    const total = cart.reduce((a,b)=>a+b.p, 0);
-    const btn = document.getElementById('btn-confirmar');
-    
-    btn.disabled = true;
-    btn.innerText = "PROCESANDO...";
-
-    const nuevaVenta = {
-        t: total,
-        u: currentUser,
-        turno: currentTurnoId,
-        f: new Date().toLocaleDateString(),
-        m: (new Date().getMonth() + 1),
-        timestamp: serverTimestamp()
+    const firebaseConfig = {
+        apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0",
+        projectId: "churrerialaunica-a2888",
+        appId: "1:721969833627:web:8c0db201407a05f82c483e"
     };
 
-    try {
-        await addDoc(collection(db, "ventas"), nuevaVenta);
-        alert("Venta Exitosa");
-    } catch (e) {
-        alert("Guardado localmente (sin internet)");
-    } finally {
-        cart = [];
-        document.getElementById('total-val').innerText = "$0";
-        document.getElementById('cart-summary').innerText = "";
-        btn.disabled = false;
-        btn.innerText = "CONFIRMAR VENTA";
+    const app = initializeApp(firebaseConfig);
+    const db = initializeFirestore(app, { localCache: persistentLocalCache() });
+
+    let user = ""; let turno = ""; let cart = []; let ventasLocal = [];
+    let productos = [ {n: "Churros x12", p: 5000}, {n: "Churros x6", p: 2600}, {n: "Rellenos x1", p: 600} ];
+
+    window.handleLogin = async () => {
+        const pin = document.getElementById('pin-input').value;
+        if(pin === "1234") user = "Empleado 1"; else if(pin === "0000") user = "Admin"; else return alert("PIN Incorrecto");
+        
+        const hora = new Date().getHours();
+        turno = (hora < 14) ? "Mañana" : "Tarde";
+        
+        document.getElementById('view-login').style.display = 'none';
+        document.getElementById('navbar').style.display = 'flex';
+        showView('view-ventas');
+        renderProductos();
+    };
+
+    window.renderProductos = () => {
+        document.getElementById('grid-productos').innerHTML = productos.map(p => `
+            <div class="glass-card" onclick="addToCart(${p.p})">${p.n}<br><b>$${p.p}</b></div>
+        `).join('');
+    };
+
+    window.addToCart = (p) => { cart.push(p); document.getElementById('total-val'); actualizarTotal(); };
+    function actualizarTotal() { document.getElementById('total-venta').innerText = "$" + cart.reduce((a,b)=>a+b,0); }
+
+    window.confirmarVenta = async () => {
+        if(!cart.length) return;
+        const v = { t: cart.reduce((a,b)=>a+b,0), u: user, tr: turno, f: new Date().toLocaleDateString(), ts: serverTimestamp() };
+        try { await addDoc(collection(db, "ventas"), v); alert("Venta Guardada"); } 
+        catch(e) { alert("Guardado en Memoria (Offline)"); }
+        cart = []; actualizarTotal();
+    };
+
+    onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => {
+        ventasLocal = s.docs.map(d => d.data());
+    });
+
+    window.renderReporte = () => {
+        const filtro = document.getElementById('filtro-tiempo').value;
+        const hoy = new Date().toLocaleDateString();
+        let filtradas = ventasLocal;
+
+        if(filtro === "hoy") filtradas = ventasLocal.filter(v => v.f === hoy);
+        
+        const total = filtradas.reduce((a,b)=>a+b.t, 0);
+        const mañana = filtradas.filter(v => v.tr === "Mañana").reduce((a,b)=>a+b.t, 0);
+        const tarde = filtradas.filter(v => v.tr === "Tarde").reduce((a,b)=>a+b.t, 0);
+
+        document.getElementById('reporte-content').innerHTML = `
+            <p>🌅 Turno Mañana: <b>$${mañana}</b></p>
+            <p>🌇 Turno Tarde: <b>$${tarde}</b></p>
+            <hr>
+            <h4>TOTAL PERIODO: $${total}</h4>
+        `;
+    };
+
+    window.showView = (id) => {
+        document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+    };
+
+    window.marcarSalida = () => { location.reload(); };
+
+    // REGISTRO DEL SERVICE WORKER PARA OFFLINE
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(() => console.log("Escudo Offline Activado"));
     }
-  };
-
-  // ADMIN Y ACUMULADOS
-  window.renderAdmin = () => {
-    const hoy = new Date().toLocaleDateString();
-    const mesActual = new Date().getMonth() + 1;
-    
-    const vHoy = db_local.ventas.filter(v => v.f === hoy).reduce((a,b)=>a+b.t, 0);
-    const vMes = db_local.ventas.filter(v => v.m === mesActual).reduce((a,b)=>a+b.t, 0);
-
-    document.getElementById('admin-stats').innerHTML = `
-        <div style="margin-bottom:20px;">
-            <p>Ventas de Hoy:</p>
-            <h2 style="color:var(--gold)">$${vHoy}</h2>
-        </div>
-        <div style="margin-bottom:20px;">
-            <p>Ventas del Mes:</p>
-            <h2 style="color:var(--success)">$${vMes}</h2>
-        </div>
-        <hr style="opacity:0.1">
-        <p style="font-size:0.7rem;">* Los datos se actualizan automáticamente al recuperar señal.</p>
-    `;
-  };
-
-  window.showView = (id, navId) => {
-    document.querySelectorAll('.container').forEach(c => c.style.display='none');
-    document.getElementById(id).style.display='block';
-    if(navId) {
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(navId).classList.add('active');
-    }
-  };
-
 </script>
 </body>
 </html>
