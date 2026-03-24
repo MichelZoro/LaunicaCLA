@@ -3,167 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CCV - Churrería La Única</title>
+    <title>CCV by La Única - SISTEMA PROFESIONAL</title>
     <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; }
-        * { box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 80px; overflow-x: hidden; }
-        .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
-        .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(197, 160, 89, 0.3); }
-        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: black; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: none; justify-content: space-around; padding: 12px 0; border-top: 2px solid var(--gold); z-index: 100; }
-        .nav-item { text-align: center; font-size: 0.7rem; color: #888; flex: 1; cursor: pointer; }
+        :root { 
+            --cactus-dark: #3D4B3F; --cactus-soft: #5B6D5E; 
+            --gold: #C5A059; --bg-glass: rgba(255, 255, 255, 0.1);
+            --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66;
+        }
+        * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: radial-gradient(circle at top, var(--cactus-soft), var(--cactus-dark)); color: var(--white); margin: 0; min-height: 100vh; padding-bottom: 90px; overflow-x: hidden; }
+        
+        header { padding: 20px; text-align: center; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); border-bottom: 1px solid var(--gold); }
+        header h1 { font-size: 0.8rem; letter-spacing: 3px; color: var(--gold); margin: 0; text-transform: uppercase; }
+        
+        .container { padding: 15px; display: none; max-width: 480px; margin: auto; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .glass-card { background: var(--bg-glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 15px; border-left: 4px solid var(--gold); }
+        
+        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; box-shadow: 0 4px 15px rgba(184, 134, 11, 0.3); }
+        .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; color: white; margin: 10px 0; font-size: 1.1rem; outline: none; text-align: center; }
+        
+        .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 15px; color: white; text-align: center; transition: 0.2s; }
+        .btn-item:active { transform: scale(0.95); background: var(--gold); color: black; }
+        .btn-item span { display: block; font-size: 1.8rem; margin-bottom: 5px; }
+        
+        nav { position: fixed; bottom: 0; width: 100%; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); display: none; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--gold); z-index: 999; }
+        .nav-item { color: #666; font-size: 0.65rem; text-align: center; cursor: pointer; flex: 1; font-weight: 600; }
         .nav-item.active { color: var(--gold); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
-        th, td { padding: 10px 5px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        #sync-status { position: fixed; top: 10px; right: 10px; font-size: 0.6rem; z-index: 101; }
+        
+        table { width: 100%; font-size: 0.75rem; border-collapse: collapse; margin-top: 10px; }
+        td, th { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; }
+        
+        #sync-status { position: fixed; top: 10px; right: 15px; font-size: 0.55rem; font-weight: 700; z-index: 1001; padding: 4px 8px; border-radius: 10px; }
+        .online { background: rgba(81, 207, 102, 0.2); color: var(--success); }
+        .offline { background: rgba(255, 107, 107, 0.2); color: var(--danger); }
     </style>
 </head>
 <body>
 
-<div id="sync-status">● Verificando...</div>
+<div id="sync-status" class="online">● CONECTADO</div>
+<header><h1>CHURRERÍA LA ÚNICA</h1></header>
 
-<div id="view-login" class="container" style="display: block; text-align: center; padding-top: 60px;">
-    <div class="glass-card">
-        <h2 style="color: var(--gold); letter-spacing: 2px;">LA ÚNICA</h2>
-        <p style="font-size: 0.8rem; opacity: 0.7;">INGRESO DE PERSONAL</p>
-        <input type="password" id="pin-input" placeholder="PIN" style="width:100%; padding:15px; border-radius:10px; border:none; margin:15px 0; font-size:1.5rem; text-align:center; background: rgba(0,0,0,0.3); color: white;">
-        <button class="btn-gold" onclick="handleLogin()">FICHAR Y ENTRAR</button>
+<div id="view-login" style="display: flex; flex-direction: column; align-items: center; padding-top: 70px;">
+    <div class="glass-card" style="width: 320px; text-align: center; border-left: none; border-bottom: 4px solid var(--gold);">
+        <h2 style="font-size: 1rem; color: var(--gold); margin-bottom: 20px;">SISTEMA DE GESTIÓN CCV</h2>
+        <input type="password" id="pin-input" class="input-dark" placeholder="INGRESE PIN">
+        <button onclick="handleLogin()" class="btn-gold">ENTRAR / FICHAR</button>
     </div>
 </div>
 
 <div id="view-ventas" class="container">
-    <div id="grid-productos" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
-    <div class="glass-card" style="margin-top: 15px;">
-        <div style="display: flex; justify-content: space-between;"><span>TOTAL</span> <span id="total-val" style="font-size: 1.8rem; color: var(--gold); font-weight: bold;">$0</span></div>
-        <button class="btn-gold" style="margin-top: 10px;" onclick="confirmarVenta()">CONFIRMAR VENTA</button>
+    <div id="grid-productos" class="grid-pos"></div>
+    <div class="glass-card" style="margin-top: 20px;">
+        <div style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;" id="detalle-items">Esperando productos...</div>
+        <div style="display:flex; justify-content:space-between; align-items: baseline;">
+            <span style="font-weight: 600;">TOTAL</span>
+            <span id="total-val" style="font-size: 2.2rem; color: var(--gold); font-weight: 800;">$0</span>
+        </div>
+        <button onclick="confirmarVenta()" class="btn-gold" id="btn-vender">CONFIRMAR VENTA</button>
     </div>
 </div>
 
 <div id="view-admin" class="container">
     <div class="glass-card">
-        <h3>Reportes Detallados</h3>
-        <select id="filtro-tiempo" onchange="renderReporte()" style="width:100%; padding:12px; border-radius:8px; margin-bottom:15px; background: #222; color: white; border: 1px solid var(--gold);">
-            <option value="hoy">Hoy (Por Turnos)</option>
+        <h3>Reporte Detallado</h3>
+        <select id="filtro-tiempo" onchange="renderReporte()" class="input-dark" style="font-size: 0.9rem;">
+            <option value="hoy">Hoy (Detalle por Turnos)</option>
             <option value="semana">Últimos 7 Días</option>
-            <option value="mes">Últimos 30 Días</option>
+            <option value="mes">Resumen Mensual</option>
         </select>
         <div id="reporte-content"></div>
     </div>
 </div>
 
-<nav id="nav-bar" class="nav-bar">
-    <div class="nav-item active" id="n-v" onclick="showView('view-ventas', 'n-v')">💰 Ventas</div>
-    <div class="nav-item" id="n-r" onclick="showView('view-admin', 'n-r'); renderReporte();">📊 Reportes</div>
-    <div class="nav-item" onclick="location.reload()" style="color: var(--danger);">🚪 Salir</div>
+<nav id="navbar">
+    <div class="nav-item active" id="n-v" onclick="showView('view-ventas', 'n-v')">💰<br>VENTAS</div>
+    <div class="nav-item" id="n-a" onclick="showView('view-admin', 'n-a'); renderReporte();">📊<br>REPORTES</div>
+    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">🚪<br>SALIR</div>
 </nav>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0",
-        projectId: "churrerialaunica-a2888",
-        appId: "1:721969833627:web:8c0db201407a05f82c483e"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0",
+    projectId: "churrerialaunica-a2888",
+    appId: "1:721969833627:web:8c0db201407a05f82c483e"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = initializeFirestore(app, { localCache: persistentLocalCache() });
+  const app = initializeApp(firebaseConfig);
+  const db = initializeFirestore(app, { localCache: persistentLocalCache() });
 
-    let currentUser = ""; let currentTurno = ""; let cart = []; let ventasLocal = [];
-    let productos = [ {n:"Doscena Churros", p:5000, e:"🍩"}, {n:"Media Doscena", p:2600, e:"🍩"}, {n:"Rellenos x1", p:600, e:"🍯"} ];
+  let currentUser = ""; let currentTurno = ""; let cart = []; let db_local = { productos: [], ventas: [] };
 
-    // Sincronización
-    setInterval(() => {
-        const s = document.getElementById('sync-status');
-        s.innerText = navigator.onLine ? "● ONLINE" : "● MODO LOCAL (SIN RED)";
-        s.style.color = navigator.onLine ? "#51CF66" : "#FF6B6B";
-    }, 2000);
+  // Status de conexión
+  setInterval(() => {
+    const s = document.getElementById('sync-status');
+    s.innerText = navigator.onLine ? "● ONLINE" : "● MODO OFFLINE";
+    s.className = navigator.onLine ? "online" : "offline";
+  }, 3000);
 
-    window.handleLogin = async () => {
-        const pin = document.getElementById('pin-input').value;
-        if(pin === "0000") currentUser = "Admin"; else if(pin === "1234") currentUser = "Empleado"; else return alert("PIN Incorrecto");
-        
-        const hora = new Date().getHours();
-        currentTurno = (hora < 14) ? "Mañana" : "Tarde";
-        
-        // Registro de fichaje
-        await addDoc(collection(db, "fichajes"), { u: currentUser, t: "ENTRADA", f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() });
+  // Carga de datos
+  onSnapshot(collection(db, "productos"), (s) => {
+    db_local.productos = s.docs.map(d => d.data());
+    renderBotones();
+  });
 
-        document.getElementById('view-login').style.display = 'none';
-        document.getElementById('nav-bar').style.display = 'flex';
-        showView('view-ventas', 'n-v');
-        renderProductos();
-    };
+  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => {
+    db_local.ventas = s.docs.map(d => d.data());
+  });
 
-    window.renderProductos = () => {
-        document.getElementById('grid-productos').innerHTML = productos.map(p => `
-            <div class="glass-card" onclick="addToCart(${p.p}, '${p.n}')" style="text-align:center; cursor:pointer;">
-                <span style="font-size:1.5rem;">${p.e}</span><br><small>${p.n}</small><br><b>$${p.p}</b>
-            </div>
-        `).join('');
-    };
+  window.handleLogin = async () => {
+    const pin = document.getElementById('pin-input').value;
+    if(pin === "0000") currentUser = "Admin"; else if(pin === "1234") currentUser = "Empleado"; else return alert("PIN Incorrecto");
+    
+    const hora = new Date().getHours();
+    currentTurno = (hora < 14) ? "Mañana" : "Tarde";
+    
+    await addDoc(collection(db, "fichajes"), { u: currentUser, tipo: "ENTRADA", f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() });
 
-    window.addToCart = (p, n) => { cart.push({p, n}); actualizarTotal(); };
-    function actualizarTotal() { document.getElementById('total-val').innerText = "$" + cart.reduce((a,b)=>a+b.p, 0); }
+    document.getElementById('view-login').style.display='none';
+    document.getElementById('navbar').style.display='flex';
+    showView('view-ventas', 'n-v');
+  };
 
-    window.confirmarVenta = async () => {
-        if(!cart.length) return;
-        const total = cart.reduce((a,b)=>a+b.p, 0);
-        const v = { t: total, u: currentUser, tr: currentTurno, f: new Date().toLocaleDateString(), m: (new Date().getMonth()+1), ts: serverTimestamp() };
-        
-        try { 
-            await addDoc(collection(db, "ventas"), v); 
-            alert("Venta registrada");
-        } catch(e) { 
-            alert("Venta guardada localmente"); 
-        }
-        cart = []; actualizarTotal();
-    };
+  window.renderBotones = () => {
+    document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
+        <div class="btn-item" onclick="addToCart('${p.n}', ${p.p})">
+            <span>${p.e || '🍩'}</span>
+            <small>${p.n}</small><br><b>$${p.p}</b>
+        </div>
+    `).join('');
+  };
 
-    onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => {
-        ventasLocal = s.docs.map(d => d.data());
-    });
+  window.addToCart = (n, p) => {
+    cart.push({n, p});
+    const total = cart.reduce((a,b)=>a+b.p, 0);
+    document.getElementById('total-val').innerText = "$" + total;
+    document.getElementById('detalle-items').innerText = cart.map(i => i.n).join(", ");
+  };
 
-    window.renderReporte = () => {
-        const filtro = document.getElementById('filtro-tiempo').value;
-        const hoy = new Date().toLocaleDateString();
-        let html = "";
-        let sumaTotal = 0;
+  window.confirmarVenta = async () => {
+    if(!cart.length) return;
+    const total = cart.reduce((a,b)=>a+b.p, 0);
+    const v = { t: total, u: currentUser, tr: currentTurno, f: new Date().toLocaleDateString(), m: (new Date().getMonth()+1), ts: serverTimestamp() };
+    
+    try {
+        await addDoc(collection(db, "ventas"), v);
+        alert("¡Venta confirmada!");
+    } catch(e) {
+        alert("Guardado en el celular (Offline)");
+    }
+    cart = []; document.getElementById('total-val').innerText = "$0"; document.getElementById('detalle-items').innerText = "Esperando productos...";
+  };
 
-        if(filtro === "hoy") {
-            const vHoy = ventasLocal.filter(v => v.f === hoy);
-            const m = vHoy.filter(v => v.tr === "Mañana").reduce((a,b)=>a+b.t, 0);
-            const t = vHoy.filter(v => v.tr === "Tarde").reduce((a,b)=>a+b.t, 0);
-            sumaTotal = m + t;
-            html = `<p>🌅 Mañana: <b>$${m}</b></p><p>🌇 Tarde: <b>$${t}</b></p><hr><h4>TOTAL HOY: $${sumaTotal}</h4>`;
-        } else {
-            const dias = (filtro === "semana") ? 7 : 30;
-            const agrupado = {};
-            ventasLocal.forEach(v => {
-                if(!agrupado[v.f]) agrupado[v.f] = 0;
-                agrupado[v.f] += v.t;
-                sumaTotal += v.t;
-            });
-            html = `<table><tr><th>Fecha</th><th>Total</th></tr>`;
-            Object.keys(agrupado).slice(0, dias).forEach(f => {
-                html += `<tr><td>${f}</td><td>$${agrupado[f]}</td></tr>`;
-            });
-            html += `</table><h4 style="margin-top:15px; color:var(--gold);">TOTAL ACUMULADO: $${sumaTotal}</h4>`;
-        }
-        document.getElementById('reporte-content').innerHTML = html;
-    };
+  window.renderReporte = () => {
+    const filtro = document.getElementById('filtro-tiempo').value;
+    const hoy = new Date().toLocaleDateString();
+    let html = ""; let totalPeriodo = 0;
 
-    window.showView = (id, navId) => {
-        document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(navId) document.getElementById(navId).classList.add('active');
-    };
+    if(filtro === "hoy") {
+        const vHoy = db_local.ventas.filter(v => v.f === hoy);
+        const m = vHoy.filter(v => v.tr === "Mañana").reduce((a,b)=>a+b.t, 0);
+        const t = vHoy.filter(v => v.tr === "Tarde").reduce((a,b)=>a+b.t, 0);
+        totalPeriodo = m + t;
+        html = `
+            <div style="margin-top:10px;">
+                <p>🌅 Turno Mañana: <b>$${m}</b></p>
+                <p>🌇 Turno Tarde: <b>$${t}</b></p>
+                <hr style="opacity:0.1">
+                <h3 style="color:var(--gold)">TOTAL DEL DÍA: $${totalPeriodo}</h3>
+            </div>`;
+    } else {
+        const agrupado = {};
+        db_local.ventas.forEach(v => {
+            if(!agrupado[v.f]) agrupado[v.f] = 0;
+            agrupado[v.f] += v.t;
+            totalPeriodo += v.t;
+        });
+        html = `<table><tr><th>Fecha</th><th>Total</th></tr>`;
+        Object.keys(agrupado).sort().reverse().slice(0, (filtro === 'semana' ? 7 : 30)).forEach(f => {
+            html += `<tr><td>${f}</td><td>$${agrupado[f]}</td></tr>`;
+        });
+        html += `</table><h3 style="color:var(--gold); margin-top:15px;">TOTAL ACUMULADO: $${totalPeriodo}</h3>`;
+    }
+    document.getElementById('reporte-content').innerHTML = html;
+  };
 
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+  window.showView = (id, navId) => {
+    document.querySelectorAll('.container').forEach(c => c.style.display='none');
+    document.getElementById(id).style.display='block';
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(navId).classList.add('active');
+  };
+
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
 </html>
