@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>SISTEMA LA ÚNICA V8</title>
+    <title>LA ÚNICA - CONTROL V9</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
@@ -15,7 +15,7 @@
         .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
         .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-size: 1.1rem; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); }
-        .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
+        .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
         .tab-bar { display: flex; gap: 8px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.7rem; font-weight: 700; }
         .tab-btn.active { background: var(--gold); color: #000; }
@@ -27,6 +27,7 @@
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
         th { color: var(--gold); text-align: left; padding: 10px; border-bottom: 1px solid var(--glass); }
         td { padding: 10px; border-bottom: 1px solid var(--glass); }
+        .cart-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -40,16 +41,16 @@
 </div>
 
 <div id="view-ventas" class="container">
-    <h2 id="welcome-msg" style="color:var(--gold); text-align: center; font-size: 1.2rem;"></h2>
+    <h2 id="welcome-msg" style="color:var(--gold); text-align: center; font-size: 1.1rem;"></h2>
     <div id="grid-productos" class="grid-pos"></div>
     <div class="glass-card" style="margin-top:20px;">
         <div id="cart-list"></div>
-        <h3 style="text-align:right">Total: <span id="total-val" style="color:var(--gold)">$0</span></h3>
+        <h3 style="text-align:right; margin: 15px 0;">Total: <span id="total-val" style="color:var(--gold); font-size: 1.8rem;">$0</span></h3>
         <select id="metodo-pago" class="input-dark"><option value="Efectivo">💵 EFECTIVO</option><option value="Transferencia">📱 TRANSFERENCIA</option></select>
         <input type="number" id="paga-con" class="input-dark" placeholder="RECIBIDO $" oninput="calcVuelto()">
-        <p style="text-align:center">Vuelto: <span id="vuelto-val" style="color:var(--success); font-weight:bold; font-size:1.5rem;">$0</span></p>
-        <button onclick="confirmarVenta()" class="btn-gold">CONFIRMAR VENTA</button>
-        <button onclick="registrarSalida()" class="btn-gold" style="background:none; border: 1px solid var(--danger); color:var(--danger); margin-top:20px;">CERRAR TURNO</button>
+        <p style="text-align:center; font-size: 0.9rem; opacity: 0.8;">Vuelto: <span id="vuelto-val" style="color:var(--success); font-weight:bold; font-size:1.4rem;">$0</span></p>
+        <button onclick="confirmarVenta()" class="btn-gold" style="padding:18px;">✓ CONFIRMAR VENTA</button>
+        <button onclick="registrarSalida()" class="btn-gold" style="background:none; border: 1px solid var(--danger); color:var(--danger); margin-top:20px; font-size: 0.7rem; padding: 10px;">CERRAR TURNO</button>
     </div>
 </div>
 
@@ -59,23 +60,20 @@
         <button class="tab-btn" onclick="switchTab('s', this)">STAFF</button>
         <button class="tab-btn" onclick="switchTab('p', this)">MENÚ</button>
     </div>
-
     <div id="tab-v" class="admin-tab">
         <div class="glass-card">
             <select id="filtro-h" class="input-dark" onchange="renderHistorial()"><option value="hoy">HOY</option><option value="semana">SEMANA</option><option value="mes">MES</option></select>
             <div id="historial-resumen" style="text-align:center"></div>
             <div id="historial-list"></div>
-            <button onclick="reiniciarSistema()" class="btn-gold" style="background:var(--danger); color:white; margin-top:30px; font-size:0.6rem;">BORRAR TODO</button>
+            <button onclick="reiniciarSistema()" class="btn-gold" style="background:var(--danger); color:white; margin-top:30px; font-size:0.6rem; opacity: 0.7;">⚠️ REINICIAR TODO</button>
         </div>
     </div>
-
     <div id="tab-s" class="admin-tab" style="display:none">
-        <div class="glass-card"><h4>PERSONAL</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR</button></div>
-        <div class="glass-card"><h4>ÚLTIMOS FICHAJES</h4><div id="fichaje-list"></div></div>
+        <div class="glass-card"><h4>PERSONAL</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
+        <div class="glass-card"><h4>FICHAJES RECIENTES</h4><div id="fichaje-list"></div></div>
     </div>
-
     <div id="tab-p" class="admin-tab" style="display:none">
-        <div class="glass-card"><h4>PRODUCTOS</h4><div id="prod-admin-list"></div><button class="btn-gold" onclick="nuevoProd()">+ AGREGAR</button></div>
+        <div class="glass-card"><h4>MENU DE PRODUCTOS</h4><div id="prod-admin-list"></div><button class="btn-gold" onclick="nuevoProd()">+ AGREGAR AL MENU</button></div>
     </div>
 </div>
 
@@ -96,49 +94,32 @@
   let user = ""; let cart = [];
   let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
 
-  // --- ESCUCHA DE DATOS (AUTO-RENDER) ---
-  onSnapshot(collection(db, "productos"), (s) => { 
-    db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); 
-    renderProductos(); 
-    renderAdminLists(); 
-  });
-  
-  onSnapshot(collection(db, "staff"), (s) => { 
-    db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); 
-    renderAdminLists(); 
-  });
-  
-  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { 
-    db_local.ventas = s.docs.map(d => d.data()); 
-    renderHistorial(); 
-  });
-  
-  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "desc")), (s) => { 
-    db_local.fichajes = s.docs.map(d => d.data()); 
-    renderAdminLists(); 
-  });
+  onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
+  onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
+  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => d.data()); renderHistorial(); });
+  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "desc")), (s) => { db_local.fichajes = s.docs.map(d => d.data()); renderAdminLists(); });
 
   window.handleLogin = async () => {
     const pin = document.getElementById('pin-input').value;
+    const pinAdmin = "325606";
     const emp = db_local.staff.find(x => x.p === pin);
-    if(!emp && pin !== "0000") return alert("PIN INCORRECTO");
+    if(!emp && pin !== pinAdmin) return alert("PIN INCORRECTO");
     
-    user = emp ? emp.n : "Admin";
+    user = (pin === pinAdmin) ? "Admin" : emp.n;
     document.getElementById('view-login').style.display = 'none';
     document.getElementById('navbar').style.display = 'flex';
 
-    if(pin === "0000") {
+    if(user === "Admin") {
         document.getElementById('nav-admin-btn').style.display = 'block';
         showView('view-admin');
         document.getElementById('nav-v').style.display = 'none';
     } else {
-        document.getElementById('welcome-msg').innerText = "HOLA, " + user;
+        document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
         showView('view-ventas');
         await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), tipo: "ENTRADA", ts: serverTimestamp() });
     }
   };
 
-  // --- LÓGICA EMPLEADO ---
   window.renderProductos = () => {
     document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
       <div class="btn-item" onclick="addCart('${p.n}', ${p.p})"><span>🍩</span>${p.n}<br>$${p.p}</div>
@@ -146,9 +127,13 @@
   };
 
   window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
-  function renderCart() {
+  
+  window.renderCart = () => {
     document.getElementById('cart-list').innerHTML = cart.map((item, i) => `
-        <div class="cart-item"><span>${item.n}</span> <span>$${item.p} <button onclick="cart.splice(${i},1);renderCart()" style="color:red;background:none;border:none;">X</button></span></div>
+        <div class="cart-row">
+            <span>${item.n} ($${item.p})</span>
+            <button class="btn-del" onclick="cart.splice(${i},1);renderCart()" style="padding: 5px 10px; font-size: 1rem;">🗑</button>
+        </div>
     `).join('');
     const t = cart.reduce((a,b)=>a+b.p, 0);
     document.getElementById('total-val').innerText = "$"+t; calcVuelto();
@@ -163,32 +148,26 @@
   window.confirmarVenta = async () => {
     if(!cart.length) return;
     await addDoc(collection(db, "ventas"), { t: cart.reduce((a,b)=>a+b.p,0), u: user, m: document.getElementById('metodo-pago').value, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp(), tr: (new Date().getHours() < 14 ? "Mañana" : "Tarde") });
-    cart = []; document.getElementById('paga-con').value = ""; renderCart(); alert("VENTA OK");
+    cart = []; document.getElementById('paga-con').value = ""; renderCart(); alert("VENTA CONFIRMADA");
   };
 
   window.registrarSalida = async () => {
-    if(confirm("¿SALIR?")){ await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), tipo: "SALIDA", ts: serverTimestamp() }); location.reload(); }
+    if(confirm("¿CERRAR TURNO?")){ await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), tipo: "SALIDA", ts: serverTimestamp() }); location.reload(); }
   };
 
-  // --- LÓGICA ADMIN (CORREGIDA) ---
   window.switchTab = (t, btn) => {
     document.querySelectorAll('.admin-tab').forEach(x => x.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
     document.getElementById('tab-'+t).style.display = 'block';
     btn.classList.add('active');
-    renderAdminLists(); // Forzar render al cambiar de pestaña
+    renderAdminLists();
   };
 
   function renderAdminLists() {
-    // Staff
     const sList = document.getElementById('staff-list');
     if(sList) sList.innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
-    
-    // Fichajes
     const fList = document.getElementById('fichaje-list');
-    if(fList) fList.innerHTML = `<table>` + db_local.fichajes.slice(0,8).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td>${f.tipo}</td></tr>`).join('') + `</table>`;
-    
-    // Productos
+    if(fList) fList.innerHTML = `<table>` + db_local.fichajes.slice(0,8).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td style="color:var(--gold)">${f.tipo}</td></tr>`).join('') + `</table>`;
     const pList = document.getElementById('prod-admin-list');
     if(pList) pList.innerHTML = db_local.productos.map(p => `<div class="list-item"><span>🍩 ${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
   }
@@ -198,19 +177,19 @@
     const hoy = new Date().toLocaleDateString();
     let lista = (f === 'hoy') ? db_local.ventas.filter(v => v.f === hoy) : db_local.ventas;
     const res = document.getElementById('historial-resumen');
-    if(res) res.innerHTML = `<h3>TOTAL: $${lista.reduce((a,b)=>a+b.t,0)}</h3>`;
+    if(res) res.innerHTML = `<p style="opacity:0.6; margin:0;">TOTAL ACUMULADO</p><h2 style="color:var(--gold); margin:5px 0;">$${lista.reduce((a,b)=>a+b.t,0)}</h2>`;
     const hList = document.getElementById('historial-list');
-    if(hList) hList.innerHTML = `<table><tr><th>HORA</th><th>PAGO</th><th>$</th></tr>` + lista.slice(0,15).map(v => `<tr><td>${v.h}</td><td>${v.m}</td><td>$${v.t}</td></tr>`).join('') + `</table>`;
+    if(hList) hList.innerHTML = `<table><tr><th>HORA</th><th>PAGO</th><th>TOTAL</th></tr>` + lista.slice(0,15).map(v => `<tr><td>${v.h}</td><td>${v.m}</td><td style="font-weight:bold">$${v.t}</td></tr>`).join('') + `</table>`;
   };
 
   window.delDoc = async (col, id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, col, id)); };
 
   window.reiniciarSistema = async () => {
-    if(confirm("¿BORRAR TODO?")){
+    if(confirm("⚠️ ¿BORRAR TODAS LAS VENTAS?")){
         const batch = writeBatch(db);
         const vSnap = await getDocs(collection(db, "ventas")); vSnap.forEach(d => batch.delete(d.ref));
         const fSnap = await getDocs(collection(db, "fichajes")); fSnap.forEach(d => batch.delete(d.ref));
-        await batch.commit(); alert("SISTEMA REINICIADO");
+        await batch.commit(); alert("BASE DE DATOS LIMPIA");
     }
   };
 
@@ -222,8 +201,10 @@
     document.getElementById(id).style.display = 'block';
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if(id === 'view-ventas') document.getElementById('nav-v').classList.add('active');
-    if(id === 'nav-admin-btn') document.getElementById('nav-admin-btn').classList.add('active');
-    if(id === 'view-admin') renderAdminLists(); // Forzar render al entrar al admin
+    if(id === 'view-admin') {
+        document.getElementById('nav-admin-btn').classList.add('active');
+        renderAdminLists();
+    }
   };
 </script>
 </body>
