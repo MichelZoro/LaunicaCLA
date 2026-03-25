@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL V9</title>
+    <title>LA ÚNICA - CONTROL V9.1</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
@@ -14,6 +14,13 @@
         .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
         .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
         .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-size: 1.1rem; }
+        
+        /* Dashboard Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; }
+        .stat-label { font-size: 0.65rem; text-transform: uppercase; opacity: 0.7; letter-spacing: 1px; }
+        .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--gold); margin-top: 5px; }
+
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); }
         .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
         .tab-bar { display: flex; gap: 8px; margin-bottom: 20px; }
@@ -61,9 +68,18 @@
         <button class="tab-btn" onclick="switchTab('p', this)">MENÚ</button>
     </div>
     <div id="tab-v" class="admin-tab">
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-label">Total Recaudado</div>
+                <div class="stat-val" id="resumen-dinero">$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Ventas</div>
+                <div class="stat-val" id="resumen-cantidad">0</div>
+            </div>
+        </div>
         <div class="glass-card">
             <select id="filtro-h" class="input-dark" onchange="renderHistorial()"><option value="hoy">HOY</option><option value="semana">SEMANA</option><option value="mes">MES</option></select>
-            <div id="historial-resumen" style="text-align:center"></div>
             <div id="historial-list"></div>
             <button onclick="reiniciarSistema()" class="btn-gold" style="background:var(--danger); color:white; margin-top:30px; font-size:0.6rem; opacity: 0.7;">⚠️ REINICIAR TODO</button>
         </div>
@@ -173,11 +189,14 @@
   }
 
   window.renderHistorial = () => {
-    const f = document.getElementById('filtro-h').value;
+    const filtro = document.getElementById('filtro-h').value;
     const hoy = new Date().toLocaleDateString();
-    let lista = (f === 'hoy') ? db_local.ventas.filter(v => v.f === hoy) : db_local.ventas;
-    const res = document.getElementById('historial-resumen');
-    if(res) res.innerHTML = `<p style="opacity:0.6; margin:0;">TOTAL ACUMULADO</p><h2 style="color:var(--gold); margin:5px 0;">$${lista.reduce((a,b)=>a+b.t,0)}</h2>`;
+    let lista = (filtro === 'hoy') ? db_local.ventas.filter(v => v.f === hoy) : db_local.ventas;
+    
+    // Actualizar cajas de texto de resumen
+    document.getElementById('resumen-dinero').innerText = "$" + lista.reduce((a,b)=>a+b.t,0);
+    document.getElementById('resumen-cantidad').innerText = lista.length;
+
     const hList = document.getElementById('historial-list');
     if(hList) hList.innerHTML = `<table><tr><th>HORA</th><th>PAGO</th><th>TOTAL</th></tr>` + lista.slice(0,15).map(v => `<tr><td>${v.h}</td><td>${v.m}</td><td style="font-weight:bold">$${v.t}</td></tr>`).join('') + `</table>`;
   };
@@ -204,6 +223,7 @@
     if(id === 'view-admin') {
         document.getElementById('nav-admin-btn').classList.add('active');
         renderAdminLists();
+        renderHistorial();
     }
   };
 </script>
