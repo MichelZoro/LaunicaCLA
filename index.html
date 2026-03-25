@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL V10.2</title>
+    <title>LA ÚNICA - CONTROL V10.3</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
@@ -34,9 +34,9 @@
         .nav-item { text-align: center; font-size: 0.65rem; color: #888; font-weight: 800; }
         .nav-item.active { color: var(--gold); }
         
-        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        th { color: var(--gold); text-align: left; padding: 10px; border-bottom: 1px solid var(--glass); }
-        td { padding: 10px; border-bottom: 1px solid var(--glass); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.65rem; }
+        th { color: var(--gold); text-align: left; padding: 8px; border-bottom: 1px solid var(--glass); }
+        td { padding: 8px; border-bottom: 1px solid var(--glass); }
         .cart-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
@@ -89,7 +89,7 @@
     </div>
     <div id="tab-s" class="admin-tab" style="display:none">
         <div class="glass-card"><h4>PERSONAL</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
-        <div class="glass-card"><h4>FICHAJES RECIENTES</h4><div id="fichaje-list"></div></div>
+        <div class="glass-card"><h4>REPORTE DE HORARIOS</h4><div id="fichaje-list"></div></div>
     </div>
     <div id="tab-p" class="admin-tab" style="display:none">
         <div class="glass-card"><h4>MENU DE PRODUCTOS</h4><div id="prod-admin-list"></div><button class="btn-gold" onclick="nuevoProd()">+ AGREGAR AL MENU</button></div>
@@ -113,8 +113,7 @@
   let user = ""; let cart = [];
   let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
   
-  // CONFIGURACIÓN: CAMBIA ESTO POR TU NÚMERO
-  const MI_TELEFONO = "5491155135012"; 
+  const MI_TELEFONO = "5491100000000"; 
 
   onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
   onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
@@ -138,6 +137,7 @@
     } else {
         document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
         showView('view-ventas');
+        // Registro de ENTRADA
         await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), tipo: "ENTRADA", ts: serverTimestamp() });
     }
   };
@@ -150,18 +150,11 @@
 
   window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
   
-  // SOLUCIÓN: Función para eliminar un ítem específico
-  window.borrarDelCarrito = (i) => {
-    cart.splice(i, 1);
-    renderCart();
-  };
+  window.borrarDelCarrito = (i) => { cart.splice(i, 1); renderCart(); };
 
   window.renderCart = () => {
     document.getElementById('cart-list').innerHTML = cart.map((item, i) => `
-        <div class="cart-row">
-            <span>${item.n} ($${item.p})</span>
-            <button class="btn-del" onclick="borrarDelCarrito(${i})">🗑</button>
-        </div>
+        <div class="cart-row"><span>${item.n} ($${item.p})</span><button class="btn-del" onclick="borrarDelCarrito(${i})">🗑</button></div>
     `).join('');
     const t = cart.reduce((a,b)=>a+b.p, 0);
     document.getElementById('total-val').innerText = "$"+t; calcVuelto();
@@ -175,20 +168,19 @@
 
   window.confirmarVenta = async () => {
     if(!cart.length) return;
-    await addDoc(collection(db, "ventas"), { t: cart.reduce((a,b)=>a+b.p,0), u: user, m: document.getElementById('metodo-pago').value, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp(), tr: (new Date().getHours() < 14 ? "Mañana" : "Tarde") });
+    await addDoc(collection(db, "ventas"), { t: cart.reduce((a,b)=>a+b.p,0), u: user, m: document.getElementById('metodo-pago').value, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp() });
     cart = []; document.getElementById('paga-con').value = ""; renderCart(); alert("VENTA CONFIRMADA");
   };
 
-  // SOLUCIÓN: Cierre de turno con mensaje de WhatsApp
   window.registrarSalida = async () => {
     if(confirm("¿CERRAR TURNO?")){ 
         const hoy = new Date().toLocaleDateString();
         const ventasTurno = db_local.ventas.filter(v => v.u === user && v.f === hoy);
         const total = ventasTurno.reduce((a, b) => a + b.t, 0);
-        
         const mensaje = `*CIERRE LA UNICA*%0A*Empleado:* ${user}%0A*Total:* $${total}`;
         
-        await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: new Date().toLocaleTimeString(), tipo: "SALIDA", total_turno: total, ts: serverTimestamp() }); 
+        // Registro de SALIDA
+        await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: new Date().toLocaleTimeString(), tipo: "SALIDA", ts: serverTimestamp() }); 
         
         window.open(`https://wa.me/${MI_TELEFONO}?text=${mensaje}`, '_blank');
         location.reload(); 
@@ -203,11 +195,26 @@
     renderAdminLists();
   };
 
+  // MEJORA: Renderizado de la lista de STAFF y FICHAJES detallada
   function renderAdminLists() {
     const sList = document.getElementById('staff-list');
     if(sList) sList.innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
+    
+    // Tabla de fichajes mejorada
     const fList = document.getElementById('fichaje-list');
-    if(fList) fList.innerHTML = `<table>` + db_local.fichajes.slice(0,8).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td style="color:var(--gold)">${f.tipo}</td></tr>`).join('') + `</table>`;
+    if(fList) {
+        fList.innerHTML = `<table>
+            <tr><th>EMPLEADO</th><th>DÍA</th><th>TIPO</th><th>HORA</th></tr>` + 
+            db_local.fichajes.slice(0,15).map(f => `
+                <tr>
+                    <td>${f.u}</td>
+                    <td>${f.f}</td>
+                    <td style="color:${f.tipo === 'ENTRADA' ? 'var(--success)' : 'var(--danger)'}">${f.tipo}</td>
+                    <td style="font-weight:bold">${f.h}</td>
+                </tr>`).join('') + 
+        `</table>`;
+    }
+
     const pList = document.getElementById('prod-admin-list');
     if(pList) pList.innerHTML = db_local.productos.map(p => `<div class="list-item"><span>🍩 ${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
   }
@@ -229,7 +236,7 @@
         const batch = writeBatch(db);
         const vSnap = await getDocs(collection(db, "ventas")); vSnap.forEach(d => batch.delete(d.ref));
         const fSnap = await getDocs(collection(db, "fichajes")); fSnap.forEach(d => batch.delete(d.ref));
-        await batch.commit(); alert("BASE DE DATOS LIMPIA");
+        await batch.commit(); alert("SISTEMA REINICIADO");
     }
   };
 
@@ -241,11 +248,7 @@
     document.getElementById(id).style.display = 'block';
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if(id === 'view-ventas') document.getElementById('nav-v').classList.add('active');
-    if(id === 'view-admin') {
-        document.getElementById('nav-admin-btn').classList.add('active');
-        renderAdminLists();
-        renderHistorial();
-    }
+    if(id === 'view-admin') { document.getElementById('nav-admin-btn').classList.add('active'); renderAdminLists(); renderHistorial(); }
   };
 </script>
 </body>
