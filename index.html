@@ -4,117 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>CCV - LA ÚNICA v7</title>
+    <title>SISTEMA LA ÚNICA V8</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 90px; overflow-x: hidden; }
-        .container { padding: 15px; display: none; max-width: 500px; margin: auto; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
-        .btn-gold:active { transform: scale(0.98); opacity: 0.9; }
-        
-        .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-size: 1.1rem; outline: none; }
-        
-        /* Listas Modernas */
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); }
-        .btn-del { background: rgba(255, 107, 107, 0.15); color: var(--danger); border: none; width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; }
-
-        /* Tabs Admin */
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 90px; }
+        .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
+        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
+        .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-size: 1.1rem; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); }
+        .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
         .tab-bar { display: flex; gap: 8px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.7rem; font-weight: 700; transition: 0.3s; }
-        .tab-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
-
-        /* Empleado Ventas */
+        .tab-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.7rem; font-weight: 700; }
+        .tab-btn.active { background: var(--gold); color: #000; }
         .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 20px 10px; text-align: center; cursor: pointer; }
-        .btn-item span { display: block; font-size: 2.2rem; margin-bottom: 5px; }
-
+        .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 20px 10px; text-align: center; }
         nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--gold); z-index: 1000; }
-        .nav-item { text-align: center; font-size: 0.65rem; color: #888; font-weight: 800; text-transform: uppercase; }
+        .nav-item { text-align: center; font-size: 0.65rem; color: #888; font-weight: 800; }
         .nav-item.active { color: var(--gold); }
-        
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        th { color: var(--gold); text-align: left; padding: 10px; border-bottom: 2px solid var(--glass); }
-        td { padding: 12px 10px; border-bottom: 1px solid var(--glass); }
+        th { color: var(--gold); text-align: left; padding: 10px; border-bottom: 1px solid var(--glass); }
+        td { padding: 10px; border-bottom: 1px solid var(--glass); }
     </style>
 </head>
 <body>
 
 <div id="view-login" style="display: flex; flex-direction: column; align-items: center; padding-top: 100px;">
     <div class="glass-card" style="width: 85%; text-align: center;">
-        <h1 style="color:var(--gold); margin:0; font-size: 1.8rem;">LA ÚNICA</h1>
-        <p style="opacity:0.6; font-size:0.8rem; margin-bottom:20px;">SISTEMA DE CONTROL</p>
-        <input type="password" id="pin-input" class="input-dark" placeholder="INGRESE PIN" inputmode="numeric">
-        <button onclick="handleLogin()" class="btn-gold">ACCEDER</button>
+        <h1 style="color:var(--gold); margin:0;">LA ÚNICA</h1>
+        <input type="password" id="pin-input" class="input-dark" placeholder="PIN" inputmode="numeric">
+        <button onclick="handleLogin()" class="btn-gold">ENTRAR</button>
     </div>
 </div>
 
 <div id="view-ventas" class="container">
-    <h2 id="welcome-msg" style="color:var(--gold); text-align: center; font-size: 1rem;"></h2>
+    <h2 id="welcome-msg" style="color:var(--gold); text-align: center; font-size: 1.2rem;"></h2>
     <div id="grid-productos" class="grid-pos"></div>
-    <div class="glass-card" style="margin-top:20px; border-top: 4px solid var(--gold);">
+    <div class="glass-card" style="margin-top:20px;">
         <div id="cart-list"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin: 15px 0;">
-            <span style="opacity:0.7">TOTAL A PAGAR</span>
-            <span id="total-val" style="color:var(--gold); font-size: 2rem; font-weight: 800;">$0</span>
-        </div>
+        <h3 style="text-align:right">Total: <span id="total-val" style="color:var(--gold)">$0</span></h3>
         <select id="metodo-pago" class="input-dark"><option value="Efectivo">💵 EFECTIVO</option><option value="Transferencia">📱 TRANSFERENCIA</option></select>
-        <input type="number" id="paga-con" class="input-dark" placeholder="MONTO RECIBIDO $" oninput="calcVuelto()">
-        <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; text-align:center; margin-bottom:15px;">
-            <span style="font-size:0.8rem; opacity:0.6">VUELTO:</span><br>
-            <span id="vuelto-val" style="color:var(--success); font-size: 1.5rem; font-weight:bold;">$0</span>
-        </div>
-        <button onclick="confirmarVenta()" class="btn-gold" style="padding:20px;">✓ CONFIRMAR VENTA</button>
-        <button onclick="registrarSalida()" class="btn-gold" style="background:none; border: 1px solid var(--danger); color:var(--danger); margin-top:25px; font-size:0.7rem; padding:10px;">CERRAR TURNO</button>
+        <input type="number" id="paga-con" class="input-dark" placeholder="RECIBIDO $" oninput="calcVuelto()">
+        <p style="text-align:center">Vuelto: <span id="vuelto-val" style="color:var(--success); font-weight:bold; font-size:1.5rem;">$0</span></p>
+        <button onclick="confirmarVenta()" class="btn-gold">CONFIRMAR VENTA</button>
+        <button onclick="registrarSalida()" class="btn-gold" style="background:none; border: 1px solid var(--danger); color:var(--danger); margin-top:20px;">CERRAR TURNO</button>
     </div>
 </div>
 
 <div id="view-admin" class="container">
     <div class="tab-bar">
-        <button class="tab-btn active" id="t-v" onclick="switchTab('v')">REPORTES</button>
-        <button class="tab-btn" id="t-s" onclick="switchTab('s')">STAFF</button>
-        <button class="tab-btn" id="t-p" onclick="switchTab('p')">MENÚ</button>
+        <button class="tab-btn active" onclick="switchTab('v', this)">REPORTES</button>
+        <button class="tab-btn" onclick="switchTab('s', this)">STAFF</button>
+        <button class="tab-btn" onclick="switchTab('p', this)">MENÚ</button>
     </div>
 
     <div id="tab-v" class="admin-tab">
         <div class="glass-card">
-            <select id="filtro-h" class="input-dark" onchange="renderHistorial()">
-                <option value="hoy">RESUMEN HOY</option><option value="semana">ESTA SEMANA</option><option value="mes">ESTE MES</option>
-            </select>
-            <div id="historial-resumen" style="text-align:center; padding:10px;"></div>
-            <div id="historial-list" style="overflow-x:auto"></div>
-            <button onclick="reiniciarSistema()" class="btn-gold" style="background:var(--danger); color:white; font-size:0.6rem; margin-top:30px; opacity:0.8;">BORRAR TODA LA BASE DE DATOS</button>
+            <select id="filtro-h" class="input-dark" onchange="renderHistorial()"><option value="hoy">HOY</option><option value="semana">SEMANA</option><option value="mes">MES</option></select>
+            <div id="historial-resumen" style="text-align:center"></div>
+            <div id="historial-list"></div>
+            <button onclick="reiniciarSistema()" class="btn-gold" style="background:var(--danger); color:white; margin-top:30px; font-size:0.6rem;">BORRAR TODO</button>
         </div>
     </div>
 
     <div id="tab-s" class="admin-tab" style="display:none">
-        <div class="glass-card">
-            <h4 style="color:var(--gold); margin-top:0;">PERSONAL ACTIVO</h4>
-            <div id="staff-list"></div>
-            <button class="btn-gold" onclick="nuevoEmp()" style="margin-top:10px">+ AGREGAR EMPLEADO</button>
-        </div>
-        <div class="glass-card">
-            <h4 style="color:var(--gold); margin-top:0;">ÚLTIMOS FICHAJES</h4>
-            <div id="fichaje-list"></div>
-        </div>
+        <div class="glass-card"><h4>PERSONAL</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR</button></div>
+        <div class="glass-card"><h4>ÚLTIMOS FICHAJES</h4><div id="fichaje-list"></div></div>
     </div>
 
     <div id="tab-p" class="admin-tab" style="display:none">
-        <div class="glass-card">
-            <h4 style="color:var(--gold); margin-top:0;">GESTIÓN DE PRODUCTOS</h4>
-            <div id="prod-admin-list"></div>
-            <button class="btn-gold" onclick="nuevoProd()" style="margin-top:10px">+ AGREGAR AL MENÚ</button>
-        </div>
+        <div class="glass-card"><h4>PRODUCTOS</h4><div id="prod-admin-list"></div><button class="btn-gold" onclick="nuevoProd()">+ AGREGAR</button></div>
     </div>
 </div>
 
 <nav id="navbar">
     <div class="nav-item" id="nav-v" onclick="showView('view-ventas')">💰 VENTAS</div>
-    <div id="nav-admin-btn" class="nav-item" style="display:none" onclick="showView('view-admin'); renderAdminAll();">⚙️ ADMIN</div>
+    <div id="nav-admin-btn" class="nav-item" style="display:none" onclick="showView('view-admin')">⚙️ ADMIN</div>
     <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">🚪 SALIR</div>
 </nav>
 
@@ -129,11 +96,27 @@
   let user = ""; let cart = [];
   let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
 
-  // Escucha en tiempo real: Se actualiza solo
-  onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); if(user === "Admin") renderAdminAll(); });
-  onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); if(user === "Admin") renderAdminAll(); });
-  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => d.data()); if(user === "Admin") renderHistorial(); });
-  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "desc")), (s) => { db_local.fichajes = s.docs.map(d => d.data()); if(user === "Admin") renderAdminAll(); });
+  // --- ESCUCHA DE DATOS (AUTO-RENDER) ---
+  onSnapshot(collection(db, "productos"), (s) => { 
+    db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); 
+    renderProductos(); 
+    renderAdminLists(); 
+  });
+  
+  onSnapshot(collection(db, "staff"), (s) => { 
+    db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); 
+    renderAdminLists(); 
+  });
+  
+  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { 
+    db_local.ventas = s.docs.map(d => d.data()); 
+    renderHistorial(); 
+  });
+  
+  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "desc")), (s) => { 
+    db_local.fichajes = s.docs.map(d => d.data()); 
+    renderAdminLists(); 
+  });
 
   window.handleLogin = async () => {
     const pin = document.getElementById('pin-input').value;
@@ -146,26 +129,26 @@
 
     if(pin === "0000") {
         document.getElementById('nav-admin-btn').style.display = 'block';
-        showView('view-admin'); 
+        showView('view-admin');
         document.getElementById('nav-v').style.display = 'none';
     } else {
-        document.getElementById('welcome-msg').innerText = "BIENVENIDO, " + user.toUpperCase();
+        document.getElementById('welcome-msg').innerText = "HOLA, " + user;
         showView('view-ventas');
         await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), tipo: "ENTRADA", ts: serverTimestamp() });
     }
   };
 
-  // --- EMPLEADO ---
+  // --- LÓGICA EMPLEADO ---
   window.renderProductos = () => {
     document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
-      <div class="btn-item" onclick="addCart('${p.n}', ${p.p})"><span>🍩</span>${p.n}<br><small>$${p.p}</small></div>
+      <div class="btn-item" onclick="addCart('${p.n}', ${p.p})"><span>🍩</span>${p.n}<br>$${p.p}</div>
     `).join('');
   };
 
   window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
   function renderCart() {
     document.getElementById('cart-list').innerHTML = cart.map((item, i) => `
-        <div class="cart-item"><span>${item.n}</span> <span>$${item.p} <button onclick="cart.splice(${i},1);renderCart()" style="color:var(--danger);background:none;border:none;margin-left:10px;font-weight:bold;">🗑</button></span></div>
+        <div class="cart-item"><span>${item.n}</span> <span>$${item.p} <button onclick="cart.splice(${i},1);renderCart()" style="color:red;background:none;border:none;">X</button></span></div>
     `).join('');
     const t = cart.reduce((a,b)=>a+b.p, 0);
     document.getElementById('total-val').innerText = "$"+t; calcVuelto();
@@ -180,46 +163,54 @@
   window.confirmarVenta = async () => {
     if(!cart.length) return;
     await addDoc(collection(db, "ventas"), { t: cart.reduce((a,b)=>a+b.p,0), u: user, m: document.getElementById('metodo-pago').value, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), ts: serverTimestamp(), tr: (new Date().getHours() < 14 ? "Mañana" : "Tarde") });
-    cart = []; document.getElementById('paga-con').value = ""; renderCart(); alert("¡VENTA EXITOSA!");
+    cart = []; document.getElementById('paga-con').value = ""; renderCart(); alert("VENTA OK");
   };
 
   window.registrarSalida = async () => {
-    if(confirm("¿CERRAR TURNO?")) {
-        await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), tipo: "SALIDA", ts: serverTimestamp() });
-        location.reload();
-    }
+    if(confirm("¿SALIR?")){ await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), tipo: "SALIDA", ts: serverTimestamp() }); location.reload(); }
   };
 
-  // --- ADMIN ---
-  window.switchTab = (t) => {
+  // --- LÓGICA ADMIN (CORREGIDA) ---
+  window.switchTab = (t, btn) => {
     document.querySelectorAll('.admin-tab').forEach(x => x.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
     document.getElementById('tab-'+t).style.display = 'block';
-    document.getElementById('t-'+t).classList.add('active');
+    btn.classList.add('active');
+    renderAdminLists(); // Forzar render al cambiar de pestaña
   };
 
-  window.renderAdminAll = () => {
-    renderHistorial();
-    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="deleteDoc(doc(db,'staff','${s.id}'))">🗑</button></div>`).join('');
-    document.getElementById('fichaje-list').innerHTML = `<table>` + db_local.fichajes.slice(0,8).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td style="color:var(--gold)">${f.tipo}</td></tr>`).join('') + `</table>`;
-    document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>🍩 ${p.n} ($${p.p})</span><button class="btn-del" onclick="deleteDoc(doc(db,'productos','${p.id}'))">🗑</button></div>`).join('');
-  };
+  function renderAdminLists() {
+    // Staff
+    const sList = document.getElementById('staff-list');
+    if(sList) sList.innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
+    
+    // Fichajes
+    const fList = document.getElementById('fichaje-list');
+    if(fList) fList.innerHTML = `<table>` + db_local.fichajes.slice(0,8).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td>${f.tipo}</td></tr>`).join('') + `</table>`;
+    
+    // Productos
+    const pList = document.getElementById('prod-admin-list');
+    if(pList) pList.innerHTML = db_local.productos.map(p => `<div class="list-item"><span>🍩 ${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
+  }
 
   window.renderHistorial = () => {
     const f = document.getElementById('filtro-h').value;
     const hoy = new Date().toLocaleDateString();
     let lista = (f === 'hoy') ? db_local.ventas.filter(v => v.f === hoy) : db_local.ventas;
-    document.getElementById('historial-resumen').innerHTML = `<span style="opacity:0.6">TOTAL RECAUDADO</span><h2 style="color:var(--gold); margin:5px 0;">$${lista.reduce((a,b)=>a+b.t,0)}</h2>`;
-    document.getElementById('historial-list').innerHTML = `<table><tr><th>HORA</th><th>PAGO</th><th>TOTAL</th></tr>` + 
-      lista.slice(0,20).map(v => `<tr><td>${v.h}</td><td>${v.m}</td><td style="font-weight:bold">$${v.t}</td></tr>`).join('') + `</table>`;
+    const res = document.getElementById('historial-resumen');
+    if(res) res.innerHTML = `<h3>TOTAL: $${lista.reduce((a,b)=>a+b.t,0)}</h3>`;
+    const hList = document.getElementById('historial-list');
+    if(hList) hList.innerHTML = `<table><tr><th>HORA</th><th>PAGO</th><th>$</th></tr>` + lista.slice(0,15).map(v => `<tr><td>${v.h}</td><td>${v.m}</td><td>$${v.t}</td></tr>`).join('') + `</table>`;
   };
 
+  window.delDoc = async (col, id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, col, id)); };
+
   window.reiniciarSistema = async () => {
-    if(confirm("⚠️ ¿BORRAR TODO? Esto no se puede deshacer.")){
+    if(confirm("¿BORRAR TODO?")){
         const batch = writeBatch(db);
         const vSnap = await getDocs(collection(db, "ventas")); vSnap.forEach(d => batch.delete(d.ref));
         const fSnap = await getDocs(collection(db, "fichajes")); fSnap.forEach(d => batch.delete(d.ref));
-        await batch.commit(); alert("SISTEMA EN CERO");
+        await batch.commit(); alert("SISTEMA REINICIADO");
     }
   };
 
@@ -231,7 +222,8 @@
     document.getElementById(id).style.display = 'block';
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if(id === 'view-ventas') document.getElementById('nav-v').classList.add('active');
-    if(id === 'view-admin') document.getElementById('nav-admin-btn').classList.add('active');
+    if(id === 'nav-admin-btn') document.getElementById('nav-admin-btn').classList.add('active');
+    if(id === 'view-admin') renderAdminLists(); // Forzar render al entrar al admin
   };
 </script>
 </body>
