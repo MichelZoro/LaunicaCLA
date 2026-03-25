@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL V9.1</title>
+    <title>LA ÚNICA - CONTROL V10.2</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
@@ -15,22 +15,25 @@
         .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
         .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-size: 1.1rem; }
         
-        /* Dashboard Stats */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; opacity: 0.7; letter-spacing: 1px; }
         .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--gold); margin-top: 5px; }
 
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); }
-        .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+        .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; }
+        
         .tab-bar { display: flex; gap: 8px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.7rem; font-weight: 700; }
         .tab-btn.active { background: var(--gold); color: #000; }
+        
         .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 20px 10px; text-align: center; }
+        
         nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--gold); z-index: 1000; }
         .nav-item { text-align: center; font-size: 0.65rem; color: #888; font-weight: 800; }
         .nav-item.active { color: var(--gold); }
+        
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
         th { color: var(--gold); text-align: left; padding: 10px; border-bottom: 1px solid var(--glass); }
         td { padding: 10px; border-bottom: 1px solid var(--glass); }
@@ -109,6 +112,9 @@
 
   let user = ""; let cart = [];
   let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
+  
+  // CONFIGURACIÓN: CAMBIA ESTO POR TU NÚMERO
+  const MI_TELEFONO = "5491155135012"; 
 
   onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
   onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
@@ -144,11 +150,17 @@
 
   window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
   
+  // SOLUCIÓN: Función para eliminar un ítem específico
+  window.borrarDelCarrito = (i) => {
+    cart.splice(i, 1);
+    renderCart();
+  };
+
   window.renderCart = () => {
     document.getElementById('cart-list').innerHTML = cart.map((item, i) => `
         <div class="cart-row">
             <span>${item.n} ($${item.p})</span>
-            <button class="btn-del" onclick="cart.splice(${i},1);renderCart()" style="padding: 5px 10px; font-size: 1rem;">🗑</button>
+            <button class="btn-del" onclick="borrarDelCarrito(${i})">🗑</button>
         </div>
     `).join('');
     const t = cart.reduce((a,b)=>a+b.p, 0);
@@ -167,8 +179,20 @@
     cart = []; document.getElementById('paga-con').value = ""; renderCart(); alert("VENTA CONFIRMADA");
   };
 
+  // SOLUCIÓN: Cierre de turno con mensaje de WhatsApp
   window.registrarSalida = async () => {
-    if(confirm("¿CERRAR TURNO?")){ await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString(), tipo: "SALIDA", ts: serverTimestamp() }); location.reload(); }
+    if(confirm("¿CERRAR TURNO?")){ 
+        const hoy = new Date().toLocaleDateString();
+        const ventasTurno = db_local.ventas.filter(v => v.u === user && v.f === hoy);
+        const total = ventasTurno.reduce((a, b) => a + b.t, 0);
+        
+        const mensaje = `*CIERRE LA UNICA*%0A*Empleado:* ${user}%0A*Total:* $${total}`;
+        
+        await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: new Date().toLocaleTimeString(), tipo: "SALIDA", total_turno: total, ts: serverTimestamp() }); 
+        
+        window.open(`https://wa.me/${MI_TELEFONO}?text=${mensaje}`, '_blank');
+        location.reload(); 
+    }
   };
 
   window.switchTab = (t, btn) => {
@@ -192,11 +216,8 @@
     const filtro = document.getElementById('filtro-h').value;
     const hoy = new Date().toLocaleDateString();
     let lista = (filtro === 'hoy') ? db_local.ventas.filter(v => v.f === hoy) : db_local.ventas;
-    
-    // Actualizar cajas de texto de resumen
     document.getElementById('resumen-dinero').innerText = "$" + lista.reduce((a,b)=>a+b.t,0);
     document.getElementById('resumen-cantidad').innerText = lista.length;
-
     const hList = document.getElementById('historial-list');
     if(hList) hList.innerHTML = `<table><tr><th>HORA</th><th>PAGO</th><th>TOTAL</th></tr>` + lista.slice(0,15).map(v => `<tr><td>${v.h}</td><td>${v.m}</td><td style="font-weight:bold">$${v.t}</td></tr>`).join('') + `</table>`;
   };
