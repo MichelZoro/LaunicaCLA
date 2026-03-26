@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL V10.3</title>
+    <title>LA ÚNICA - CONTROL V11</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
@@ -71,18 +71,21 @@
         <button class="tab-btn" onclick="switchTab('p', this)">MENÚ</button>
     </div>
     <div id="tab-v" class="admin-tab">
-        <div id="stats-container" class="stats-grid">
-            </div>
-        <div class="glass-card">
-            <select id="filtro-h" class="input-dark" onchange="renderHistorial()">
-                <option value="hoy">HOY</option>
-                <option value="semana">ÚLTIMA SEMANA</option>
-                <option value="mes">ESTE MES</option>
-            </select>
-            <div id="historial-list"></div>
-            <button onclick="reiniciarSistema()" class="btn-gold" style="background:var(--danger); color:white; margin-top:30px; font-size:0.6rem; opacity: 0.7;">⚠️ REINICIAR TODO</button>
+        <div class="glass-card" style="text-align: center;">
+            <label style="font-size: 0.8rem; color: var(--gold);">SELECCIONAR FECHA:</label>
+            <input type="date" id="calendar-filter" class="input-dark" onchange="renderHistorial()">
         </div>
+        
+        <div id="report-results" style="display:none;">
+            <div id="stats-container" class="stats-grid"></div>
+            <div class="glass-card">
+                <div id="historial-list"></div>
+            </div>
+        </div>
+        
+        <button onclick="reiniciarSistema()" class="btn-gold" style="background:var(--danger); color:white; margin-top:30px; font-size:0.6rem; opacity: 0.7;">⚠️ REINICIAR TODO</button>
     </div>
+    
     <div id="tab-s" class="admin-tab" style="display:none">
         <div class="glass-card"><h4>PERSONAL</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
         <div class="glass-card"><h4>REPORTE DE HORARIOS</h4><div id="fichaje-list"></div></div>
@@ -120,11 +123,9 @@
     const pinAdmin = "325606";
     const emp = db_local.staff.find(x => x.p === pin);
     if(!emp && pin !== pinAdmin) return alert("PIN INCORRECTO");
-    
     user = (pin === pinAdmin) ? "Admin" : emp.n;
     document.getElementById('view-login').style.display = 'none';
     document.getElementById('navbar').style.display = 'flex';
-
     if(user === "Admin") {
         document.getElementById('nav-admin-btn').style.display = 'block';
         showView('view-admin');
@@ -132,7 +133,7 @@
     } else {
         document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
         showView('view-ventas');
-        await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString(), h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: "ENTRADA", ts: serverTimestamp() });
+        await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: "ENTRADA", ts: serverTimestamp() });
     }
   };
 
@@ -167,7 +168,7 @@
         t: cart.reduce((a,b)=>a+b.p,0), 
         u: user, 
         m: document.getElementById('metodo-pago').value, 
-        f: ahora.toLocaleDateString(), 
+        f: ahora.toLocaleDateString('es-ES'), 
         h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
         turno: turnoActual,
         ts: serverTimestamp() 
@@ -177,7 +178,7 @@
 
   window.registrarSalida = async () => {
     if(confirm("¿CERRAR TURNO?")){ 
-        const hoy = new Date().toLocaleDateString();
+        const hoy = new Date().toLocaleDateString('es-ES');
         const ventasTurno = db_local.ventas.filter(v => v.u === user && v.f === hoy);
         const total = ventasTurno.reduce((a, b) => a + b.t, 0);
         await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: "SALIDA", total_turno: total, ts: serverTimestamp() }); 
@@ -186,56 +187,72 @@
     }
   };
 
+  // --- LÓGICA DE FILTRADO POR CALENDARIO ---
   window.renderHistorial = () => {
-    const filtro = document.getElementById('filtro-h').value;
-    const ahora = new Date();
-    const hoyStr = ahora.toLocaleDateString();
-    
-    let lista = db_local.ventas;
-
-    if (filtro === 'hoy') {
-        lista = db_local.ventas.filter(v => v.f === hoyStr);
-    } else if (filtro === 'semana') {
-        const hace7d = new Date(); hace7d.setDate(ahora.getDate() - 7);
-        lista = db_local.ventas.filter(v => {
-            const p = v.f.split('/'); const fv = new Date(p[2], p[1]-1, p[0]);
-            return fv >= hace7d;
-        });
-    } else if (filtro === 'mes') {
-        lista = db_local.ventas.filter(v => {
-            const p = v.f.split('/'); return parseInt(p[1]) === (ahora.getMonth()+1) && parseInt(p[2]) === ahora.getFullYear();
-        });
+    const dateVal = document.getElementById('calendar-filter').value;
+    if(!dateVal) {
+        document.getElementById('report-results').style.display = 'none';
+        return;
     }
+    document.getElementById('report-results').style.display = 'block';
 
-    const m = lista.filter(v => v.turno === "Mañana").reduce((a,b)=>a+b.t,0);
-    const t = lista.filter(v => v.turno === "Tarde").reduce((a,b)=>a+b.t,0);
+    const selDate = new Date(dateVal + "T00:00:00");
+    const selStr = selDate.toLocaleDateString('es-ES');
+
+    // Cálculos de rangos
+    const startWeek = new Date(selDate); startWeek.setDate(selDate.getDate() - selDate.getDay());
+    const endWeek = new Date(startWeek); endWeek.setDate(startWeek.getDate() + 6);
     
+    // Filtros
+    const ventasDia = db_local.ventas.filter(v => v.f === selStr);
+    const ventasSemana = db_local.ventas.filter(v => {
+        const p = v.f.split('/'); const fv = new Date(p[2], p[1]-1, p[0]);
+        return fv >= startWeek && fv <= endWeek;
+    });
+    const ventasMes = db_local.ventas.filter(v => {
+        const p = v.f.split('/'); 
+        return parseInt(p[1]) === (selDate.getMonth()+1) && parseInt(p[2]) === selDate.getFullYear();
+    });
+
+    const m = ventasDia.filter(v => v.turno === "Mañana").reduce((a,b)=>a+b.t,0);
+    const t = ventasDia.filter(v => v.turno === "Tarde").reduce((a,b)=>a+b.t,0);
+    const totalS = ventasSemana.reduce((a,b)=>a+b.t,0);
+    const totalM = ventasMes.reduce((a,b)=>a+b.t,0);
+
     document.getElementById('stats-container').innerHTML = `
-        <div class="stat-box" style="grid-column: span 2; border-color: var(--gold);">
-            <div class="stat-label">TOTAL RECAUDADO (${filtro.toUpperCase()})</div>
-            <div class="stat-val">$${m + t}</div>
-        </div>
         <div class="stat-box">
-            <div class="stat-label">TURNO MAÑANA</div>
+            <div class="stat-label">MAÑANA (${selStr})</div>
             <div class="stat-val" style="color:#51CF66">$${m}</div>
         </div>
         <div class="stat-box">
-            <div class="stat-label">TURNO TARDE</div>
+            <div class="stat-label">TARDE (${selStr})</div>
             <div class="stat-val" style="color:#FFD43B">$${t}</div>
+        </div>
+        <div class="stat-box" style="grid-column: span 2; background: rgba(197, 160, 89, 0.1);">
+            <div class="stat-label">TOTAL DEL DÍA</div>
+            <div class="stat-val">$${m+t}</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">TOTAL SEMANA</div>
+            <div class="stat-val" style="font-size:0.9rem">$${totalS}</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">TOTAL MES</div>
+            <div class="stat-val" style="font-size:0.9rem">$${totalM}</div>
         </div>
     `;
 
     const hList = document.getElementById('historial-list');
-    if(hList) hList.innerHTML = `<table><tr><th>HORA/T</th><th>PAGO</th><th>TOTAL</th></tr>` + 
-        lista.map(v => `<tr><td>${v.h} <small>(${v.turno[0]})</small><br><small style="opacity:0.5">${v.f}</small></td><td>${v.m}</td><td style="font-weight:bold">$${v.t}</td></tr>`).join('') + `</table>`;
+    hList.innerHTML = `<h4>VENTAS DEL DÍA</h4><table><tr><th>HORA/T</th><th>PAGO</th><th>TOTAL</th></tr>` + 
+        (ventasDia.length ? ventasDia.map(v => `<tr><td>${v.h} (${v.turno[0]})</td><td>${v.m}</td><td style="font-weight:bold">$${v.t}</td></tr>`).join('') : '<tr><td colspan="3">No hay ventas</td></tr>') + `</table>`;
   };
 
   window.renderAdminLists = () => {
     const sList = document.getElementById('staff-list');
     if(sList) sList.innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
     const fList = document.getElementById('fichaje-list');
-    if(fList) fList.innerHTML = `<table><tr><th>EMPLEADO</th><th>DIA</th><th>TIPO</th><th>HORA</th></tr>` + 
-        db_local.fichajes.slice(0,12).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}">${f.tipo}</td><td>${f.h}</td></tr>`).join('') + `</table>`;
+    if(fList) fList.innerHTML = `<table><tr><th>EMP</th><th>DIA</th><th>TIPO</th><th>HORA</th></tr>` + 
+        db_local.fichajes.slice(0,10).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}">${f.tipo}</td><td>${f.h}</td></tr>`).join('') + `</table>`;
     const pList = document.getElementById('prod-admin-list');
     if(pList) pList.innerHTML = db_local.productos.map(p => `<div class="list-item"><span>🍩 ${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
   }
@@ -249,11 +266,11 @@
 
   window.delDoc = async (col, id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, col, id)); };
   window.reiniciarSistema = async () => {
-    if(confirm("⚠️ ¿BORRAR TODAS LAS VENTAS Y FICHAJES?")){
+    if(confirm("⚠️ ¿BORRAR TODO?")){
         const batch = writeBatch(db);
         const vSnap = await getDocs(collection(db, "ventas")); vSnap.forEach(d => batch.delete(d.ref));
         const fSnap = await getDocs(collection(db, "fichajes")); fSnap.forEach(d => batch.delete(d.ref));
-        await batch.commit(); alert("BASE DE DATOS LIMPIA");
+        await batch.commit(); alert("SISTEMA REINICIADO");
     }
   };
   window.nuevoEmp = async () => { const n = prompt("Nombre:"); const p = prompt("PIN:"); if(n && p) await addDoc(collection(db, "staff"), { n, p }); };
@@ -263,7 +280,7 @@
     document.getElementById(id).style.display = 'block';
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if(id === 'view-ventas') document.getElementById('nav-v').classList.add('active');
-    if(id === 'view-admin') { document.getElementById('nav-admin-btn').classList.add('active'); renderHistorial(); renderAdminLists(); }
+    if(id === 'view-admin') { document.getElementById('nav-admin-btn').classList.add('active'); renderAdminLists(); renderHistorial(); }
   };
 </script>
 </body>
