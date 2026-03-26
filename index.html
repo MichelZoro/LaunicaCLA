@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL V11</title>
-    <link rel="manifest" href="manifest.json">
+    <title>LA ÚNICA - CONTROL V11.2</title>
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -14,30 +13,24 @@
         .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
         .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
         .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-size: 1.1rem; }
-        
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; }
         .stat-label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.7; letter-spacing: 1px; }
         .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--gold); margin-top: 5px; }
-
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); }
         .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; }
-        
         .tab-bar { display: flex; gap: 8px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.7rem; font-weight: 700; }
         .tab-btn.active { background: var(--gold); color: #000; }
-        
         .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 20px 10px; text-align: center; }
-        
         nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--gold); z-index: 1000; }
         .nav-item { text-align: center; font-size: 0.65rem; color: #888; font-weight: 800; }
         .nav-item.active { color: var(--gold); }
-        
         table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
         th { color: var(--gold); text-align: left; padding: 8px; border-bottom: 1px solid var(--glass); }
         td { padding: 8px; border-bottom: 1px solid var(--glass); }
-        .cart-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .badge { font-size: 0.6rem; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -70,28 +63,32 @@
         <button class="tab-btn" onclick="switchTab('s', this)">STAFF</button>
         <button class="tab-btn" onclick="switchTab('p', this)">MENÚ</button>
     </div>
+    
     <div id="tab-v" class="admin-tab">
         <div class="glass-card" style="text-align: center;">
-            <label style="font-size: 0.8rem; color: var(--gold);">SELECCIONAR FECHA:</label>
+            <label style="font-size: 0.8rem; color: var(--gold);">VER VENTAS DEL DÍA:</label>
             <input type="date" id="calendar-filter" class="input-dark" onchange="renderHistorial()">
         </div>
-        
         <div id="report-results" style="display:none;">
             <div id="stats-container" class="stats-grid"></div>
-            <div class="glass-card">
-                <div id="historial-list"></div>
-            </div>
+            <div class="glass-card"><div id="historial-list"></div></div>
         </div>
-        
-        <button onclick="reiniciarSistema()" class="btn-gold" style="background:var(--danger); color:white; margin-top:30px; font-size:0.6rem; opacity: 0.7;">⚠️ REINICIAR TODO</button>
     </div>
     
     <div id="tab-s" class="admin-tab" style="display:none">
-        <div class="glass-card"><h4>PERSONAL</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
-        <div class="glass-card"><h4>REPORTE DE HORARIOS</h4><div id="fichaje-list"></div></div>
+        <div class="glass-card">
+            <label style="font-size: 0.8rem; color: var(--gold);">FILTRAR HORARIOS POR DÍA:</label>
+            <input type="date" id="calendar-staff" class="input-dark" onchange="renderAdminLists()">
+        </div>
+        <div id="staff-results" style="display:none;">
+            <div class="glass-card"><h4>FICHAJES Y HORAS</h4><div id="fichaje-list"></div></div>
+        </div>
+        <div class="glass-card"><h4>GESTIÓN DE PERSONAL</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
     </div>
+
     <div id="tab-p" class="admin-tab" style="display:none">
-        <div class="glass-card"><h4>MENU DE PRODUCTOS</h4><div id="prod-admin-list"></div><button class="btn-gold" onclick="nuevoProd()">+ AGREGAR AL MENU</button></div>
+        <div class="glass-card"><h4>MENÚ</h4><div id="prod-admin-list"></div><button class="btn-gold" onclick="nuevoProd()">+ AGREGAR AL MENÚ</button></div>
+        <button onclick="reiniciarSistema()" class="btn-gold" style="background:var(--danger); color:white; margin-top:30px; font-size:0.6rem; opacity: 0.5;">⚠️ REINICIAR TODO</button>
     </div>
 </div>
 
@@ -111,12 +108,11 @@
 
   let user = ""; let cart = [];
   let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
-  const MI_TELEFONO = "5491100000000"; 
 
   onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
   onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
   onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => d.data()); renderHistorial(); });
-  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "desc")), (s) => { db_local.fichajes = s.docs.map(d => d.data()); renderAdminLists(); });
+  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "asc")), (s) => { db_local.fichajes = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
 
   window.handleLogin = async () => {
     const pin = document.getElementById('pin-input').value;
@@ -129,10 +125,9 @@
     if(user === "Admin") {
         document.getElementById('nav-admin-btn').style.display = 'block';
         showView('view-admin');
-        document.getElementById('nav-v').style.display = 'none';
     } else {
-        document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
         showView('view-ventas');
+        document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
         await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: "ENTRADA", ts: serverTimestamp() });
     }
   };
@@ -145,116 +140,94 @@
 
   window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
   window.borrarDelCarrito = (i) => { cart.splice(i, 1); renderCart(); };
-
   window.renderCart = () => {
-    document.getElementById('cart-list').innerHTML = cart.map((item, i) => `
-        <div class="cart-row"><span>${item.n} ($${item.p})</span><button class="btn-del" onclick="borrarDelCarrito(${i})">🗑</button></div>
-    `).join('');
-    const t = cart.reduce((a,b)=>a+b.p, 0);
-    document.getElementById('total-val').innerText = "$"+t; calcVuelto();
+    document.getElementById('cart-list').innerHTML = cart.map((item, i) => `<div class="cart-row"><span>${item.n} ($${item.p})</span><button class="btn-del" onclick="borrarDelCarrito(${i})">🗑</button></div>`).join('');
+    const t = cart.reduce((a,b)=>a+b.p, 0); document.getElementById('total-val').innerText = "$"+t; calcVuelto();
   }
-
-  window.calcVuelto = () => {
-    const t = cart.reduce((a,b)=>a+b.p, 0);
-    const p = document.getElementById('paga-con').value || 0;
-    document.getElementById('vuelto-val').innerText = "$" + Math.max(0, p - t);
-  };
+  window.calcVuelto = () => { const t = cart.reduce((a,b)=>a+b.p, 0); const p = document.getElementById('paga-con').value || 0; document.getElementById('vuelto-val').innerText = "$" + Math.max(0, p - t); };
 
   window.confirmarVenta = async () => {
     if(!cart.length) return;
     const ahora = new Date();
-    const turnoActual = ahora.getHours() < 14 ? "Mañana" : "Tarde";
     await addDoc(collection(db, "ventas"), { 
-        t: cart.reduce((a,b)=>a+b.p,0), 
-        u: user, 
-        m: document.getElementById('metodo-pago').value, 
-        f: ahora.toLocaleDateString('es-ES'), 
-        h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-        turno: turnoActual,
-        ts: serverTimestamp() 
+        t: cart.reduce((a,b)=>a+b.p,0), u: user, m: document.getElementById('metodo-pago').value, 
+        f: ahora.toLocaleDateString('es-ES'), h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+        turno: ahora.getHours() < 14 ? "Mañana" : "Tarde", ts: serverTimestamp() 
     });
     cart = []; document.getElementById('paga-con').value = ""; renderCart(); alert("VENTA CONFIRMADA");
   };
 
   window.registrarSalida = async () => {
-    if(confirm("¿CERRAR TURNO?")){ 
-        const hoy = new Date().toLocaleDateString('es-ES');
-        const ventasTurno = db_local.ventas.filter(v => v.u === user && v.f === hoy);
-        const total = ventasTurno.reduce((a, b) => a + b.t, 0);
-        await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: "SALIDA", total_turno: total, ts: serverTimestamp() }); 
-        window.open(`https://wa.me/${MI_TELEFONO}?text=*CIERRE LA UNICA*%0A*Empleado:* ${user}%0A*Total:* $${total}`, '_blank');
+    if(confirm("¿CERRAR TURNO Y SALIR?")){ 
+        await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: "SALIDA", ts: serverTimestamp() }); 
         location.reload(); 
     }
   };
 
-  // --- LÓGICA DE FILTRADO POR CALENDARIO ---
   window.renderHistorial = () => {
     const dateVal = document.getElementById('calendar-filter').value;
-    if(!dateVal) {
-        document.getElementById('report-results').style.display = 'none';
-        return;
-    }
+    if(!dateVal) return document.getElementById('report-results').style.display = 'none';
     document.getElementById('report-results').style.display = 'block';
-
     const selDate = new Date(dateVal + "T00:00:00");
     const selStr = selDate.toLocaleDateString('es-ES');
-
-    // Cálculos de rangos
+    
     const startWeek = new Date(selDate); startWeek.setDate(selDate.getDate() - selDate.getDay());
     const endWeek = new Date(startWeek); endWeek.setDate(startWeek.getDate() + 6);
-    
-    // Filtros
-    const ventasDia = db_local.ventas.filter(v => v.f === selStr);
-    const ventasSemana = db_local.ventas.filter(v => {
-        const p = v.f.split('/'); const fv = new Date(p[2], p[1]-1, p[0]);
-        return fv >= startWeek && fv <= endWeek;
-    });
-    const ventasMes = db_local.ventas.filter(v => {
-        const p = v.f.split('/'); 
-        return parseInt(p[1]) === (selDate.getMonth()+1) && parseInt(p[2]) === selDate.getFullYear();
-    });
 
-    const m = ventasDia.filter(v => v.turno === "Mañana").reduce((a,b)=>a+b.t,0);
-    const t = ventasDia.filter(v => v.turno === "Tarde").reduce((a,b)=>a+b.t,0);
-    const totalS = ventasSemana.reduce((a,b)=>a+b.t,0);
-    const totalM = ventasMes.reduce((a,b)=>a+b.t,0);
+    const vDia = db_local.ventas.filter(v => v.f === selStr);
+    const m = vDia.filter(v => v.turno === "Mañana").reduce((a,b)=>a+b.t,0);
+    const t = vDia.filter(v => v.turno === "Tarde").reduce((a,b)=>a+b.t,0);
+    const vSem = db_local.ventas.filter(v => { const p = v.f.split('/'); const fv = new Date(p[2], p[1]-1, p[0]); return fv >= startWeek && fv <= endWeek; }).reduce((a,b)=>a+b.t,0);
+    const vMes = db_local.ventas.filter(v => { const p = v.f.split('/'); return parseInt(p[1]) === (selDate.getMonth()+1) && parseInt(p[2]) === selDate.getFullYear(); }).reduce((a,b)=>a+b.t,0);
 
     document.getElementById('stats-container').innerHTML = `
-        <div class="stat-box">
-            <div class="stat-label">MAÑANA (${selStr})</div>
-            <div class="stat-val" style="color:#51CF66">$${m}</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">TARDE (${selStr})</div>
-            <div class="stat-val" style="color:#FFD43B">$${t}</div>
-        </div>
-        <div class="stat-box" style="grid-column: span 2; background: rgba(197, 160, 89, 0.1);">
-            <div class="stat-label">TOTAL DEL DÍA</div>
-            <div class="stat-val">$${m+t}</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">TOTAL SEMANA</div>
-            <div class="stat-val" style="font-size:0.9rem">$${totalS}</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">TOTAL MES</div>
-            <div class="stat-val" style="font-size:0.9rem">$${totalM}</div>
-        </div>
-    `;
-
-    const hList = document.getElementById('historial-list');
-    hList.innerHTML = `<h4>VENTAS DEL DÍA</h4><table><tr><th>HORA/T</th><th>PAGO</th><th>TOTAL</th></tr>` + 
-        (ventasDia.length ? ventasDia.map(v => `<tr><td>${v.h} (${v.turno[0]})</td><td>${v.m}</td><td style="font-weight:bold">$${v.t}</td></tr>`).join('') : '<tr><td colspan="3">No hay ventas</td></tr>') + `</table>`;
+        <div class="stat-box" style="grid-column: span 2; background: rgba(197, 160, 89, 0.1);"><div class="stat-label">TOTAL DÍA</div><div class="stat-val">$${m+t}</div></div>
+        <div class="stat-box"><div class="stat-label">MAÑANA</div><div class="stat-val" style="color:#51CF66">$${m}</div></div>
+        <div class="stat-box"><div class="stat-label">TARDE</div><div class="stat-val" style="color:#FFD43B">$${t}</div></div>
+        <div class="stat-box"><div class="stat-label">SEMANA</div><div class="stat-val" style="font-size:0.9rem">$${vSem}</div></div>
+        <div class="stat-box"><div class="stat-label">MES</div><div class="stat-val" style="font-size:0.9rem">$${vMes}</div></div>`;
+    
+    document.getElementById('historial-list').innerHTML = `<h4>VENTAS DEL DÍA</h4><table><tr><th>HORA</th><th>PAGO</th><th>TOTAL</th></tr>` + 
+        (vDia.length ? vDia.map(v => `<tr><td>${v.h} (${v.turno[0]})</td><td>${v.m}</td><td style="font-weight:bold">$${v.t}</td></tr>`).join('') : '<tr><td colspan="3">Sin ventas</td></tr>') + `</table>`;
   };
 
   window.renderAdminLists = () => {
-    const sList = document.getElementById('staff-list');
-    if(sList) sList.innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
-    const fList = document.getElementById('fichaje-list');
-    if(fList) fList.innerHTML = `<table><tr><th>EMP</th><th>DIA</th><th>TIPO</th><th>HORA</th></tr>` + 
-        db_local.fichajes.slice(0,10).map(f => `<tr><td>${f.u}</td><td>${f.f}</td><td style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}">${f.tipo}</td><td>${f.h}</td></tr>`).join('') + `</table>`;
-    const pList = document.getElementById('prod-admin-list');
-    if(pList) pList.innerHTML = db_local.productos.map(p => `<div class="list-item"><span>🍩 ${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
+    // Lista de Staff fija
+    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
+    
+    // Lista de Menú fija
+    document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>🍩 ${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
+
+    // Lógica de Fichajes filtrada
+    const dateStaff = document.getElementById('calendar-staff').value;
+    if(!dateStaff) return document.getElementById('staff-results').style.display = 'none';
+    document.getElementById('staff-results').style.display = 'block';
+    
+    const selStr = new Date(dateStaff + "T00:00:00").toLocaleDateString('es-ES');
+    const fDia = db_local.fichajes.filter(f => f.f === selStr);
+    
+    let htmlFichajes = `<table><tr><th>EMP</th><th>ENTRADA</th><th>SALIDA</th><th>HORAS</th></tr>`;
+    
+    // Agrupar por empleado para calcular diferencia
+    const resumen = {};
+    fDia.forEach(f => {
+        if(!resumen[f.u]) resumen[f.u] = { e: '-', s: '-', h: '-' };
+        if(f.tipo === "ENTRADA") resumen[f.u].e = f.h;
+        if(f.tipo === "SALIDA") {
+            resumen[f.u].s = f.h;
+            if(resumen[f.u].e !== '-') {
+                const [hE, mE] = resumen[f.u].e.split(':');
+                const [hS, mS] = f.h.split(':');
+                const min = (parseInt(hS)*60 + parseInt(mS)) - (parseInt(hE)*60 + parseInt(mE));
+                resumen[f.u].h = (min/60).toFixed(1) + "h";
+            }
+        }
+    });
+
+    for(let emp in resumen) {
+        htmlFichajes += `<tr><td>${emp}</td><td style="color:#51CF66">${resumen[emp].e}</td><td style="color:#FF6B6B">${resumen[emp].s}</td><td style="font-weight:bold">${resumen[emp].h}</td></tr>`;
+    }
+    document.getElementById('fichaje-list').innerHTML = htmlFichajes + `</table>`;
   }
 
   window.switchTab = (t, btn) => {
