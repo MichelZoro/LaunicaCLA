@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL V11.4</title>
+    <title>LA ÚNICA - CONTROL V11.5</title>
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -31,19 +31,22 @@
         th { color: var(--gold); text-align: left; padding: 8px; border-bottom: 1px solid var(--glass); }
         td { padding: 8px; border-bottom: 1px solid var(--glass); }
         
-        /* Modal Ticket */
+        /* Modal Ticket Mejorado */
         #modal-ticket { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+        #ticket-paper { text-align: left; font-family: 'Courier New', monospace; font-size: 0.85rem; margin-bottom: 20px; background: #fff; color: #000; padding: 20px; border-radius: 2px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); position: relative; }
+        #ticket-paper::after { content: ""; position: absolute; bottom: -10px; left: 0; width: 100%; height: 10px; background: linear-gradient(-45deg, transparent 5px, #fff 5px), linear-gradient(45deg, transparent 5px, #fff 5px); background-size: 10px 10px; }
     </style>
 </head>
 <body>
 
 <div id="modal-ticket">
-    <div class="glass-card" style="width: 100%; max-width: 400px; text-align: center;">
-        <h2 style="color:var(--gold);">TICKET DE VENTA</h2>
-        <div id="ticket-content" style="text-align: left; font-family: monospace; font-size: 0.9rem; margin-bottom: 20px; background: white; color: black; padding: 15px; border-radius: 5px;"></div>
-        <input type="tel" id="whatsapp-cliente" class="input-dark" placeholder="Número (ej: 1122334455)" inputmode="numeric">
-        <button onclick="enviarTicketWA()" class="btn-gold" style="background:#25D366; color:white;">📱 ENVIAR POR WHATSAPP</button>
-        <button onclick="cerrarTicket()" class="btn-gold" style="background:none; border: 1px solid #888; color:#888; margin-top:10px;">SALIR</button>
+    <div style="width: 100%; max-width: 400px; text-align: center;">
+        <div id="ticket-paper">
+            <div id="ticket-content"></div>
+        </div>
+        <input type="tel" id="whatsapp-cliente" class="input-dark" placeholder="Número (Sin el 15)" inputmode="numeric">
+        <button onclick="enviarTicketWA()" class="btn-gold" style="background:#25D366; color:white;">📱 ENVIAR WHATSAPP</button>
+        <button onclick="cerrarTicket()" class="btn-gold" style="background:none; border: 1px solid #888; color:#ccc; margin-top:10px; font-size:0.8rem;">OMITIR / SALIR</button>
     </div>
 </div>
 
@@ -135,7 +138,9 @@
     if(!cart.length) return;
     const ahora = new Date();
     const total = cart.reduce((a,b)=>a+b.p,0);
-    const resumen = cart.map(i => `${i.n} ($${i.p})`).join('\n');
+    const pagoCon = parseFloat(document.getElementById('paga-con').value) || total;
+    const vuelto = Math.max(0, pagoCon - total);
+    const resumen = cart.map(i => `${i.n.padEnd(15)} $${i.p}`).join('\n');
     
     // Guardar en DB
     await addDoc(collection(db, "ventas"), { 
@@ -144,19 +149,19 @@
         turno: ahora.getHours() < 14 ? "Mañana" : "Tarde", ts: serverTimestamp() 
     });
 
-    // Armar Ticket para modal
-    ultimoTicketText = `--- LA ÚNICA ---\nFecha: ${ahora.toLocaleDateString()}\nHora: ${ahora.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}\nAtendió: ${user}\n----------------\n${resumen}\n----------------\nTOTAL: $${total}\nPago: ${document.getElementById('metodo-pago').value}`;
+    // Armar Ticket Detallado
+    ultimoTicketText = `      LA ÚNICA\n--------------------------\nFecha: ${ahora.toLocaleDateString()}\nHora: ${ahora.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}\nAtendió: ${user}\n--------------------------\n${resumen}\n--------------------------\nTOTAL:         $${total}\nMetodo: ${document.getElementById('metodo-pago').value}\nPagó con:      $${pagoCon}\nVuelto:        $${vuelto}\n--------------------------\n  ¡Gracias por tu compra!\n--------------------------`;
     
     document.getElementById('ticket-content').innerText = ultimoTicketText;
     document.getElementById('modal-ticket').style.display = 'flex';
     
-    // Limpiar carrito principal
+    // Limpiar carrito
     cart = []; document.getElementById('paga-con').value = ""; renderCart();
   };
 
   window.enviarTicketWA = () => {
     const tel = document.getElementById('whatsapp-cliente').value;
-    if(!tel) return alert("Ingresá un número de teléfono.");
+    if(!tel) return alert("Ingresá el número del cliente.");
     const link = `https://wa.me/549${tel}?text=${encodeURIComponent(ultimoTicketText)}`;
     window.open(link, '_blank');
     cerrarTicket();
@@ -177,7 +182,7 @@
     }
   };
 
-  // --- FUNCIONES VISUALES (REUTILIZADAS) ---
+  // --- OTRAS FUNCIONES ---
   window.renderProductos = () => { document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}', ${p.p})"><span>🍩</span>${p.n}<br>$${p.p}</div>`).join(''); };
   window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
   window.borrarDelCarrito = (i) => { cart.splice(i, 1); renderCart(); };
