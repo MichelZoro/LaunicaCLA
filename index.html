@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL V11.2</title>
+    <title>LA ÚNICA - CONTROL V11.3</title>
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -30,7 +30,6 @@
         table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
         th { color: var(--gold); text-align: left; padding: 8px; border-bottom: 1px solid var(--glass); }
         td { padding: 8px; border-bottom: 1px solid var(--glass); }
-        .badge { font-size: 0.6rem; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -66,7 +65,7 @@
     
     <div id="tab-v" class="admin-tab">
         <div class="glass-card" style="text-align: center;">
-            <label style="font-size: 0.8rem; color: var(--gold);">VER VENTAS DEL DÍA:</label>
+            <label style="font-size: 0.8rem; color: var(--gold);">VENTAS POR DÍA:</label>
             <input type="date" id="calendar-filter" class="input-dark" onchange="renderHistorial()">
         </div>
         <div id="report-results" style="display:none;">
@@ -77,13 +76,13 @@
     
     <div id="tab-s" class="admin-tab" style="display:none">
         <div class="glass-card">
-            <label style="font-size: 0.8rem; color: var(--gold);">FILTRAR HORARIOS POR DÍA:</label>
+            <label style="font-size: 0.8rem; color: var(--gold);">HORARIOS POR DÍA:</label>
             <input type="date" id="calendar-staff" class="input-dark" onchange="renderAdminLists()">
         </div>
         <div id="staff-results" style="display:none;">
-            <div class="glass-card"><h4>FICHAJES Y HORAS</h4><div id="fichaje-list"></div></div>
+            <div class="glass-card"><h4>FICHAJES</h4><div id="fichaje-list"></div></div>
         </div>
-        <div class="glass-card"><h4>GESTIÓN DE PERSONAL</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
+        <div class="glass-card"><h4>GESTIÓN STAFF</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR</button></div>
     </div>
 
     <div id="tab-p" class="admin-tab" style="display:none">
@@ -106,8 +105,7 @@
   const app = initializeApp(firebaseConfig);
   const db = initializeFirestore(app, { localCache: persistentLocalCache() });
 
-  let user = ""; let cart = [];
-  let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
+  let user = ""; let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
 
   onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
   onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
@@ -119,25 +117,58 @@
     const pinAdmin = "325606";
     const emp = db_local.staff.find(x => x.p === pin);
     if(!emp && pin !== pinAdmin) return alert("PIN INCORRECTO");
+    
     user = (pin === pinAdmin) ? "Admin" : emp.n;
     document.getElementById('view-login').style.display = 'none';
     document.getElementById('navbar').style.display = 'flex';
+
     if(user === "Admin") {
         document.getElementById('nav-admin-btn').style.display = 'block';
         showView('view-admin');
     } else {
         showView('view-ventas');
         document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
-        await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: "ENTRADA", ts: serverTimestamp() });
+        
+        // SEGURIDAD: Solo registra ENTRADA si no existe una hoy
+        const hoy = new Date().toLocaleDateString('es-ES');
+        const yaEntro = db_local.fichajes.some(f => f.u === user && f.f === hoy && f.tipo === "ENTRADA");
+        
+        if(!yaEntro) {
+            await addDoc(collection(db, "fichajes"), { 
+                u: user, f: hoy, 
+                h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+                tipo: "ENTRADA", ts: serverTimestamp() 
+            });
+        }
     }
   };
 
-  window.renderProductos = () => {
-    document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
-      <div class="btn-item" onclick="addCart('${p.n}', ${p.p})"><span>🍩</span>${p.n}<br>$${p.p}</div>
-    `).join('');
+  window.registrarSalida = async () => {
+    const ahora = new Date();
+    const hora = ahora.getHours();
+    const min = ahora.getMinutes();
+    const tiempoActual = hora * 100 + min; // Ejemplo: 11:20 -> 1120
+
+    // VALIDACIÓN DE HORARIOS DE CIERRE
+    if (hora < 14) { // Turno Mañana
+        if (tiempoActual < 1120) return alert("⚠️ No podés cerrar el turno mañana antes de las 11:20 hs.");
+    } else { // Turno Tarde
+        if (tiempoActual < 1900) return alert("⚠️ No podés cerrar el turno tarde antes de las 19:00 hs.");
+    }
+
+    if(confirm("¿CONFIRMAR CIERRE DE TURNO?")){ 
+        await addDoc(collection(db, "fichajes"), { 
+            u: user, f: ahora.toLocaleDateString('es-ES'), 
+            h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+            tipo: "SALIDA", ts: serverTimestamp() 
+        }); 
+        location.reload(); 
+    }
   };
 
+  // --- RESTO DE FUNCIONES MANTENIDAS ---
+  window.renderProductos = () => { document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}', ${p.p})"><span>🍩</span>${p.n}<br>$${p.p}</div>`).join(''); };
+  let cart = [];
   window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
   window.borrarDelCarrito = (i) => { cart.splice(i, 1); renderCart(); };
   window.renderCart = () => {
@@ -145,23 +176,11 @@
     const t = cart.reduce((a,b)=>a+b.p, 0); document.getElementById('total-val').innerText = "$"+t; calcVuelto();
   }
   window.calcVuelto = () => { const t = cart.reduce((a,b)=>a+b.p, 0); const p = document.getElementById('paga-con').value || 0; document.getElementById('vuelto-val').innerText = "$" + Math.max(0, p - t); };
-
   window.confirmarVenta = async () => {
     if(!cart.length) return;
     const ahora = new Date();
-    await addDoc(collection(db, "ventas"), { 
-        t: cart.reduce((a,b)=>a+b.p,0), u: user, m: document.getElementById('metodo-pago').value, 
-        f: ahora.toLocaleDateString('es-ES'), h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-        turno: ahora.getHours() < 14 ? "Mañana" : "Tarde", ts: serverTimestamp() 
-    });
+    await addDoc(collection(db, "ventas"), { t: cart.reduce((a,b)=>a+b.p,0), u: user, m: document.getElementById('metodo-pago').value, f: ahora.toLocaleDateString('es-ES'), h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), turno: ahora.getHours() < 14 ? "Mañana" : "Tarde", ts: serverTimestamp() });
     cart = []; document.getElementById('paga-con').value = ""; renderCart(); alert("VENTA CONFIRMADA");
-  };
-
-  window.registrarSalida = async () => {
-    if(confirm("¿CERRAR TURNO Y SALIR?")){ 
-        await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: "SALIDA", ts: serverTimestamp() }); 
-        location.reload(); 
-    }
   };
 
   window.renderHistorial = () => {
@@ -170,45 +189,23 @@
     document.getElementById('report-results').style.display = 'block';
     const selDate = new Date(dateVal + "T00:00:00");
     const selStr = selDate.toLocaleDateString('es-ES');
-    
-    const startWeek = new Date(selDate); startWeek.setDate(selDate.getDate() - selDate.getDay());
-    const endWeek = new Date(startWeek); endWeek.setDate(startWeek.getDate() + 6);
-
     const vDia = db_local.ventas.filter(v => v.f === selStr);
     const m = vDia.filter(v => v.turno === "Mañana").reduce((a,b)=>a+b.t,0);
     const t = vDia.filter(v => v.turno === "Tarde").reduce((a,b)=>a+b.t,0);
-    const vSem = db_local.ventas.filter(v => { const p = v.f.split('/'); const fv = new Date(p[2], p[1]-1, p[0]); return fv >= startWeek && fv <= endWeek; }).reduce((a,b)=>a+b.t,0);
-    const vMes = db_local.ventas.filter(v => { const p = v.f.split('/'); return parseInt(p[1]) === (selDate.getMonth()+1) && parseInt(p[2]) === selDate.getFullYear(); }).reduce((a,b)=>a+b.t,0);
-
-    document.getElementById('stats-container').innerHTML = `
-        <div class="stat-box" style="grid-column: span 2; background: rgba(197, 160, 89, 0.1);"><div class="stat-label">TOTAL DÍA</div><div class="stat-val">$${m+t}</div></div>
-        <div class="stat-box"><div class="stat-label">MAÑANA</div><div class="stat-val" style="color:#51CF66">$${m}</div></div>
-        <div class="stat-box"><div class="stat-label">TARDE</div><div class="stat-val" style="color:#FFD43B">$${t}</div></div>
-        <div class="stat-box"><div class="stat-label">SEMANA</div><div class="stat-val" style="font-size:0.9rem">$${vSem}</div></div>
-        <div class="stat-box"><div class="stat-label">MES</div><div class="stat-val" style="font-size:0.9rem">$${vMes}</div></div>`;
-    
-    document.getElementById('historial-list').innerHTML = `<h4>VENTAS DEL DÍA</h4><table><tr><th>HORA</th><th>PAGO</th><th>TOTAL</th></tr>` + 
-        (vDia.length ? vDia.map(v => `<tr><td>${v.h} (${v.turno[0]})</td><td>${v.m}</td><td style="font-weight:bold">$${v.t}</td></tr>`).join('') : '<tr><td colspan="3">Sin ventas</td></tr>') + `</table>`;
+    const vSem = db_local.ventas.filter(v => { const p = v.f.split('/'); const fv = new Date(p[2], p[1]-1, p[0]); return fv >= new Date(selDate.setDate(selDate.getDate()-selDate.getDay())) && fv <= new Date(selDate.setDate(selDate.getDate()+6)); }).reduce((a,b)=>a+b.t,0);
+    const vMes = db_local.ventas.filter(v => { const p = v.f.split('/'); return parseInt(p[1]) === (new Date(dateVal+"T00:00:00").getMonth()+1); }).reduce((a,b)=>a+b.t,0);
+    document.getElementById('stats-container').innerHTML = `<div class="stat-box" style="grid-column: span 2; background: rgba(197, 160, 89, 0.1);"><div class="stat-label">TOTAL DÍA</div><div class="stat-val">$${m+t}</div></div><div class="stat-box"><div class="stat-label">MAÑANA</div><div class="stat-val" style="color:#51CF66">$${m}</div></div><div class="stat-box"><div class="stat-label">TARDE</div><div class="stat-val" style="color:#FFD43B">$${t}</div></div><div class="stat-box"><div class="stat-label">SEMANA</div><div class="stat-val" style="font-size:0.9rem">$${vSem}</div></div><div class="stat-box"><div class="stat-label">MES</div><div class="stat-val" style="font-size:0.9rem">$${vMes}</div></div>`;
+    document.getElementById('historial-list').innerHTML = `<h4>VENTAS DEL DÍA</h4><table>` + (vDia.length ? vDia.map(v => `<tr><td>${v.h} (${v.turno[0]})</td><td>${v.m}</td><td style="font-weight:bold">$${v.t}</td></tr>`).join('') : '<tr><td>No hay ventas</td></tr>') + `</table>`;
   };
 
   window.renderAdminLists = () => {
-    // Lista de Staff fija
     document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
-    
-    // Lista de Menú fija
     document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>🍩 ${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
-
-    // Lógica de Fichajes filtrada
     const dateStaff = document.getElementById('calendar-staff').value;
     if(!dateStaff) return document.getElementById('staff-results').style.display = 'none';
     document.getElementById('staff-results').style.display = 'block';
-    
     const selStr = new Date(dateStaff + "T00:00:00").toLocaleDateString('es-ES');
     const fDia = db_local.fichajes.filter(f => f.f === selStr);
-    
-    let htmlFichajes = `<table><tr><th>EMP</th><th>ENTRADA</th><th>SALIDA</th><th>HORAS</th></tr>`;
-    
-    // Agrupar por empleado para calcular diferencia
     const resumen = {};
     fDia.forEach(f => {
         if(!resumen[f.u]) resumen[f.u] = { e: '-', s: '-', h: '-' };
@@ -216,45 +213,23 @@
         if(f.tipo === "SALIDA") {
             resumen[f.u].s = f.h;
             if(resumen[f.u].e !== '-') {
-                const [hE, mE] = resumen[f.u].e.split(':');
-                const [hS, mS] = f.h.split(':');
-                const min = (parseInt(hS)*60 + parseInt(mS)) - (parseInt(hE)*60 + parseInt(mE));
+                const [hE, mE] = resumen[f.u].e.split(':'); const [hS, mS] = f.h.split(':');
+                const min = (parseInt(hS)*60+parseInt(mS)) - (parseInt(hE)*60+parseInt(mE));
                 resumen[f.u].h = (min/60).toFixed(1) + "h";
             }
         }
     });
-
-    for(let emp in resumen) {
-        htmlFichajes += `<tr><td>${emp}</td><td style="color:#51CF66">${resumen[emp].e}</td><td style="color:#FF6B6B">${resumen[emp].s}</td><td style="font-weight:bold">${resumen[emp].h}</td></tr>`;
-    }
-    document.getElementById('fichaje-list').innerHTML = htmlFichajes + `</table>`;
+    let html = `<table><tr><th>EMP</th><th>ENTRADA</th><th>SALIDA</th><th>TOTAL</th></tr>`;
+    for(let e in resumen) html += `<tr><td>${e}</td><td style="color:#51CF66">${resumen[e].e}</td><td style="color:#FF6B6B">${resumen[e].s}</td><td style="font-weight:bold">${resumen[e].h}</td></tr>`;
+    document.getElementById('fichaje-list').innerHTML = html + `</table>`;
   }
 
-  window.switchTab = (t, btn) => {
-    document.querySelectorAll('.admin-tab').forEach(x => x.style.display = 'none');
-    document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
-    document.getElementById('tab-'+t).style.display = 'block';
-    btn.classList.add('active');
-  };
-
+  window.switchTab = (t, btn) => { document.querySelectorAll('.admin-tab').forEach(x => x.style.display = 'none'); document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active')); document.getElementById('tab-'+t).style.display = 'block'; btn.classList.add('active'); };
   window.delDoc = async (col, id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, col, id)); };
-  window.reiniciarSistema = async () => {
-    if(confirm("⚠️ ¿BORRAR TODO?")){
-        const batch = writeBatch(db);
-        const vSnap = await getDocs(collection(db, "ventas")); vSnap.forEach(d => batch.delete(d.ref));
-        const fSnap = await getDocs(collection(db, "fichajes")); fSnap.forEach(d => batch.delete(d.ref));
-        await batch.commit(); alert("SISTEMA REINICIADO");
-    }
-  };
+  window.reiniciarSistema = async () => { if(confirm("⚠️ ¿BORRAR TODO?")){ const b = writeBatch(db); (await getDocs(collection(db, "ventas"))).forEach(d => b.delete(d.ref)); (await getDocs(collection(db, "fichajes"))).forEach(d => b.delete(d.ref)); await b.commit(); alert("SISTEMA REINICIADO"); } };
   window.nuevoEmp = async () => { const n = prompt("Nombre:"); const p = prompt("PIN:"); if(n && p) await addDoc(collection(db, "staff"), { n, p }); };
   window.nuevoProd = async () => { const n = prompt("Producto:"); const p = parseInt(prompt("Precio:")); if(n && p) await addDoc(collection(db, "productos"), { n, p }); };
-  window.showView = (id) => {
-    document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
-    document.getElementById(id).style.display = 'block';
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    if(id === 'view-ventas') document.getElementById('nav-v').classList.add('active');
-    if(id === 'view-admin') { document.getElementById('nav-admin-btn').classList.add('active'); renderAdminLists(); renderHistorial(); }
-  };
+  window.showView = (id) => { document.querySelectorAll('.container').forEach(c => c.style.display = 'none'); document.getElementById(id).style.display = 'block'; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(id === 'view-ventas') document.getElementById('nav-v').classList.add('active'); if(id === 'view-admin') { document.getElementById('nav-admin-btn').classList.add('active'); renderAdminLists(); renderHistorial(); } };
 </script>
 </body>
 </html>
