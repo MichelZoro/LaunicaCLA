@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL TOTAL V12.2</title>
+    <title>LA ÚNICA - CONTROL TOTAL V13.0</title>
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -17,9 +17,9 @@
         .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; }
         .stat-label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.7; letter-spacing: 1px; }
         .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--gold); margin-top: 5px; }
-        .tab-bar { display: flex; gap: 8px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.65rem; font-weight: 700; }
-        .tab-btn.active { background: var(--gold); color: #000; }
+        .tab-bar { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { flex: 1; min-width: 80px; padding: 10px 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.6rem; font-weight: 700; }
+        .tab-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
         .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 20px 10px; text-align: center; }
         nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--gold); z-index: 1000; }
@@ -56,27 +56,34 @@
 <div id="view-admin" class="container">
     <div class="tab-bar">
         <button class="tab-btn active" onclick="switchTab('v', this)">REPORTES</button>
+        <button class="tab-btn" onclick="switchTab('ins', this)">INSUMOS</button>
         <button class="tab-btn" onclick="switchTab('s', this)">STAFF</button>
         <button class="tab-btn" onclick="switchTab('p', this)">MENÚ</button>
     </div>
     
     <div id="tab-v" class="admin-tab">
         <div class="glass-card" style="text-align: center;">
-            <label>FILTRAR DÍA:</label>
             <input type="date" id="calendar-filter" class="input-dark" onchange="renderHistorial()">
         </div>
         <div id="report-results" style="display:none;">
             <div id="stats-container" class="stats-grid"></div>
-            <div class="glass-card">
-                <div id="historial-list"></div>
-            </div>
+            <div class="glass-card"><h4>VENTAS</h4><div id="historial-list"></div></div>
+            <div class="glass-card"><h4>GASTOS EN INSUMOS</h4><div id="insumos-dia-list"></div></div>
+        </div>
+    </div>
+
+    <div id="tab-ins" class="admin-tab" style="display:none">
+        <button class="btn-gold" onclick="nuevoInsumo()">+ CARGAR COMPRA INSUMO</button>
+        <div class="glass-card" style="margin-top:15px;">
+            <h4>MATERIA PRIMA (Precios Actuales)</h4>
+            <div id="insumo-admin-list"></div>
         </div>
     </div>
     
     <div id="tab-s" class="admin-tab" style="display:none">
         <div class="glass-card"><input type="date" id="calendar-staff" class="input-dark" onchange="renderAdminLists()"></div>
         <div id="staff-results" style="display:none;"><div class="glass-card"><h4>FICHAJES</h4><div id="fichaje-list"></div></div></div>
-        <div class="glass-card"><h4>GESTIÓN STAFF</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR</button></div>
+        <div class="glass-card"><h4>GESTIÓN STAFF</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
     </div>
 
     <div id="tab-p" class="admin-tab" style="display:none">
@@ -98,35 +105,27 @@
   const app = initializeApp(firebaseConfig);
   const db = initializeFirestore(app, { localCache: persistentLocalCache() });
 
-  let user = ""; let cart = []; let db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
+  let user = ""; let cart = []; let db_local = { productos: [], ventas: [], staff: [], fichajes: [], insumos: [] };
 
   onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
   onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
   onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => d.data()); renderHistorial(); });
-  
-  // Escucha activa de fichajes para actualizar la tabla de staff en tiempo real
-  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "asc")), (s) => { 
-    db_local.fichajes = s.docs.map(d => ({id: d.id, ...d.data()})); 
-    renderAdminLists(); 
-  });
+  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "asc")), (s) => { db_local.fichajes = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
+  onSnapshot(query(collection(db, "insumos"), orderBy("ts", "desc")), (s) => { db_local.insumos = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); renderHistorial(); });
 
   window.handleLogin = async () => {
     const pin = document.getElementById('pin-input').value;
     const pinAdmin = "325606";
     const emp = db_local.staff.find(x => x.p === pin);
     if(!emp && pin !== pinAdmin) return alert("PIN INCORRECTO");
-    
     user = (pin === pinAdmin) ? "Admin" : emp.n;
     document.getElementById('view-login').style.display = 'none';
     document.getElementById('navbar').style.display = 'flex';
-    
     if(user === "Admin") {
         document.getElementById('nav-admin-btn').style.display = 'block';
         document.getElementById('nav-v').style.display = 'none';
         showView('view-admin');
-        // Seteamos fecha de hoy por defecto para ver los ingresos rápido
         document.getElementById('calendar-staff').valueAsDate = new Date();
-        renderAdminLists();
     } else {
         showView('view-ventas');
         document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
@@ -136,58 +135,54 @@
 
   async function autoFichar() {
     const hoy = new Date().toLocaleDateString('es-ES');
-    const horaAct = new Date().getHours();
-    
-    // Forzamos lectura fresca para evitar duplicados
     const q = await getDocs(collection(db, "fichajes"));
     const historico = q.docs.map(d => d.data());
-    
-    let tipo = (horaAct < 14) ? "E_MAÑANA" : "E_TARDE";
-    const yaFicho = historico.some(f => f.u === user && f.f === hoy && f.tipo === tipo);
-
-    if (!yaFicho) {
-        await addDoc(collection(db, "fichajes"), { 
-            u: user, 
-            f: hoy, 
-            h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-            tipo: tipo, 
-            ts: serverTimestamp() 
-        });
+    let tipo = (new Date().getHours() < 14) ? "E_MAÑANA" : "E_TARDE";
+    if (!historico.some(f => f.u === user && f.f === hoy && f.tipo === tipo)) {
+        await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: tipo, ts: serverTimestamp() });
     }
   }
 
-  window.registrarSalida = async () => {
-    const ahora = new Date();
-    const hoy = ahora.toLocaleDateString('es-ES');
-    const horaNum = ahora.getHours() * 100 + ahora.getMinutes();
-    let tipoSalida = (ahora.getHours() < 14) ? "S_MAÑANA" : "S_TARDE";
-
-    if (tipoSalida === "S_MAÑANA" && horaNum < 1125) return alert("No podés cerrar antes de las 11:25");
-    if (tipoSalida === "S_TARDE" && horaNum < 1955) return alert("No podés cerrar antes de las 19:55");
-
-    if(confirm(`¿CERRAR TURNO?`)){ 
-        await addDoc(collection(db, "fichajes"), { 
-            u: user, 
-            f: hoy, 
-            h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-            tipo: tipoSalida, 
-            ts: serverTimestamp() 
-        }); 
-        location.reload(); 
+  // --- MATERIA PRIMA / INSUMOS ---
+  window.nuevoInsumo = async () => {
+    const n = prompt("Nombre del Insumo (Ej: Aceite, Harina):");
+    if(!n) return;
+    const cant = parseFloat(prompt("Cantidad comprada (Solo número):"));
+    const uni = prompt("Unidad (kg, litro, cajón, pack):");
+    const pagoTotal = parseFloat(prompt("Total pagado (Plata que salió de la caja):"));
+    
+    if(n && cant && pagoTotal) {
+        const costoUni = pagoTotal / cant;
+        await addDoc(collection(db, "insumos"), {
+            n: n.toUpperCase(),
+            cant: cant,
+            uni: uni,
+            total: pagoTotal,
+            costoUni: costoUni,
+            f: new Date().toLocaleDateString('es-ES'),
+            ts: serverTimestamp()
+        });
+        alert("COMPRA REGISTRADA");
     }
   };
 
   window.renderAdminLists = () => {
-    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
+    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n}</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
     document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
     
+    // Lista de Precios de Insumos
+    document.getElementById('insumo-admin-list').innerHTML = db_local.insumos.map(i => `
+        <div class="list-item">
+            <div>
+                <b style="color:var(--gold)">${i.n}</b><br>
+                <small>Último costo: $${i.costoUni.toFixed(2)} por ${i.uni}</small>
+            </div>
+            <button class="btn-del" onclick="delDoc('insumos','${i.id}')">🗑</button>
+        </div>`).join('');
+
     const dS = document.getElementById('calendar-staff').value; 
     if(!dS) return;
-    
-    document.getElementById('staff-results').style.display = 'block';
-    const partes = dS.split('-');
-    const sS = `${partes[2]}/${partes[1]}/${partes[0]}`; // Formato DD/MM/YYYY para comparar
-    
+    const partes = dS.split('-'); const sS = `${partes[2]}/${partes[1]}/${partes[0]}`;
     const res = {};
     db_local.fichajes.filter(f => f.f === sS).forEach(f => {
         if(!res[f.u]) res[f.u] = {em:'-', sm:'-', et:'-', st:'-', h:0};
@@ -196,39 +191,41 @@
         if(f.tipo==="E_TARDE") res[f.u].et=f.h;
         if(f.tipo==="S_TARDE") { res[f.u].st=f.h; res[f.u].h += calcularHoras(res[f.u].et, f.h); }
     });
-
-    let h = `<table><tr><th>EMP</th><th>M</th><th>T</th><th>TOTAL</th></tr>`;
-    for(let e in res) h += `<tr><td>${e}</td><td><small>${res[e].em}/${res[e].sm}</small></td><td><small>${res[e].et}/${res[e].st}</small></td><td style="font-weight:bold; color:var(--gold)">${res[e].h.toFixed(1)}h</td></tr>`;
+    let h = `<table><tr><th>EMP</th><th>M</th><th>T</th><th>HORAS</th></tr>`;
+    for(let e in res) h += `<tr><td>${e}</td><td>${res[e].em}/${res[e].sm}</td><td>${res[e].et}/${res[e].st}</td><td style="font-weight:bold">${res[e].h.toFixed(1)}h</td></tr>`;
     document.getElementById('fichaje-list').innerHTML = h + `</table>`;
   };
 
-  function calcularHoras(e, s) { 
-    if(e==='-' || s==='-') return 0; 
-    const [hE,mE]=e.split(':'); const [hS,mS]=s.split(':'); 
-    let mins = (parseInt(hS)*60+parseInt(mS)) - (parseInt(hE)*60+parseInt(mE));
-    return Math.max(0, mins/60); 
-  }
-
-  // --- REPORTES VENTAS ---
+  // --- REPORTES ---
   window.renderHistorial = () => {
     const dV = document.getElementById('calendar-filter').value; if(!dV) return;
     document.getElementById('report-results').style.display = 'block';
-    const partes = dV.split('-');
-    const sS = `${partes[2]}/${partes[1]}/${partes[0]}`;
-    const vD = db_local.ventas.filter(v => v.f === sS);
+    const partes = dV.split('-'); const sS = `${partes[2]}/${partes[1]}/${partes[0]}`;
     
+    const vD = db_local.ventas.filter(v => v.f === sS);
+    const iD = db_local.insumos.filter(i => i.f === sS); // Insumos comprados hoy
+    
+    const ventasTot = vD.reduce((a,b)=>a+b.t,0);
+    const gastosTot = iD.reduce((a,b)=>a+b.total,0);
     const m = vD.filter(v => v.turno === "Mañana").reduce((a,b)=>a+b.t,0);
     const t = vD.filter(v => v.turno === "Tarde").reduce((a,b)=>a+b.t,0);
 
     document.getElementById('stats-container').innerHTML = `
-        <div class="stat-box" style="grid-column: span 2;"><div class="stat-label">TOTAL DÍA</div><div class="stat-val">$${m+t}</div></div>
+        <div class="stat-box" style="grid-column: span 2; border-color:var(--success)"><div class="stat-label">GANANCIA CAJA (LIMPIO)</div><div class="stat-val">$${ventasTot - gastosTot}</div></div>
+        <div class="stat-box"><div class="stat-label">BRUTO VENTAS</div><div class="stat-val">$${ventasTot}</div></div>
+        <div class="stat-box" style="border-color:var(--danger)"><div class="stat-label">GASTOS MAT. PRIMA</div><div class="stat-val">$${gastosTot}</div></div>
         <div class="stat-box"><div class="stat-label">MAÑANA</div><div class="stat-val">$${m}</div></div>
         <div class="stat-box"><div class="stat-label">TARDE</div><div class="stat-val">$${t}</div></div>`;
 
     document.getElementById('historial-list').innerHTML = `<table><tr><th>HORA</th><th>VEND.</th><th>TOTAL</th></tr>` + 
-        (vD.length ? vD.map(v => `<tr><td>${v.h || '-'}</td><td>${v.u}</td><td>$${v.t}</td></tr>`).join('') : '<tr><td colspan="3">No hay ventas</td></tr>') + `</table>`;
+        (vD.length ? vD.map(v => `<tr><td>${v.h || '-'}</td><td>${v.u}</td><td>$${v.t}</td></tr>`).join('') : '<tr><td colspan="3">Sin ventas</td></tr>') + `</table>`;
+
+    document.getElementById('insumos-dia-list').innerHTML = iD.length ? 
+        iD.map(i => `<div class="list-item" style="border-left-color:var(--danger)"><span>${i.n} (${i.cant}${i.uni})</span><span style="color:var(--danger)">-$${i.total}</span></div>`).join('') 
+        : '<p style="text-align:center; font-size:0.7rem;">No se compraron insumos hoy.</p>';
   };
 
+  // --- VENTAS ---
   window.confirmarVenta = async () => {
     if(!cart.length) return;
     const ahora = new Date();
@@ -246,10 +243,21 @@
   window.renderProductos = () => { document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}', ${p.p})">${p.n}<br>$${p.p}</div>`).join(''); };
   window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
   window.renderCart = () => {
-    document.getElementById('cart-list').innerHTML = cart.map((item, i) => `<div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;"><span>${item.n}</span><span>$${item.p}</span></div>`).join('');
+    document.getElementById('cart-list').innerHTML = cart.map(item => `<div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;"><span>${item.n}</span><span>$${item.p}</span></div>`).join('');
     document.getElementById('total-val').innerText = "$" + cart.reduce((a,b)=>a+b.p, 0);
   }
 
+  window.registrarSalida = async () => {
+    const ahora = new Date();
+    const hoy = ahora.toLocaleDateString('es-ES');
+    let tipoSalida = (ahora.getHours() < 14) ? "S_MAÑANA" : "S_TARDE";
+    if(confirm(`¿CERRAR TURNO?`)){ 
+        await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: tipoSalida, ts: serverTimestamp() }); 
+        location.reload(); 
+    }
+  };
+
+  function calcularHoras(e, s) { if(e==='-' || s==='-') return 0; const [hE,mE]=e.split(':'); const [hS,mS]=s.split(':'); return Math.max(0, ((parseInt(hS)*60+parseInt(mS)) - (parseInt(hE)*60+parseInt(mE)))/60); }
   window.switchTab = (t, b) => { document.querySelectorAll('.admin-tab').forEach(x => x.style.display = 'none'); document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active')); document.getElementById('tab-'+t).style.display = 'block'; b.classList.add('active'); };
   window.delDoc = async (c, i) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, c, i)); };
   window.nuevoEmp = async () => { const n = prompt("Nombre:"); const p = prompt("PIN:"); if(n && p) await addDoc(collection(db, "staff"), { n, p }); };
