@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL TOTAL V12.1</title>
+    <title>LA ÚNICA - CONTROL TOTAL V12.2</title>
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -92,7 +92,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", projectId: "churrerialaunica-a2888", appId: "1:721969833627:web:8c0db201407a05f82c483e" };
   const app = initializeApp(firebaseConfig);
@@ -103,20 +103,30 @@
   onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
   onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
   onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => d.data()); renderHistorial(); });
-  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "asc")), (s) => { db_local.fichajes = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
+  
+  // Escucha activa de fichajes para actualizar la tabla de staff en tiempo real
+  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "asc")), (s) => { 
+    db_local.fichajes = s.docs.map(d => ({id: d.id, ...d.data()})); 
+    renderAdminLists(); 
+  });
 
   window.handleLogin = async () => {
     const pin = document.getElementById('pin-input').value;
     const pinAdmin = "325606";
     const emp = db_local.staff.find(x => x.p === pin);
     if(!emp && pin !== pinAdmin) return alert("PIN INCORRECTO");
+    
     user = (pin === pinAdmin) ? "Admin" : emp.n;
     document.getElementById('view-login').style.display = 'none';
     document.getElementById('navbar').style.display = 'flex';
+    
     if(user === "Admin") {
         document.getElementById('nav-admin-btn').style.display = 'block';
         document.getElementById('nav-v').style.display = 'none';
         showView('view-admin');
+        // Seteamos fecha de hoy por defecto para ver los ingresos rápido
+        document.getElementById('calendar-staff').valueAsDate = new Date();
+        renderAdminLists();
     } else {
         showView('view-ventas');
         document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
@@ -127,10 +137,22 @@
   async function autoFichar() {
     const hoy = new Date().toLocaleDateString('es-ES');
     const horaAct = new Date().getHours();
-    const fichajesHoy = db_local.fichajes.filter(f => f.u === user && f.f === hoy);
+    
+    // Forzamos lectura fresca para evitar duplicados
+    const q = await getDocs(collection(db, "fichajes"));
+    const historico = q.docs.map(d => d.data());
+    
     let tipo = (horaAct < 14) ? "E_MAÑANA" : "E_TARDE";
-    if (!fichajesHoy.some(f => f.tipo === tipo)) {
-        await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: tipo, ts: serverTimestamp() });
+    const yaFicho = historico.some(f => f.u === user && f.f === hoy && f.tipo === tipo);
+
+    if (!yaFicho) {
+        await addDoc(collection(db, "fichajes"), { 
+            u: user, 
+            f: hoy, 
+            h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+            tipo: tipo, 
+            ts: serverTimestamp() 
+        });
     }
   }
 
@@ -144,18 +166,57 @@
     if (tipoSalida === "S_TARDE" && horaNum < 1955) return alert("No podés cerrar antes de las 19:55");
 
     if(confirm(`¿CERRAR TURNO?`)){ 
-        await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: tipoSalida, ts: serverTimestamp() }); 
+        await addDoc(collection(db, "fichajes"), { 
+            u: user, 
+            f: hoy, 
+            h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+            tipo: tipoSalida, 
+            ts: serverTimestamp() 
+        }); 
         location.reload(); 
     }
   };
 
+  window.renderAdminLists = () => {
+    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
+    document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
+    
+    const dS = document.getElementById('calendar-staff').value; 
+    if(!dS) return;
+    
+    document.getElementById('staff-results').style.display = 'block';
+    const partes = dS.split('-');
+    const sS = `${partes[2]}/${partes[1]}/${partes[0]}`; // Formato DD/MM/YYYY para comparar
+    
+    const res = {};
+    db_local.fichajes.filter(f => f.f === sS).forEach(f => {
+        if(!res[f.u]) res[f.u] = {em:'-', sm:'-', et:'-', st:'-', h:0};
+        if(f.tipo==="E_MAÑANA") res[f.u].em=f.h;
+        if(f.tipo==="S_MAÑANA") { res[f.u].sm=f.h; res[f.u].h += calcularHoras(res[f.u].em, f.h); }
+        if(f.tipo==="E_TARDE") res[f.u].et=f.h;
+        if(f.tipo==="S_TARDE") { res[f.u].st=f.h; res[f.u].h += calcularHoras(res[f.u].et, f.h); }
+    });
+
+    let h = `<table><tr><th>EMP</th><th>M</th><th>T</th><th>TOTAL</th></tr>`;
+    for(let e in res) h += `<tr><td>${e}</td><td><small>${res[e].em}/${res[e].sm}</small></td><td><small>${res[e].et}/${res[e].st}</small></td><td style="font-weight:bold; color:var(--gold)">${res[e].h.toFixed(1)}h</td></tr>`;
+    document.getElementById('fichaje-list').innerHTML = h + `</table>`;
+  };
+
+  function calcularHoras(e, s) { 
+    if(e==='-' || s==='-') return 0; 
+    const [hE,mE]=e.split(':'); const [hS,mS]=s.split(':'); 
+    let mins = (parseInt(hS)*60+parseInt(mS)) - (parseInt(hE)*60+parseInt(mE));
+    return Math.max(0, mins/60); 
+  }
+
+  // --- REPORTES VENTAS ---
   window.renderHistorial = () => {
     const dV = document.getElementById('calendar-filter').value; if(!dV) return;
     document.getElementById('report-results').style.display = 'block';
-    const sS = new Date(dV + "T00:00:00").toLocaleDateString('es-ES');
+    const partes = dV.split('-');
+    const sS = `${partes[2]}/${partes[1]}/${partes[0]}`;
     const vD = db_local.ventas.filter(v => v.f === sS);
     
-    // Filtro por turnos (Mañana hasta las 14hs, Tarde después)
     const m = vD.filter(v => v.turno === "Mañana").reduce((a,b)=>a+b.t,0);
     const t = vD.filter(v => v.turno === "Tarde").reduce((a,b)=>a+b.t,0);
 
@@ -189,26 +250,6 @@
     document.getElementById('total-val').innerText = "$" + cart.reduce((a,b)=>a+b.p, 0);
   }
 
-  window.renderAdminLists = () => {
-    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n} (PIN: ${s.p})</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
-    document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
-    const dS = document.getElementById('calendar-staff').value; if(!dS) return;
-    document.getElementById('staff-results').style.display = 'block';
-    const sS = new Date(dS + "T00:00:00").toLocaleDateString('es-ES');
-    const res = {};
-    db_local.fichajes.filter(f => f.f === sS).forEach(f => {
-        if(!res[f.u]) res[f.u] = {em:'-', sm:'-', et:'-', st:'-', h:0};
-        if(f.tipo==="E_MAÑANA") res[f.u].em=f.h;
-        if(f.tipo==="S_MAÑANA") { res[f.u].sm=f.h; res[f.u].h += calcularHoras(res[f.u].em, f.h); }
-        if(f.tipo==="E_TARDE") res[f.u].et=f.h;
-        if(f.tipo==="S_TARDE") { res[f.u].st=f.h; res[f.u].h += calcularHoras(res[f.u].et, f.h); }
-    });
-    let h = `<table><tr><th>EMP</th><th>M</th><th>T</th><th>TOTAL</th></tr>`;
-    for(let e in res) h += `<tr><td>${e}</td><td>${res[e].em}/${res[e].sm}</td><td>${res[e].et}/${res[e].st}</td><td style="font-weight:bold">${res[e].h.toFixed(1)}h</td></tr>`;
-    document.getElementById('fichaje-list').innerHTML = h + `</table>`;
-  };
-
-  function calcularHoras(e, s) { if(e==='-' || s==='-') return 0; const [hE,mE]=e.split(':'); const [hS,mS]=s.split(':'); return ((parseInt(hS)*60+parseInt(mS)) - (parseInt(hE)*60+parseInt(mE)))/60; }
   window.switchTab = (t, b) => { document.querySelectorAll('.admin-tab').forEach(x => x.style.display = 'none'); document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active')); document.getElementById('tab-'+t).style.display = 'block'; b.classList.add('active'); };
   window.delDoc = async (c, i) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, c, i)); };
   window.nuevoEmp = async () => { const n = prompt("Nombre:"); const p = prompt("PIN:"); if(n && p) await addDoc(collection(db, "staff"), { n, p }); };
