@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL TOTAL V12.1</title>
+    <title>LA ÚNICA - V12.2</title>
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -12,16 +12,17 @@
         .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
         .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
         .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
+        .btn-red { background: linear-gradient(135deg, #ff6b6b, #ee5253); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
         .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-size: 1.1rem; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; }
         .stat-label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.7; letter-spacing: 1px; }
         .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--gold); margin-top: 5px; }
-        .tab-bar { display: flex; gap: 8px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.65rem; font-weight: 700; }
+        .tab-bar { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { min-width: 90px; padding: 12px 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.6rem; font-weight: 700; }
         .tab-btn.active { background: var(--gold); color: #000; }
         .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 20px 10px; text-align: center; }
+        .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 20px 10px; text-align: center; font-weight: bold; }
         nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--gold); z-index: 1000; }
         .nav-item { text-align: center; font-size: 0.65rem; color: #888; font-weight: 800; }
         .nav-item.active { color: var(--gold); }
@@ -58,6 +59,7 @@
         <button class="tab-btn active" onclick="switchTab('v', this)">REPORTES</button>
         <button class="tab-btn" onclick="switchTab('s', this)">STAFF</button>
         <button class="tab-btn" onclick="switchTab('p', this)">MENÚ</button>
+        <button class="tab-btn" onclick="switchTab('sys', this)">SISTEMA</button>
     </div>
     
     <div id="tab-v" class="admin-tab">
@@ -82,6 +84,14 @@
     <div id="tab-p" class="admin-tab" style="display:none">
         <div class="glass-card"><h4>MENÚ</h4><div id="prod-admin-list"></div><button class="btn-gold" onclick="nuevoProd()">+ AGREGAR AL MENÚ</button></div>
     </div>
+
+    <div id="tab-sys" class="admin-tab" style="display:none">
+        <div class="glass-card" style="border: 1px solid var(--danger);">
+            <h4 style="color:var(--danger)">ZONA DE PELIGRO</h4>
+            <p style="font-size: 0.7rem; opacity: 0.8;">Esta acción borrará todas las ventas y fichajes de la base de datos de forma permanente.</p>
+            <button onclick="reinicioTotal()" class="btn-red">REINICIAR TODO</button>
+        </div>
+    </div>
 </div>
 
 <nav id="navbar">
@@ -92,7 +102,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", projectId: "churrerialaunica-a2888", appId: "1:721969833627:web:8c0db201407a05f82c483e" };
   const app = initializeApp(firebaseConfig);
@@ -102,7 +112,7 @@
 
   onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
   onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
-  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => d.data()); renderHistorial(); });
+  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => ({id: d.id, ...d.data()})); renderHistorial(); });
   onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "asc")), (s) => { db_local.fichajes = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
 
   window.handleLogin = async () => {
@@ -122,6 +132,27 @@
         document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
         await autoFichar();
     }
+  };
+
+  // --- REINICIO TOTAL ---
+  window.reinicioTotal = async () => {
+      const confirmacion = prompt("Esto borrará VENTAS y FICHAJES. Para confirmar escriba: REINICIAR");
+      if (confirmacion !== "REINICIAR") return alert("Acción cancelada.");
+
+      try {
+          const batch = writeBatch(db);
+          const vSnap = await getDocs(collection(db, "ventas"));
+          const fSnap = await getDocs(collection(db, "fichajes"));
+          
+          vSnap.forEach(d => batch.delete(d.ref));
+          fSnap.forEach(d => batch.delete(d.ref));
+          
+          await batch.commit();
+          alert("Base de datos reiniciada con éxito.");
+          location.reload();
+      } catch (e) {
+          alert("Error al reiniciar: " + e.message);
+      }
   };
 
   async function autoFichar() {
@@ -155,7 +186,6 @@
     const sS = new Date(dV + "T00:00:00").toLocaleDateString('es-ES');
     const vD = db_local.ventas.filter(v => v.f === sS);
     
-    // Filtro por turnos (Mañana hasta las 14hs, Tarde después)
     const m = vD.filter(v => v.turno === "Mañana").reduce((a,b)=>a+b.t,0);
     const t = vD.filter(v => v.turno === "Tarde").reduce((a,b)=>a+b.t,0);
 
@@ -216,4 +246,4 @@
   window.showView = (id) => { document.querySelectorAll('.container').forEach(c => c.style.display = 'none'); document.getElementById(id).style.display = 'block'; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(id==='view-admin') document.getElementById('nav-admin-btn').classList.add('active'); else document.getElementById('nav-v').classList.add('active'); };
 </script>
 </body>
-</html> 
+</html>
