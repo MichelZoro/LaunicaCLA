@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <title>LA ÚNICA - CONTROL TOTAL V13.0</title>
+    <title>LA ÚNICA - CONTROL TOTAL V14.0</title>
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -18,7 +18,7 @@
         .stat-label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.7; letter-spacing: 1px; }
         .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--gold); margin-top: 5px; }
         .tab-bar { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { flex: 1; min-width: 80px; padding: 10px 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.6rem; font-weight: 700; }
+        .tab-btn { flex: 1; min-width: 90px; padding: 10px 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.6rem; font-weight: 700; }
         .tab-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
         .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 20px 10px; text-align: center; }
@@ -56,7 +56,8 @@
 <div id="view-admin" class="container">
     <div class="tab-bar">
         <button class="tab-btn active" onclick="switchTab('v', this)">REPORTES</button>
-        <button class="tab-btn" onclick="switchTab('ins', this)">INSUMOS</button>
+        <button class="tab-btn" onclick="switchTab('elab', this)">ELABORACIÓN</button>
+        <button class="tab-btn" onclick="switchTab('ins', this)">STOCK</button>
         <button class="tab-btn" onclick="switchTab('s', this)">STAFF</button>
         <button class="tab-btn" onclick="switchTab('p', this)">MENÚ</button>
     </div>
@@ -68,14 +69,29 @@
         <div id="report-results" style="display:none;">
             <div id="stats-container" class="stats-grid"></div>
             <div class="glass-card"><h4>VENTAS</h4><div id="historial-list"></div></div>
-            <div class="glass-card"><h4>GASTOS EN INSUMOS</h4><div id="insumos-dia-list"></div></div>
+            <div class="glass-card"><h4>OTROS GASTOS / ELABORACIÓN</h4><div id="gastos-dia-list"></div></div>
+        </div>
+    </div>
+
+    <div id="tab-elab" class="admin-tab" style="display:none">
+        <div class="glass-card">
+            <h4>ELABORACIÓN DEL DÍA</h4>
+            <select id="sel-insumo-elab" class="input-dark"></select>
+            <input type="number" id="cant-elab" class="input-dark" placeholder="Cantidad usada (ej: 5)">
+            <button class="btn-gold" onclick="registrarElaboracion()">REGISTRAR USO</button>
+        </div>
+        <div class="glass-card">
+            <h4>OTROS GASTOS (Sueldos, Luz, etc)</h4>
+            <input type="text" id="desc-gasto" class="input-dark" placeholder="Descripción">
+            <input type="number" id="monto-gasto" class="input-dark" placeholder="Monto $">
+            <button class="btn-gold" onclick="registrarGastoExtra()">CARGAR GASTO</button>
         </div>
     </div>
 
     <div id="tab-ins" class="admin-tab" style="display:none">
-        <button class="btn-gold" onclick="nuevoInsumo()">+ CARGAR COMPRA INSUMO</button>
+        <button class="btn-gold" onclick="nuevoInsumo()">+ CARGAR COMPRA (STOCK)</button>
         <div class="glass-card" style="margin-top:15px;">
-            <h4>MATERIA PRIMA (Precios Actuales)</h4>
+            <h4>MATERIA PRIMA (Últimos Precios)</h4>
             <div id="insumo-admin-list"></div>
         </div>
     </div>
@@ -105,13 +121,22 @@
   const app = initializeApp(firebaseConfig);
   const db = initializeFirestore(app, { localCache: persistentLocalCache() });
 
-  let user = ""; let cart = []; let db_local = { productos: [], ventas: [], staff: [], fichajes: [], insumos: [] };
+  let user = ""; let cart = []; 
+  let db_local = { productos: [], ventas: [], staff: [], fichajes: [], insumos: [], gastos: [] };
 
   onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
   onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
   onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc")), (s) => { db_local.ventas = s.docs.map(d => d.data()); renderHistorial(); });
   onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "asc")), (s) => { db_local.fichajes = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
-  onSnapshot(query(collection(db, "insumos"), orderBy("ts", "desc")), (s) => { db_local.insumos = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); renderHistorial(); });
+  onSnapshot(query(collection(db, "insumos"), orderBy("ts", "desc")), (s) => { 
+    db_local.insumos = s.docs.map(d => ({id: d.id, ...d.data()})); 
+    renderAdminLists(); 
+    updateInsumosSelect();
+  });
+  onSnapshot(query(collection(db, "gastos"), orderBy("ts", "desc")), (s) => { 
+    db_local.gastos = s.docs.map(d => ({id: d.id, ...d.data()})); 
+    renderHistorial(); 
+  });
 
   window.handleLogin = async () => {
     const pin = document.getElementById('pin-input').value;
@@ -125,7 +150,7 @@
         document.getElementById('nav-admin-btn').style.display = 'block';
         document.getElementById('nav-v').style.display = 'none';
         showView('view-admin');
-        document.getElementById('calendar-staff').valueAsDate = new Date();
+        document.getElementById('calendar-filter').valueAsDate = new Date();
     } else {
         showView('view-ventas');
         document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
@@ -135,34 +160,68 @@
 
   async function autoFichar() {
     const hoy = new Date().toLocaleDateString('es-ES');
-    const q = await getDocs(collection(db, "fichajes"));
-    const historico = q.docs.map(d => d.data());
     let tipo = (new Date().getHours() < 14) ? "E_MAÑANA" : "E_TARDE";
-    if (!historico.some(f => f.u === user && f.f === hoy && f.tipo === tipo)) {
+    const q = await getDocs(collection(db, "fichajes"));
+    if (!q.docs.map(d=>d.data()).some(f => f.u === user && f.f === hoy && f.tipo === tipo)) {
         await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: tipo, ts: serverTimestamp() });
     }
   }
 
-  // --- MATERIA PRIMA / INSUMOS ---
-  window.nuevoInsumo = async () => {
-    const n = prompt("Nombre del Insumo (Ej: Aceite, Harina):");
-    if(!n) return;
-    const cant = parseFloat(prompt("Cantidad comprada (Solo número):"));
-    const uni = prompt("Unidad (kg, litro, cajón, pack):");
-    const pagoTotal = parseFloat(prompt("Total pagado (Plata que salió de la caja):"));
+  // --- ELABORACIÓN Y GASTOS ---
+  function updateInsumosSelect() {
+    const sel = document.getElementById('sel-insumo-elab');
+    const unicos = [...new Map(db_local.insumos.map(item => [item['n'], item])).values()];
+    sel.innerHTML = '<option value="">ELEGIR INSUMO...</option>' + 
+        unicos.map(i => `<option value="${i.n}">${i.n} (${i.uni})</option>`).join('');
+  }
+
+  window.registrarElaboracion = async () => {
+    const n = document.getElementById('sel-insumo-elab').value;
+    const cant = parseFloat(document.getElementById('cant-elab').value);
+    if(!n || !cant) return alert("Completar datos");
     
+    const insumo = db_local.insumos.find(i => i.n === n);
+    const costoFinal = insumo.costoUni * cant;
+
+    await addDoc(collection(db, "gastos"), {
+        n: "USO: " + n,
+        t: costoFinal,
+        f: new Date().toLocaleDateString('es-ES'),
+        tipo: "ELAB",
+        ts: serverTimestamp()
+    });
+    document.getElementById('cant-elab').value = "";
+    alert("USO REGISTRADO");
+  };
+
+  window.registrarGastoExtra = async () => {
+    const desc = document.getElementById('desc-gasto').value;
+    const monto = parseFloat(document.getElementById('monto-gasto').value);
+    if(!desc || !monto) return alert("Completar datos");
+
+    await addDoc(collection(db, "gastos"), {
+        n: desc.toUpperCase(),
+        t: monto,
+        f: new Date().toLocaleDateString('es-ES'),
+        tipo: "EXTRA",
+        ts: serverTimestamp()
+    });
+    document.getElementById('desc-gasto').value = "";
+    document.getElementById('monto-gasto').value = "";
+    alert("GASTO CARGADO");
+  };
+
+  // --- INSUMOS (STOCK) ---
+  window.nuevoInsumo = async () => {
+    const n = prompt("Nombre (Ej: HARINA):").toUpperCase();
+    const cant = parseFloat(prompt("Cantidad comprada:"));
+    const uni = prompt("Unidad (kg, litro, etc):");
+    const pagoTotal = parseFloat(prompt("Precio Total pagado:"));
     if(n && cant && pagoTotal) {
-        const costoUni = pagoTotal / cant;
         await addDoc(collection(db, "insumos"), {
-            n: n.toUpperCase(),
-            cant: cant,
-            uni: uni,
-            total: pagoTotal,
-            costoUni: costoUni,
-            f: new Date().toLocaleDateString('es-ES'),
-            ts: serverTimestamp()
+            n, cant, uni, total: pagoTotal, costoUni: pagoTotal/cant,
+            f: new Date().toLocaleDateString('es-ES'), ts: serverTimestamp()
         });
-        alert("COMPRA REGISTRADA");
     }
   };
 
@@ -170,30 +229,12 @@
     document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n}</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
     document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
     
-    // Lista de Precios de Insumos
-    document.getElementById('insumo-admin-list').innerHTML = db_local.insumos.map(i => `
+    const unicos = [...new Map(db_local.insumos.map(item => [item['n'], item])).values()];
+    document.getElementById('insumo-admin-list').innerHTML = unicos.map(i => `
         <div class="list-item">
-            <div>
-                <b style="color:var(--gold)">${i.n}</b><br>
-                <small>Último costo: $${i.costoUni.toFixed(2)} por ${i.uni}</small>
-            </div>
+            <div><b>${i.n}</b><br><small>Costo: $${i.costoUni.toFixed(2)} / ${i.uni}</small></div>
             <button class="btn-del" onclick="delDoc('insumos','${i.id}')">🗑</button>
         </div>`).join('');
-
-    const dS = document.getElementById('calendar-staff').value; 
-    if(!dS) return;
-    const partes = dS.split('-'); const sS = `${partes[2]}/${partes[1]}/${partes[0]}`;
-    const res = {};
-    db_local.fichajes.filter(f => f.f === sS).forEach(f => {
-        if(!res[f.u]) res[f.u] = {em:'-', sm:'-', et:'-', st:'-', h:0};
-        if(f.tipo==="E_MAÑANA") res[f.u].em=f.h;
-        if(f.tipo==="S_MAÑANA") { res[f.u].sm=f.h; res[f.u].h += calcularHoras(res[f.u].em, f.h); }
-        if(f.tipo==="E_TARDE") res[f.u].et=f.h;
-        if(f.tipo==="S_TARDE") { res[f.u].st=f.h; res[f.u].h += calcularHoras(res[f.u].et, f.h); }
-    });
-    let h = `<table><tr><th>EMP</th><th>M</th><th>T</th><th>HORAS</th></tr>`;
-    for(let e in res) h += `<tr><td>${e}</td><td>${res[e].em}/${res[e].sm}</td><td>${res[e].et}/${res[e].st}</td><td style="font-weight:bold">${res[e].h.toFixed(1)}h</td></tr>`;
-    document.getElementById('fichaje-list').innerHTML = h + `</table>`;
   };
 
   // --- REPORTES ---
@@ -203,26 +244,25 @@
     const partes = dV.split('-'); const sS = `${partes[2]}/${partes[1]}/${partes[0]}`;
     
     const vD = db_local.ventas.filter(v => v.f === sS);
-    const iD = db_local.insumos.filter(i => i.f === sS); // Insumos comprados hoy
+    const gD = db_local.gastos.filter(g => g.f === sS);
     
     const ventasTot = vD.reduce((a,b)=>a+b.t,0);
-    const gastosTot = iD.reduce((a,b)=>a+b.total,0);
-    const m = vD.filter(v => v.turno === "Mañana").reduce((a,b)=>a+b.t,0);
-    const t = vD.filter(v => v.turno === "Tarde").reduce((a,b)=>a+b.t,0);
+    const gastosTot = gD.reduce((a,b)=>a+b.t,0);
 
     document.getElementById('stats-container').innerHTML = `
-        <div class="stat-box" style="grid-column: span 2; border-color:var(--success)"><div class="stat-label">GANANCIA CAJA (LIMPIO)</div><div class="stat-val">$${ventasTot - gastosTot}</div></div>
-        <div class="stat-box"><div class="stat-label">BRUTO VENTAS</div><div class="stat-val">$${ventasTot}</div></div>
-        <div class="stat-box" style="border-color:var(--danger)"><div class="stat-label">GASTOS MAT. PRIMA</div><div class="stat-val">$${gastosTot}</div></div>
-        <div class="stat-box"><div class="stat-label">MAÑANA</div><div class="stat-val">$${m}</div></div>
-        <div class="stat-box"><div class="stat-label">TARDE</div><div class="stat-val">$${t}</div></div>`;
+        <div class="stat-box" style="grid-column: span 2; border-color:var(--success); background:rgba(81,207,102,0.1)">
+            <div class="stat-label">GANANCIA REAL (LIMPIO)</div>
+            <div class="stat-val">$${ventasTot - gastosTot}</div>
+        </div>
+        <div class="stat-box"><div class="stat-label">VENTAS BRUTAS</div><div class="stat-val">$${ventasTot}</div></div>
+        <div class="stat-box" style="border-color:var(--danger)"><div class="stat-label">TOTAL GASTOS</div><div class="stat-val">$${gastosTot}</div></div>`;
 
     document.getElementById('historial-list').innerHTML = `<table><tr><th>HORA</th><th>VEND.</th><th>TOTAL</th></tr>` + 
         (vD.length ? vD.map(v => `<tr><td>${v.h || '-'}</td><td>${v.u}</td><td>$${v.t}</td></tr>`).join('') : '<tr><td colspan="3">Sin ventas</td></tr>') + `</table>`;
 
-    document.getElementById('insumos-dia-list').innerHTML = iD.length ? 
-        iD.map(i => `<div class="list-item" style="border-left-color:var(--danger)"><span>${i.n} (${i.cant}${i.uni})</span><span style="color:var(--danger)">-$${i.total}</span></div>`).join('') 
-        : '<p style="text-align:center; font-size:0.7rem;">No se compraron insumos hoy.</p>';
+    document.getElementById('gastos-dia-list').innerHTML = gD.length ? 
+        gD.map(g => `<div class="list-item" style="border-left-color:var(--danger)"><span>${g.n}</span><span style="color:var(--danger)">-$${g.t.toFixed(0)}</span></div>`).join('') 
+        : '<p style="text-align:center; font-size:0.7rem;">Sin gastos registrados hoy.</p>';
   };
 
   // --- VENTAS ---
@@ -230,12 +270,9 @@
     if(!cart.length) return;
     const ahora = new Date();
     await addDoc(collection(db, "ventas"), { 
-        t: cart.reduce((a,b)=>a+b.p,0), 
-        u: user, 
-        f: ahora.toLocaleDateString('es-ES'), 
-        h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-        turno: ahora.getHours() < 14 ? "Mañana" : "Tarde",
-        ts: serverTimestamp() 
+        t: cart.reduce((a,b)=>a+b.p,0), u: user, 
+        f: ahora.toLocaleDateString('es-ES'), h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        turno: ahora.getHours() < 14 ? "Mañana" : "Tarde", ts: serverTimestamp() 
     });
     cart = []; renderCart(); alert("VENTA EXITOSA");
   };
@@ -248,16 +285,12 @@
   }
 
   window.registrarSalida = async () => {
-    const ahora = new Date();
-    const hoy = ahora.toLocaleDateString('es-ES');
-    let tipoSalida = (ahora.getHours() < 14) ? "S_MAÑANA" : "S_TARDE";
     if(confirm(`¿CERRAR TURNO?`)){ 
-        await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: tipoSalida, ts: serverTimestamp() }); 
+        await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), tipo: (new Date().getHours() < 14) ? "S_MAÑANA" : "S_TARDE", ts: serverTimestamp() }); 
         location.reload(); 
     }
   };
 
-  function calcularHoras(e, s) { if(e==='-' || s==='-') return 0; const [hE,mE]=e.split(':'); const [hS,mS]=s.split(':'); return Math.max(0, ((parseInt(hS)*60+parseInt(mS)) - (parseInt(hE)*60+parseInt(mE)))/60); }
   window.switchTab = (t, b) => { document.querySelectorAll('.admin-tab').forEach(x => x.style.display = 'none'); document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active')); document.getElementById('tab-'+t).style.display = 'block'; b.classList.add('active'); };
   window.delDoc = async (c, i) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, c, i)); };
   window.nuevoEmp = async () => { const n = prompt("Nombre:"); const p = prompt("PIN:"); if(n && p) await addDoc(collection(db, "staff"), { n, p }); };
