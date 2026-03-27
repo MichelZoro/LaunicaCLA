@@ -3,254 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - V16.0 FINAL</title>
+    <title>LA ÚNICA - V17.0 ULTRA LIGHT</title>
     <style>
-        :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 90px; }
+        :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.1); }
+        * { box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 80px; font-size: 16px; }
         .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 18px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
-        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; margin: 5px 0; }
-        .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 12px; border-radius: 12px; color: white; margin: 8px 0; text-align: center; font-size: 1.1rem; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 15px; border: 1px solid rgba(197,160,89,0.3); text-align: center; }
-        .tab-bar { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding: 5px; }
-        .tab-btn { flex: 1; min-width: 85px; padding: 10px 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.65rem; font-weight: 700; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
+        .btn-gold { background: #C5A059; color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; }
+        .input-dark { width: 100%; background: #000; border: 1px solid var(--gold); padding: 12px; border-radius: 10px; color: #fff; margin: 5px 0; text-align: center; }
+        .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-item { background: var(--glass); border: 1px solid var(--gold); border-radius: 12px; padding: 20px 5px; text-align: center; font-weight: bold; }
+        nav { position: fixed; bottom: 0; width: 100%; background: #000; display: none; justify-content: space-around; padding: 10px 0; border-top: 2px solid var(--gold); }
+        .nav-item { color: #888; font-size: 0.7rem; font-weight: bold; text-align: center; }
+        .active { color: var(--gold) !important; }
+        .tab-bar { display: flex; overflow-x: auto; gap: 5px; margin-bottom: 10px; }
+        .tab-btn { background: none; color: #fff; border: 1px solid #555; padding: 8px; border-radius: 8px; min-width: 80px; font-size: 0.7rem; }
         .tab-btn.active { background: var(--gold); color: #000; }
-        .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 25px 10px; text-align: center; font-weight: 800; font-size: 0.9rem; }
-        nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--gold); z-index: 1000; }
-        .nav-item { text-align: center; font-size: 0.7rem; color: #888; font-weight: 800; }
-        .nav-item.active { color: var(--gold); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        th { color: var(--gold); padding: 8px; border-bottom: 1px solid var(--glass); text-align: left; }
-        td { padding: 8px; border-bottom: 1px solid var(--glass); }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); }
-        .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        td, th { padding: 8px; border-bottom: 1px solid #444; text-align: left; }
     </style>
 </head>
 <body>
 
-<div id="view-login" style="display: flex; flex-direction: column; align-items: center; padding-top: 100px;">
-    <div class="glass-card" style="width: 85%; text-align: center;">
-        <h1 style="color:var(--gold); margin:0 0 15px 0;">LA ÚNICA</h1>
+<div id="view-login" style="text-align: center; padding-top: 80px;">
+    <div class="glass-card" style="width: 85%; margin: auto;">
+        <h1 style="color:var(--gold)">LA ÚNICA</h1>
         <input type="password" id="pin-input" class="input-dark" placeholder="PIN" inputmode="numeric">
         <button onclick="handleLogin()" class="btn-gold">ENTRAR</button>
     </div>
 </div>
 
 <div id="view-ventas" class="container">
-    <h2 id="welcome-msg" style="color:var(--gold); text-align: center; margin-top:0;"></h2>
+    <h2 id="welcome-msg" style="text-align: center; color:var(--gold)"></h2>
     <div id="grid-productos" class="grid-pos"></div>
     <div class="glass-card" style="margin-top:20px;">
         <div id="cart-list"></div>
-        <h3 style="text-align:right;">Total: <span id="total-val" style="color:var(--gold); font-size: 1.8rem;">$0</span></h3>
-        <button onclick="confirmarVenta()" class="btn-gold">✓ CONFIRMAR VENTA</button>
-        <button onclick="registrarSalida()" class="btn-gold" style="background:none; border: 1px solid var(--danger); color:var(--danger); margin-top:15px; font-size: 0.7rem;">CERRAR TURNO</button>
+        <h3 style="text-align:right">Total: <span id="total-val" style="color:var(--gold)">$0</span></h3>
+        <button onclick="confirmarVenta()" class="btn-gold">CONFIRMAR</button>
+        <button onclick="registrarSalida()" style="background:none; color:red; border:none; width:100%; margin-top:20px;">Cerrar Turno</button>
     </div>
 </div>
 
 <div id="view-admin" class="container">
     <div class="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('v', this)">REPORTES</button>
-        <button class="tab-btn" onclick="switchTab('elab', this)">ELABORACIÓN</button>
-        <button class="tab-btn" onclick="switchTab('ins', this)">STOCK</button>
+        <button class="tab-btn active" onclick="switchTab('v', this)">VENTAS</button>
         <button class="tab-btn" onclick="switchTab('s', this)">STAFF</button>
-        <button class="tab-btn" onclick="switchTab('p', this)">MENÚ</button>
+        <button class="tab-btn" onclick="switchTab('i', this)">STOCK</button>
     </div>
-    
+
     <div id="tab-v" class="admin-tab">
-        <input type="date" id="calendar-filter" class="input-dark" onchange="renderHistorial()">
-        <div id="report-results" style="display:none;">
-            <div id="stats-container" class="stats-grid"></div>
-            <div class="glass-card"><h4>VENTAS DEL DÍA</h4><div id="historial-list"></div></div>
-            <div class="glass-card"><h4>GASTOS Y USO</h4><div id="gastos-dia-list"></div></div>
-        </div>
+        <input type="date" id="cal-v" class="input-dark" onchange="cargarReporteDia()">
+        <div id="res-v"></div>
     </div>
 
-    <div id="tab-elab" class="admin-tab" style="display:none">
-        <div class="glass-card">
-            <h4>REGISTRAR ELABORACIÓN</h4>
-            <select id="sel-insumo-elab" class="input-dark"></select>
-            <input type="number" id="cant-elab" class="input-dark" placeholder="Cantidad usada (ej: 5)">
-            <button class="btn-gold" onclick="registrarElaboracion()">CARGAR USO</button>
-        </div>
-        <div class="glass-card">
-            <h4>PAGO EMPLEADO / GASTOS</h4>
-            <input type="text" id="desc-gasto" class="input-dark" placeholder="Ej: Paga de hoy">
-            <input type="number" id="monto-gasto" class="input-dark" placeholder="Monto $">
-            <button class="btn-gold" onclick="registrarGastoExtra()">CARGAR GASTO</button>
-        </div>
-    </div>
-
-    <div id="tab-ins" class="admin-tab" style="display:none">
-        <button class="btn-gold" onclick="nuevoInsumo()">+ CARGAR COMPRA INSUMO</button>
-        <div id="insumo-admin-list" style="margin-top:15px;"></div>
-    </div>
-    
     <div id="tab-s" class="admin-tab" style="display:none">
-        <input type="date" id="calendar-staff" class="input-dark" onchange="renderStaffReport()">
-        <div class="glass-card"><h4>FICHAJES DEL DÍA</h4><div id="fichaje-list"></div></div>
-        <div class="glass-card"><h4>GESTIÓN STAFF</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
+        <input type="date" id="cal-s" class="input-dark" onchange="cargarFichajesDia()">
+        <div id="res-s"></div>
+        <button class="btn-gold" style="margin-top:20px" onclick="nuevoEmp()">+ Nuevo Empleado</button>
+        <div id="lista-empleados" style="margin-top:10px"></div>
     </div>
 
-    <div id="tab-p" class="admin-tab" style="display:none">
-        <div class="glass-card"><h4>MENÚ</h4><div id="prod-admin-list"></div><button class="btn-gold" onclick="nuevoProd()">+ AGREGAR AL MENÚ</button></div>
+    <div id="tab-i" class="admin-tab" style="display:none">
+        <button class="btn-gold" onclick="nuevoInsumo()">+ Cargar Compra</button>
+        <div id="lista-insumos"></div>
     </div>
 </div>
 
 <nav id="navbar">
-    <div class="nav-item" id="nav-v" onclick="showView('view-ventas')">💰 VENTAS</div>
-    <div id="nav-admin-btn" class="nav-item" style="display:none" onclick="showView('view-admin')">⚙️ ADMIN</div>
-    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">🚪 SALIR</div>
+    <div class="nav-item" id="nv-v" onclick="showView('view-ventas')">VENTAS</div>
+    <div class="nav-item" id="nv-a" onclick="showView('view-admin')">ADMIN</div>
+    <div class="nav-item" onclick="location.reload()">SALIR</div>
 </nav>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { initializeFirestore, persistentLocalCache, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs, limit } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { initializeFirestore, collection, addDoc, getDocs, query, where, orderBy, limit, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-  const firebaseConfig = { apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", projectId: "churrerialaunica-a2888", appId: "1:721969833627:web:8c0db201407a05f82c483e" };
-  const app = initializeApp(firebaseConfig);
-  const db = initializeFirestore(app, { localCache: persistentLocalCache() });
+    const firebaseConfig = { apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", projectId: "churrerialaunica-a2888", appId: "1:721969833627:web:8c0db201407a05f82c483e" };
+    const app = initializeApp(firebaseConfig);
+    const db = initializeFirestore(app);
 
-  let user = ""; let cart = []; 
-  let db_local = { productos: [], ventas: [], staff: [], fichajes: [], insumos: [], gastos: [] };
+    let user = ""; let cart = []; let productos = []; let staff = [];
 
-  // DATA SYNC (Solo lo necesario)
-  onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
-  onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
-  onSnapshot(query(collection(db, "insumos"), orderBy("ts", "desc"), limit(30)), (s) => { 
-    db_local.insumos = s.docs.map(d => ({id: d.id, ...d.data()})); 
-    updateInsumosSelect(); 
-    renderAdminLists(); 
-  });
-  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc"), limit(50)), (s) => { db_local.ventas = s.docs.map(d => d.data()); renderHistorial(); });
-  onSnapshot(query(collection(db, "gastos"), orderBy("ts", "desc"), limit(50)), (s) => { db_local.gastos = s.docs.map(d => d.data()); renderHistorial(); });
-  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "desc"), limit(50)), (s) => { db_local.fichajes = s.docs.map(d => d.data()); renderStaffReport(); });
-
-  window.handleLogin = async () => {
-    const pin = document.getElementById('pin-input').value;
-    const pinAdmin = "325606";
-    const emp = db_local.staff.find(x => x.p === pin);
-    if(!emp && pin !== pinAdmin) return alert("PIN INCORRECTO");
-    user = (pin === pinAdmin) ? "Admin" : emp.n;
-    document.getElementById('view-login').style.display = 'none';
-    document.getElementById('navbar').style.display = 'flex';
-    if(user === "Admin") {
-        document.getElementById('nav-admin-btn').style.display = 'block';
-        showView('view-admin');
-        document.getElementById('calendar-filter').valueAsDate = new Date();
-        document.getElementById('calendar-staff').valueAsDate = new Date();
-    } else {
-        showView('view-ventas');
-        document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
-        await autoFichar();
+    // Carga inicial rápida (Solo productos y staff)
+    async function init() {
+        const pSnap = await getDocs(collection(db, "productos"));
+        productos = pSnap.docs.map(d => ({id:d.id, ...d.data()}));
+        const sSnap = await getDocs(collection(db, "staff"));
+        staff = sSnap.docs.map(d => ({id:d.id, ...d.data()}));
+        renderProductos();
     }
-  };
+    init();
 
-  async function autoFichar() {
-    const hoy = new Date().toLocaleDateString('es-ES');
-    let tipo = (new Date().getHours() < 14) ? "Entrada Mañana" : "Entrada Tarde";
-    const yaFicho = db_local.fichajes.find(f => f.u === user && f.f === hoy && f.tipo.includes("Entrada"));
-    if (!yaFicho) {
-        await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), tipo: tipo, ts: serverTimestamp() });
+    window.handleLogin = async () => {
+        const pin = document.getElementById('pin-input').value;
+        if(pin === "325606") {
+            user = "Admin";
+            document.getElementById('nv-a').style.display = "block";
+            showView('view-admin');
+        } else {
+            const emp = staff.find(e => e.p === pin);
+            if(!emp) return alert("PIN Incorrecto");
+            user = emp.n;
+            await realizarFichaje("Entrada");
+            showView('view-ventas');
+        }
+        document.getElementById('view-login').style.display = "none";
+        document.getElementById('navbar').style.display = "flex";
+    };
+
+    async function realizarFichaje(tipo) {
+        const hoy = new Date().toLocaleDateString('es-ES');
+        const hora = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        try {
+            await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: hora, t: tipo, ts: serverTimestamp() });
+        } catch(e) { console.error("Error fichaje", e); }
     }
-  }
 
-  // --- ELABORACIÓN ---
-  function updateInsumosSelect() {
-    const sel = document.getElementById('sel-insumo-elab');
-    if(!sel) return;
-    const unicos = [...new Map(db_local.insumos.map(i => [i.n, i])).values()];
-    sel.innerHTML = '<option value="">SELECCIONAR INSUMO...</option>' + unicos.map(i => `<option value="${i.n}">${i.n} (${i.uni})</option>`).join('');
-  }
+    // --- ADMIN: REPORTES BAJO DEMANDA ---
+    window.cargarReporteDia = async () => {
+        const fecha = document.getElementById('cal-v').value.split('-').reverse().join('/');
+        const q = query(collection(db, "ventas"), where("f", "==", fecha));
+        const snap = await getDocs(q);
+        const ventas = snap.docs.map(d => d.data());
+        const total = ventas.reduce((a,b) => a + b.t, 0);
+        
+        document.getElementById('res-v').innerHTML = `
+            <div class="glass-card" style="text-align:center">
+                <small>TOTAL VENTAS</small><h2 style="color:var(--gold)">$${total}</h2>
+            </div>
+            <table><tr><th>Hora</th><th>Vendedor</th><th>Total</th></tr>
+            ${ventas.map(v => `<tr><td>${v.h}</td><td>${v.u}</td><td>$${v.t}</td></tr>`).join('')}
+            </table>`;
+    };
 
-  window.registrarElaboracion = async () => {
-    const n = document.getElementById('sel-insumo-elab').value;
-    const cant = parseFloat(document.getElementById('cant-elab').value);
-    if(!n || !cant) return alert("Completar datos");
-    const insumo = db_local.insumos.find(i => i.n === n);
-    const costo = insumo.costoUni * cant;
-    await addDoc(collection(db, "gastos"), { n: "USO: "+n+" ("+cant+insumo.uni+")", t: costo, f: new Date().toLocaleDateString('es-ES'), ts: serverTimestamp() });
-    document.getElementById('cant-elab').value = "";
-    alert("USO CARGADO");
-  };
+    window.cargarFichajesDia = async () => {
+        const fecha = document.getElementById('cal-s').value.split('-').reverse().join('/');
+        const q = query(collection(db, "fichajes"), where("f", "==", fecha));
+        const snap = await getDocs(q);
+        const datos = snap.docs.map(d => d.data());
+        
+        document.getElementById('res-s').innerHTML = `
+            <div class="glass-card">
+                ${datos.length ? datos.map(f => `<div><b>${f.u}</b>: ${f.h} (${f.t})</div>`).join('') : "No hay fichajes"}
+            </div>`;
+        
+        document.getElementById('lista-empleados').innerHTML = "<h4>Staff Activo</h4>" + staff.map(e => `<div>${e.n} <button onclick="borrarDoc('staff','${e.id}')">Eliminar</button></div>`).join('');
+    };
 
-  window.registrarGastoExtra = async () => {
-    const desc = document.getElementById('desc-gasto').value;
-    const monto = parseFloat(document.getElementById('monto-gasto').value);
-    if(!desc || !monto) return alert("Completar datos");
-    await addDoc(collection(db, "gastos"), { n: desc.toUpperCase(), t: monto, f: new Date().toLocaleDateString('es-ES'), ts: serverTimestamp() });
-    document.getElementById('desc-gasto').value = ""; document.getElementById('monto-gasto').value = "";
-    alert("GASTO CARGADO");
-  };
-
-  window.nuevoInsumo = async () => {
-    const n = prompt("Insumo:")?.toUpperCase();
-    const cant = parseFloat(prompt("Cantidad comprada:"));
-    const uni = prompt("Unidad (kg, litro, etc):");
-    const total = parseFloat(prompt("Costo Total:"));
-    if(n && cant && total) {
-        await addDoc(collection(db, "insumos"), { n, cant, uni, total, costoUni: total/cant, f: new Date().toLocaleDateString('es-ES'), ts: serverTimestamp() });
-        alert("STOCK ACTUALIZADO");
+    // --- VENTAS ---
+    function renderProductos() {
+        document.getElementById('grid-productos').innerHTML = productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}', ${p.p})">${p.n}<br>$${p.p}</div>`).join('');
     }
-  };
 
-  window.renderHistorial = () => {
-    const d = document.getElementById('calendar-filter').value; if(!d) return;
-    const sS = d.split('-').reverse().join('/');
-    document.getElementById('report-results').style.display = 'block';
-    const vD = db_local.ventas.filter(v => v.f === sS);
-    const gD = db_local.gastos.filter(g => g.f === sS);
-    const vent = vD.reduce((a,b)=>a+b.t, 0);
-    const gast = gD.reduce((a,b)=>a+b.t, 0);
-    document.getElementById('stats-container').innerHTML = `
-        <div class="stat-box" style="grid-column: span 2; border-color:var(--success); background:rgba(81,207,102,0.1)"><div style="font-size:0.7rem">GANANCIA REAL</div><div style="font-size:1.6rem; color:var(--success); font-weight:800">$${vent - gast}</div></div>
-        <div class="stat-box"><div>VENTAS</div><div style="color:var(--gold); font-weight:800">$${vent}</div></div>
-        <div class="stat-box"><div>GASTOS</div><div style="color:var(--danger); font-weight:800">$${gast.toFixed(0)}</div></div>`;
-    document.getElementById('historial-list').innerHTML = `<table><tr><th>HORA</th><th>TOTAL</th></tr>` + (vD.length ? vD.map(v => `<tr><td>${v.h}</td><td>$${v.t}</td></tr>`).join('') : '<tr><td colspan="2">Sin ventas</td></tr>') + `</table>`;
-    document.getElementById('gastos-dia-list').innerHTML = gD.length ? gD.map(g => `<div class="list-item" style="border-left-color:var(--danger)"><span>${g.n}</span><span style="color:var(--danger)">-$${g.t.toFixed(0)}</span></div>`).join('') : 'Sin gastos';
-  };
-
-  window.renderStaffReport = () => {
-    const d = document.getElementById('calendar-staff').value; if(!d) return;
-    const sS = d.split('-').reverse().join('/');
-    const res = db_local.fichajes.filter(f => f.f === sS);
-    document.getElementById('fichaje-list').innerHTML = res.length ? res.map(f => `<div class="list-item"><span><b>${f.u}</b></span><span>${f.h} (${f.tipo})</span></div>`).join('') : 'Sin fichajes hoy';
-  };
-
-  window.renderAdminLists = () => {
-    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n}</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
-    document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
-    const unicos = [...new Map(db_local.insumos.map(i => [i.n, i])).values()];
-    document.getElementById('insumo-admin-list').innerHTML = unicos.map(i => `<div class="glass-card" style="padding:12px; margin-bottom:8px"><div style="display:flex; justify-content:space-between"><b>${i.n}</b><button class="btn-del" onclick="delDoc('insumos','${i.id}')">🗑</button></div><small>Costo actual: $${i.costoUni.toFixed(2)} por ${i.uni}</small></div>`).join('');
-  };
-
-  // --- VENTAS ---
-  window.renderProductos = () => { document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}', ${p.p})">${p.n}<br>$${p.p}</div>`).join(''); };
-  window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
-  window.renderCart = () => {
-    document.getElementById('cart-list').innerHTML = cart.map(item => `<div style="display:flex; justify-content:space-between; margin-bottom:5px"><span>${item.n}</span><span>$${item.p}</span></div>`).join('');
-    document.getElementById('total-val').innerText = "$" + cart.reduce((a,b)=>a+b.p, 0);
-  }
-  window.confirmarVenta = async () => {
-    if(!cart.length) return;
-    const t = cart.reduce((a,b)=>a+b.p,0);
-    await addDoc(collection(db, "ventas"), { t, u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), ts: serverTimestamp() });
-    cart = []; renderCart(); alert("VENTA CONFIRMADA");
-  };
-  window.registrarSalida = async () => {
-    if(confirm(`¿SALIR Y CERRAR TURNO?`)){ 
-        await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), tipo: (new Date().getHours() < 14) ? "Salida Mañana" : "Salida Tarde", ts: serverTimestamp() }); 
-        location.reload(); 
+    window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
+    function renderCart() {
+        document.getElementById('cart-list').innerHTML = cart.map(i => `<div>${i.n} - $${i.p}</div>`).join('');
+        document.getElementById('total-val').innerText = "$" + cart.reduce((a,b) => a + b.p, 0);
     }
-  };
 
-  window.switchTab = (t, b) => { document.querySelectorAll('.admin-tab').forEach(x => x.style.display = 'none'); document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active')); document.getElementById('tab-'+t).style.display = 'block'; b.classList.add('active'); };
-  window.delDoc = async (c, i) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, c, i)); };
-  window.nuevoEmp = async () => { const n = prompt("Nombre:"); const p = prompt("PIN:"); if(n && p) await addDoc(collection(db, "staff"), { n, p }); };
-  window.nuevoProd = async () => { const n = prompt("Producto:"); const p = parseInt(prompt("Precio:")); if(n && p) await addDoc(collection(db, "productos"), { n, p }); };
-  window.showView = (id) => { document.querySelectorAll('.container').forEach(c => c.style.display = 'none'); document.getElementById(id).style.display = 'block'; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(id==='view-admin') document.getElementById('nav-admin-btn').classList.add('active'); else document.getElementById('nav-v').classList.add('active'); };
+    window.confirmarVenta = async () => {
+        if(!cart.length) return;
+        const total = cart.reduce((a,b) => a + b.p, 0);
+        await addDoc(collection(db, "ventas"), { 
+            t: total, u: user, f: new Date().toLocaleDateString('es-ES'), 
+            h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), 
+            ts: serverTimestamp() 
+        });
+        cart = []; renderCart(); alert("Venta Exitosa");
+    };
+
+    window.registrarSalida = async () => {
+        if(confirm("¿Cerrar turno?")) { await realizarFichaje("Salida"); location.reload(); }
+    };
+
+    // --- UTILIDADES ---
+    window.showView = (id) => {
+        document.querySelectorAll('.container').forEach(c => c.style.display = "none");
+        document.getElementById(id).style.display = "block";
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if(id === 'view-ventas') {
+            document.getElementById('nv-v').classList.add('active');
+            document.getElementById('welcome-msg').innerText = user.toUpperCase();
+        } else { document.getElementById('nv-a').classList.add('active'); }
+    };
+
+    window.switchTab = (id, btn) => {
+        document.querySelectorAll('.admin-tab').forEach(t => t.style.display = "none");
+        document.getElementById('tab-'+id).style.display = "block";
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    };
+
+    window.nuevoEmp = async () => {
+        const n = prompt("Nombre:"); const p = prompt("PIN:");
+        if(n && p) { await addDoc(collection(db, "staff"), { n, p }); location.reload(); }
+    };
+
+    window.borrarDoc = async (col, id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, col, id)); location.reload(); } };
 </script>
 </body>
 </html>
