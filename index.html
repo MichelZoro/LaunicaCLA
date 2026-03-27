@@ -3,100 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - V17.0 ULTRA LIGHT</title>
+    <title>LA ÚNICA V18.0</title>
     <style>
-        :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.1); }
+        :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --glass: rgba(255,255,255,0.1); }
         * { box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 80px; font-size: 16px; }
+        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 80px; }
         .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
-        .btn-gold { background: #C5A059; color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; }
-        .input-dark { width: 100%; background: #000; border: 1px solid var(--gold); padding: 12px; border-radius: 10px; color: #fff; margin: 5px 0; text-align: center; }
+        .glass-card { background: var(--glass); border-radius: 15px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; text-align: center; }
+        .btn-gold { background: var(--gold); color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; }
+        .input-dark { width: 100%; background: #000; border: 1px solid var(--gold); padding: 12px; border-radius: 10px; color: #fff; margin: 10px 0; text-align: center; font-size: 1.2rem; }
         .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-item { background: var(--glass); border: 1px solid var(--gold); border-radius: 12px; padding: 20px 5px; text-align: center; font-weight: bold; }
-        nav { position: fixed; bottom: 0; width: 100%; background: #000; display: none; justify-content: space-around; padding: 10px 0; border-top: 2px solid var(--gold); }
-        .nav-item { color: #888; font-size: 0.7rem; font-weight: bold; text-align: center; }
+        .btn-item { background: var(--glass); border: 1px solid var(--gold); border-radius: 12px; padding: 25px 5px; text-align: center; font-weight: bold; }
+        nav { position: fixed; bottom: 0; width: 100%; background: #000; display: none; justify-content: space-around; padding: 15px 0; border-top: 2px solid var(--gold); }
+        .nav-item { color: #888; font-size: 0.8rem; font-weight: bold; }
         .active { color: var(--gold) !important; }
-        .tab-bar { display: flex; overflow-x: auto; gap: 5px; margin-bottom: 10px; }
-        .tab-btn { background: none; color: #fff; border: 1px solid #555; padding: 8px; border-radius: 8px; min-width: 80px; font-size: 0.7rem; }
+        .tab-btn { background: none; color: #fff; border: 1px solid #555; padding: 8px; border-radius: 8px; font-size: 0.7rem; margin-right: 5px; }
         .tab-btn.active { background: var(--gold); color: #000; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        td, th { padding: 8px; border-bottom: 1px solid #444; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        td { padding: 8px; border-bottom: 1px solid #444; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-<div id="view-login" style="text-align: center; padding-top: 80px;">
+<div id="view-login" style="padding-top: 100px;">
     <div class="glass-card" style="width: 85%; margin: auto;">
         <h1 style="color:var(--gold)">LA ÚNICA</h1>
+        <p id="loading-msg" style="font-size: 0.7rem; opacity: 0.6;">Cargando sistema...</p>
         <input type="password" id="pin-input" class="input-dark" placeholder="PIN" inputmode="numeric">
-        <button onclick="handleLogin()" class="btn-gold">ENTRAR</button>
+        <button onclick="handleLogin()" id="btn-entrar" class="btn-gold" disabled>ENTRAR</button>
     </div>
 </div>
 
 <div id="view-ventas" class="container">
-    <h2 id="welcome-msg" style="text-align: center; color:var(--gold)"></h2>
+    <h2 id="welcome-msg" style="color:var(--gold)"></h2>
     <div id="grid-productos" class="grid-pos"></div>
     <div class="glass-card" style="margin-top:20px;">
         <div id="cart-list"></div>
         <h3 style="text-align:right">Total: <span id="total-val" style="color:var(--gold)">$0</span></h3>
-        <button onclick="confirmarVenta()" class="btn-gold">CONFIRMAR</button>
-        <button onclick="registrarSalida()" style="background:none; color:red; border:none; width:100%; margin-top:20px;">Cerrar Turno</button>
+        <button onclick="confirmarVenta()" class="btn-gold">CONFIRMAR VENTA</button>
+        <button onclick="registrarSalida()" style="background:none; color:red; border:none; width:100%; margin-top:25px;">CERRAR TURNO</button>
     </div>
 </div>
 
 <div id="view-admin" class="container">
-    <div class="tab-bar">
+    <div style="margin-bottom: 15px;">
         <button class="tab-btn active" onclick="switchTab('v', this)">VENTAS</button>
         <button class="tab-btn" onclick="switchTab('s', this)">STAFF</button>
-        <button class="tab-btn" onclick="switchTab('i', this)">STOCK</button>
     </div>
-
     <div id="tab-v" class="admin-tab">
-        <input type="date" id="cal-v" class="input-dark" onchange="cargarReporteDia()">
+        <input type="date" id="cal-v" class="input-dark" onchange="cargarVentas()">
         <div id="res-v"></div>
     </div>
-
     <div id="tab-s" class="admin-tab" style="display:none">
-        <input type="date" id="cal-s" class="input-dark" onchange="cargarFichajesDia()">
+        <input type="date" id="cal-s" class="input-dark" onchange="cargarFichajes()">
         <div id="res-s"></div>
-        <button class="btn-gold" style="margin-top:20px" onclick="nuevoEmp()">+ Nuevo Empleado</button>
-        <div id="lista-empleados" style="margin-top:10px"></div>
-    </div>
-
-    <div id="tab-i" class="admin-tab" style="display:none">
-        <button class="btn-gold" onclick="nuevoInsumo()">+ Cargar Compra</button>
-        <div id="lista-insumos"></div>
     </div>
 </div>
 
 <nav id="navbar">
-    <div class="nav-item" id="nv-v" onclick="showView('view-ventas')">VENTAS</div>
-    <div class="nav-item" id="nv-a" onclick="showView('view-admin')">ADMIN</div>
-    <div class="nav-item" onclick="location.reload()">SALIR</div>
+    <div class="nav-item active" id="nv-v" onclick="showView('view-ventas')">💰 VENTAS</div>
+    <div class="nav-item" id="nv-a" style="display:none" onclick="showView('view-admin')">⚙️ ADMIN</div>
+    <div class="nav-item" onclick="location.reload()">🚪 SALIR</div>
 </nav>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { initializeFirestore, collection, addDoc, getDocs, query, where, orderBy, limit, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { initializeFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = { apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", projectId: "churrerialaunica-a2888", appId: "1:721969833627:web:8c0db201407a05f82c483e" };
     const app = initializeApp(firebaseConfig);
     const db = initializeFirestore(app);
 
-    let user = ""; let cart = []; let productos = []; let staff = [];
+    let user = ""; let cart = []; let staff = []; let productos = [];
 
-    // Carga inicial rápida (Solo productos y staff)
-    async function init() {
-        const pSnap = await getDocs(collection(db, "productos"));
-        productos = pSnap.docs.map(d => ({id:d.id, ...d.data()}));
-        const sSnap = await getDocs(collection(db, "staff"));
-        staff = sSnap.docs.map(d => ({id:d.id, ...d.data()}));
-        renderProductos();
+    // Carga inicial forzada
+    async function start() {
+        try {
+            const [sSnap, pSnap] = await Promise.all([
+                getDocs(collection(db, "staff")),
+                getDocs(collection(db, "productos"))
+            ]);
+            staff = sSnap.docs.map(d => d.data());
+            productos = pSnap.docs.map(d => d.data());
+            
+            document.getElementById('loading-msg').innerText = "Sistema Listo";
+            document.getElementById('btn-entrar').disabled = false;
+            renderProductos();
+        } catch (e) {
+            document.getElementById('loading-msg').innerText = "Error de conexión. Reintentando...";
+            setTimeout(start, 3000);
+        }
     }
-    init();
+    start();
 
-    window.handleLogin = async () => {
+    window.handleLogin = () => {
         const pin = document.getElementById('pin-input').value;
         if(pin === "325606") {
             user = "Admin";
@@ -104,62 +104,30 @@
             showView('view-admin');
         } else {
             const emp = staff.find(e => e.p === pin);
-            if(!emp) return alert("PIN Incorrecto");
+            if(!emp) return alert("PIN INCORRECTO");
             user = emp.n;
-            await realizarFichaje("Entrada");
             showView('view-ventas');
+            fichar("ENTRADA"); // Se hace en el fondo, no traba la entrada
         }
         document.getElementById('view-login').style.display = "none";
         document.getElementById('navbar').style.display = "flex";
     };
 
-    async function realizarFichaje(tipo) {
+    async function fichar(tipo) {
         const hoy = new Date().toLocaleDateString('es-ES');
         const hora = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        try {
-            await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: hora, t: tipo, ts: serverTimestamp() });
-        } catch(e) { console.error("Error fichaje", e); }
+        addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: hora, t: tipo, ts: serverTimestamp() });
     }
 
-    // --- ADMIN: REPORTES BAJO DEMANDA ---
-    window.cargarReporteDia = async () => {
-        const fecha = document.getElementById('cal-v').value.split('-').reverse().join('/');
-        const q = query(collection(db, "ventas"), where("f", "==", fecha));
-        const snap = await getDocs(q);
-        const ventas = snap.docs.map(d => d.data());
-        const total = ventas.reduce((a,b) => a + b.t, 0);
-        
-        document.getElementById('res-v').innerHTML = `
-            <div class="glass-card" style="text-align:center">
-                <small>TOTAL VENTAS</small><h2 style="color:var(--gold)">$${total}</h2>
-            </div>
-            <table><tr><th>Hora</th><th>Vendedor</th><th>Total</th></tr>
-            ${ventas.map(v => `<tr><td>${v.h}</td><td>${v.u}</td><td>$${v.t}</td></tr>`).join('')}
-            </table>`;
+    window.renderProductos = () => {
+        document.getElementById('grid-productos').innerHTML = productos.map(p => `
+            <div class="btn-item" onclick="addCart('${p.n}', ${p.p})">${p.n}<br>$${p.p}</div>
+        `).join('');
     };
-
-    window.cargarFichajesDia = async () => {
-        const fecha = document.getElementById('cal-s').value.split('-').reverse().join('/');
-        const q = query(collection(db, "fichajes"), where("f", "==", fecha));
-        const snap = await getDocs(q);
-        const datos = snap.docs.map(d => d.data());
-        
-        document.getElementById('res-s').innerHTML = `
-            <div class="glass-card">
-                ${datos.length ? datos.map(f => `<div><b>${f.u}</b>: ${f.h} (${f.t})</div>`).join('') : "No hay fichajes"}
-            </div>`;
-        
-        document.getElementById('lista-empleados').innerHTML = "<h4>Staff Activo</h4>" + staff.map(e => `<div>${e.n} <button onclick="borrarDoc('staff','${e.id}')">Eliminar</button></div>`).join('');
-    };
-
-    // --- VENTAS ---
-    function renderProductos() {
-        document.getElementById('grid-productos').innerHTML = productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}', ${p.p})">${p.n}<br>$${p.p}</div>`).join('');
-    }
 
     window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
     function renderCart() {
-        document.getElementById('cart-list').innerHTML = cart.map(i => `<div>${i.n} - $${i.p}</div>`).join('');
+        document.getElementById('cart-list').innerHTML = cart.map(i => `<div style="display:flex; justify-content:space-between; font-size:0.9rem;"><span>${i.n}</span><span>$${i.p}</span></div>`).join('');
         document.getElementById('total-val').innerText = "$" + cart.reduce((a,b) => a + b.p, 0);
     }
 
@@ -171,22 +139,32 @@
             h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), 
             ts: serverTimestamp() 
         });
-        cart = []; renderCart(); alert("Venta Exitosa");
+        cart = []; renderCart(); alert("VENTA OK");
     };
 
-    window.registrarSalida = async () => {
-        if(confirm("¿Cerrar turno?")) { await realizarFichaje("Salida"); location.reload(); }
+    window.registrarSalida = () => { if(confirm("¿Cerrar turno?")) { fichar("SALIDA"); location.reload(); } };
+
+    // --- ADMIN ---
+    window.cargarVentas = async () => {
+        const f = document.getElementById('cal-v').value.split('-').reverse().join('/');
+        const snap = await getDocs(query(collection(db, "ventas"), where("f", "==", f)));
+        const v = snap.docs.map(d => d.data());
+        document.getElementById('res-v').innerHTML = `<h3>Total: $${v.reduce((a,b)=>a+b.t,0)}</h3>` + 
+            `<table>${v.map(i=>`<tr><td>${i.h}</td><td>${i.u}</td><td>$${i.t}</td></tr>`).join('')}</table>`;
     };
 
-    // --- UTILIDADES ---
+    window.cargarFichajes = async () => {
+        const f = document.getElementById('cal-s').value.split('-').reverse().join('/');
+        const snap = await getDocs(query(collection(db, "fichajes"), where("f", "==", f)));
+        document.getElementById('res-s').innerHTML = snap.docs.map(d => {
+            const i = d.data(); return `<div><b>${i.u}</b>: ${i.h} (${i.t})</div>`;
+        }).join('') || "Sin fichajes";
+    };
+
     window.showView = (id) => {
         document.querySelectorAll('.container').forEach(c => c.style.display = "none");
         document.getElementById(id).style.display = "block";
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(id === 'view-ventas') {
-            document.getElementById('nv-v').classList.add('active');
-            document.getElementById('welcome-msg').innerText = user.toUpperCase();
-        } else { document.getElementById('nv-a').classList.add('active'); }
+        if(id === 'view-ventas') document.getElementById('welcome-msg').innerText = "HOLA, " + user;
     };
 
     window.switchTab = (id, btn) => {
@@ -195,13 +173,6 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     };
-
-    window.nuevoEmp = async () => {
-        const n = prompt("Nombre:"); const p = prompt("PIN:");
-        if(n && p) { await addDoc(collection(db, "staff"), { n, p }); location.reload(); }
-    };
-
-    window.borrarDoc = async (col, id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, col, id)); location.reload(); } };
 </script>
 </body>
 </html>
