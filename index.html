@@ -3,32 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - V15.0 OPTIMIZADA</title>
+    <title>LA ÚNICA - V16.0 FINAL</title>
     <style>
         :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 90px; overflow-x: hidden; }
-        .container { padding: 15px; display: none; max-width: 500px; margin: auto; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 90px; }
+        .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
         .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 18px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
         .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; margin: 5px 0; }
-        .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 12px; border-radius: 12px; color: white; margin: 8px 0; text-align: center; font-size: 1rem; }
+        .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 12px; border-radius: 12px; color: white; margin: 8px 0; text-align: center; font-size: 1.1rem; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; }
-        .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--gold); }
+        .stat-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 15px; border: 1px solid rgba(197,160,89,0.3); text-align: center; }
         .tab-bar { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding: 5px; }
-        .tab-btn { flex: 1; min-width: 85px; padding: 10px 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.65rem; font-weight: 700; white-space: nowrap; }
+        .tab-btn { flex: 1; min-width: 85px; padding: 10px 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; font-size: 0.65rem; font-weight: 700; }
         .tab-btn.active { background: var(--gold); color: #000; }
-        .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 15px; padding: 15px 5px; text-align: center; font-weight: bold; }
-        nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: none; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--gold); z-index: 1000; }
-        .nav-item { text-align: center; font-size: 0.65rem; color: #888; font-weight: 800; flex: 1; }
+        .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-item { background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 25px 10px; text-align: center; font-weight: 800; font-size: 0.9rem; }
+        nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--gold); z-index: 1000; }
+        .nav-item { text-align: center; font-size: 0.7rem; color: #888; font-weight: 800; }
         .nav-item.active { color: var(--gold); }
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
         th { color: var(--gold); padding: 8px; border-bottom: 1px solid var(--glass); text-align: left; }
         td { padding: 8px; border-bottom: 1px solid var(--glass); }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 5px; border-left: 3px solid var(--gold); }
-        .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 5px 10px; border-radius: 8px; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); }
+        .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -65,35 +63,35 @@
         <input type="date" id="calendar-filter" class="input-dark" onchange="renderHistorial()">
         <div id="report-results" style="display:none;">
             <div id="stats-container" class="stats-grid"></div>
-            <div class="glass-card"><h4>VENTAS</h4><div id="historial-list"></div></div>
+            <div class="glass-card"><h4>VENTAS DEL DÍA</h4><div id="historial-list"></div></div>
             <div class="glass-card"><h4>GASTOS Y USO</h4><div id="gastos-dia-list"></div></div>
         </div>
     </div>
 
     <div id="tab-elab" class="admin-tab" style="display:none">
         <div class="glass-card">
-            <h4 style="margin-top:0">ELABORACIÓN (USO)</h4>
+            <h4>REGISTRAR ELABORACIÓN</h4>
             <select id="sel-insumo-elab" class="input-dark"></select>
-            <input type="number" id="cant-elab" class="input-dark" placeholder="Cantidad (ej: 5)">
-            <button class="btn-gold" onclick="registrarElaboracion()">REGISTRAR USO</button>
+            <input type="number" id="cant-elab" class="input-dark" placeholder="Cantidad usada (ej: 5)">
+            <button class="btn-gold" onclick="registrarElaboracion()">CARGAR USO</button>
         </div>
         <div class="glass-card">
-            <h4>GASTOS EXTRA</h4>
-            <input type="text" id="desc-gasto" class="input-dark" placeholder="Ej: Paga Empleado">
+            <h4>PAGO EMPLEADO / GASTOS</h4>
+            <input type="text" id="desc-gasto" class="input-dark" placeholder="Ej: Paga de hoy">
             <input type="number" id="monto-gasto" class="input-dark" placeholder="Monto $">
             <button class="btn-gold" onclick="registrarGastoExtra()">CARGAR GASTO</button>
         </div>
     </div>
 
     <div id="tab-ins" class="admin-tab" style="display:none">
-        <button class="btn-gold" onclick="nuevoInsumo()">+ CARGAR COMPRA (STOCK)</button>
-        <div id="insumo-admin-list" style="margin-top:10px;"></div>
+        <button class="btn-gold" onclick="nuevoInsumo()">+ CARGAR COMPRA INSUMO</button>
+        <div id="insumo-admin-list" style="margin-top:15px;"></div>
     </div>
     
     <div id="tab-s" class="admin-tab" style="display:none">
         <input type="date" id="calendar-staff" class="input-dark" onchange="renderStaffReport()">
-        <div id="fichaje-list" class="glass-card"></div>
-        <div class="glass-card"><h4>STAFF</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
+        <div class="glass-card"><h4>FICHAJES DEL DÍA</h4><div id="fichaje-list"></div></div>
+        <div class="glass-card"><h4>GESTIÓN STAFF</h4><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
     </div>
 
     <div id="tab-p" class="admin-tab" style="display:none">
@@ -118,38 +116,17 @@
   let user = ""; let cart = []; 
   let db_local = { productos: [], ventas: [], staff: [], fichajes: [], insumos: [], gastos: [] };
 
-  // Listeners eficientes
-  onSnapshot(collection(db, "productos"), (s) => { 
-    db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); 
-    renderProductos(); 
-    renderAdminLists(); 
-  });
-  
-  onSnapshot(collection(db, "staff"), (s) => { 
-    db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); 
-    renderAdminLists(); 
-  });
-
-  onSnapshot(query(collection(db, "insumos"), orderBy("ts", "desc"), limit(50)), (s) => { 
+  // DATA SYNC (Solo lo necesario)
+  onSnapshot(collection(db, "productos"), (s) => { db_local.productos = s.docs.map(d => ({id: d.id, ...d.data()})); renderProductos(); renderAdminLists(); });
+  onSnapshot(collection(db, "staff"), (s) => { db_local.staff = s.docs.map(d => ({id: d.id, ...d.data()})); renderAdminLists(); });
+  onSnapshot(query(collection(db, "insumos"), orderBy("ts", "desc"), limit(30)), (s) => { 
     db_local.insumos = s.docs.map(d => ({id: d.id, ...d.data()})); 
-    updateInsumosSelect();
-    renderAdminLists();
+    updateInsumosSelect(); 
+    renderAdminLists(); 
   });
-
-  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc"), limit(100)), (s) => { 
-    db_local.ventas = s.docs.map(d => d.data()); 
-    renderHistorial(); 
-  });
-
-  onSnapshot(query(collection(db, "gastos"), orderBy("ts", "desc"), limit(50)), (s) => { 
-    db_local.gastos = s.docs.map(d => d.data()); 
-    renderHistorial(); 
-  });
-
-  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "desc"), limit(50)), (s) => {
-    db_local.fichajes = s.docs.map(d => d.data());
-    renderStaffReport();
-  });
+  onSnapshot(query(collection(db, "ventas"), orderBy("ts", "desc"), limit(50)), (s) => { db_local.ventas = s.docs.map(d => d.data()); renderHistorial(); });
+  onSnapshot(query(collection(db, "gastos"), orderBy("ts", "desc"), limit(50)), (s) => { db_local.gastos = s.docs.map(d => d.data()); renderHistorial(); });
+  onSnapshot(query(collection(db, "fichajes"), orderBy("ts", "desc"), limit(50)), (s) => { db_local.fichajes = s.docs.map(d => d.data()); renderStaffReport(); });
 
   window.handleLogin = async () => {
     const pin = document.getElementById('pin-input').value;
@@ -161,20 +138,21 @@
     document.getElementById('navbar').style.display = 'flex';
     if(user === "Admin") {
         document.getElementById('nav-admin-btn').style.display = 'block';
-        document.getElementById('nav-v').style.display = 'none';
         showView('view-admin');
         document.getElementById('calendar-filter').valueAsDate = new Date();
+        document.getElementById('calendar-staff').valueAsDate = new Date();
     } else {
         showView('view-ventas');
-        document.getElementById('welcome-msg').innerText = user.toUpperCase();
-        autoFichar();
+        document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
+        await autoFichar();
     }
   };
 
   async function autoFichar() {
     const hoy = new Date().toLocaleDateString('es-ES');
-    let tipo = (new Date().getHours() < 14) ? "E_MAÑANA" : "E_TARDE";
-    if (!db_local.fichajes.some(f => f.u === user && f.f === hoy && f.tipo === tipo)) {
+    let tipo = (new Date().getHours() < 14) ? "Entrada Mañana" : "Entrada Tarde";
+    const yaFicho = db_local.fichajes.find(f => f.u === user && f.f === hoy && f.tipo.includes("Entrada"));
+    if (!yaFicho) {
         await addDoc(collection(db, "fichajes"), { u: user, f: hoy, h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), tipo: tipo, ts: serverTimestamp() });
     }
   }
@@ -184,88 +162,53 @@
     const sel = document.getElementById('sel-insumo-elab');
     if(!sel) return;
     const unicos = [...new Map(db_local.insumos.map(i => [i.n, i])).values()];
-    sel.innerHTML = '<option value="">ELEGIR INSUMO...</option>' + 
-        unicos.map(i => `<option value="${i.n}">${i.n} (${i.uni})</option>`).join('');
+    sel.innerHTML = '<option value="">SELECCIONAR INSUMO...</option>' + unicos.map(i => `<option value="${i.n}">${i.n} (${i.uni})</option>`).join('');
   }
 
   window.registrarElaboracion = async () => {
     const n = document.getElementById('sel-insumo-elab').value;
     const cant = parseFloat(document.getElementById('cant-elab').value);
-    if(!n || !cant) return alert("Faltan datos");
-    
+    if(!n || !cant) return alert("Completar datos");
     const insumo = db_local.insumos.find(i => i.n === n);
     const costo = insumo.costoUni * cant;
-
-    await addDoc(collection(db, "gastos"), {
-        n: "USO: " + n + " ("+cant+insumo.uni+")", t: costo, 
-        f: new Date().toLocaleDateString('es-ES'), tipo: "ELAB", ts: serverTimestamp()
-    });
+    await addDoc(collection(db, "gastos"), { n: "USO: "+n+" ("+cant+insumo.uni+")", t: costo, f: new Date().toLocaleDateString('es-ES'), ts: serverTimestamp() });
     document.getElementById('cant-elab').value = "";
-    alert("REGISTRADO");
+    alert("USO CARGADO");
   };
 
   window.registrarGastoExtra = async () => {
     const desc = document.getElementById('desc-gasto').value;
     const monto = parseFloat(document.getElementById('monto-gasto').value);
-    if(!desc || !monto) return alert("Faltan datos");
-
-    await addDoc(collection(db, "gastos"), {
-        n: desc.toUpperCase(), t: monto, 
-        f: new Date().toLocaleDateString('es-ES'), tipo: "EXTRA", ts: serverTimestamp()
-    });
-    document.getElementById('desc-gasto').value = "";
-    document.getElementById('monto-gasto').value = "";
+    if(!desc || !monto) return alert("Completar datos");
+    await addDoc(collection(db, "gastos"), { n: desc.toUpperCase(), t: monto, f: new Date().toLocaleDateString('es-ES'), ts: serverTimestamp() });
+    document.getElementById('desc-gasto').value = ""; document.getElementById('monto-gasto').value = "";
     alert("GASTO CARGADO");
   };
 
-  // --- STOCK ---
   window.nuevoInsumo = async () => {
-    const n = prompt("Insumo (Harina, Aceite):")?.toUpperCase();
+    const n = prompt("Insumo:")?.toUpperCase();
     const cant = parseFloat(prompt("Cantidad comprada:"));
-    const uni = prompt("Unidad (kg, litro):");
+    const uni = prompt("Unidad (kg, litro, etc):");
     const total = parseFloat(prompt("Costo Total:"));
     if(n && cant && total) {
-        await addDoc(collection(db, "insumos"), {
-            n, cant, uni, total, costoUni: total/cant,
-            f: new Date().toLocaleDateString('es-ES'), ts: serverTimestamp()
-        });
-        alert("COMPRA CARGADA");
+        await addDoc(collection(db, "insumos"), { n, cant, uni, total, costoUni: total/cant, f: new Date().toLocaleDateString('es-ES'), ts: serverTimestamp() });
+        alert("STOCK ACTUALIZADO");
     }
   };
 
-  // --- RENDERS ---
-  window.renderAdminLists = () => {
-    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n}</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
-    document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
-    
-    const unicos = [...new Map(db_local.insumos.map(i => [i.n, i])).values()];
-    document.getElementById('insumo-admin-list').innerHTML = unicos.map(i => `
-        <div class="glass-card" style="padding:12px; margin-bottom:8px">
-            <div style="display:flex; justify-content:space-between">
-                <b>${i.n}</b> <button class="btn-del" onclick="delDoc('insumos','${i.id}')">🗑</button>
-            </div>
-            <small>Costo actual: $${i.costoUni.toFixed(2)} por ${i.uni}</small>
-        </div>`).join('');
-  };
-
   window.renderHistorial = () => {
-    const dV = document.getElementById('calendar-filter').value; if(!dV) return;
-    const sS = dV.split('-').reverse().join('/');
+    const d = document.getElementById('calendar-filter').value; if(!d) return;
+    const sS = d.split('-').reverse().join('/');
     document.getElementById('report-results').style.display = 'block';
-    
     const vD = db_local.ventas.filter(v => v.f === sS);
     const gD = db_local.gastos.filter(g => g.f === sS);
     const vent = vD.reduce((a,b)=>a+b.t, 0);
     const gast = gD.reduce((a,b)=>a+b.t, 0);
-
     document.getElementById('stats-container').innerHTML = `
-        <div class="stat-box" style="grid-column: span 2; border-color:var(--success); background:rgba(81,207,102,0.1)">
-            <div style="font-size:0.7rem">GANANCIA REAL</div><div class="stat-val" style="font-size:1.5rem">$${vent - gast}</div>
-        </div>
-        <div class="stat-box"><div>VENTAS</div><div class="stat-val">$${vent}</div></div>
-        <div class="stat-box"><div>GASTOS</div><div class="stat-val" style="color:var(--danger)">$${gast.toFixed(0)}</div></div>`;
-
-    document.getElementById('historial-list').innerHTML = vD.length ? `<table><tr><th>HORA</th><th>TOTAL</th></tr>` + vD.map(v => `<tr><td>${v.h}</td><td>$${v.t}</td></tr>`).join('') + `</table>` : 'Sin ventas';
+        <div class="stat-box" style="grid-column: span 2; border-color:var(--success); background:rgba(81,207,102,0.1)"><div style="font-size:0.7rem">GANANCIA REAL</div><div style="font-size:1.6rem; color:var(--success); font-weight:800">$${vent - gast}</div></div>
+        <div class="stat-box"><div>VENTAS</div><div style="color:var(--gold); font-weight:800">$${vent}</div></div>
+        <div class="stat-box"><div>GASTOS</div><div style="color:var(--danger); font-weight:800">$${gast.toFixed(0)}</div></div>`;
+    document.getElementById('historial-list').innerHTML = `<table><tr><th>HORA</th><th>TOTAL</th></tr>` + (vD.length ? vD.map(v => `<tr><td>${v.h}</td><td>$${v.t}</td></tr>`).join('') : '<tr><td colspan="2">Sin ventas</td></tr>') + `</table>`;
     document.getElementById('gastos-dia-list').innerHTML = gD.length ? gD.map(g => `<div class="list-item" style="border-left-color:var(--danger)"><span>${g.n}</span><span style="color:var(--danger)">-$${g.t.toFixed(0)}</span></div>`).join('') : 'Sin gastos';
   };
 
@@ -273,26 +216,32 @@
     const d = document.getElementById('calendar-staff').value; if(!d) return;
     const sS = d.split('-').reverse().join('/');
     const res = db_local.fichajes.filter(f => f.f === sS);
-    document.getElementById('fichaje-list').innerHTML = `<h4>FICHAJES ${sS}</h4>` + (res.length ? res.map(f => `<div>${f.u}: ${f.h} (${f.tipo})</div>`).join('') : 'Nadie fichó');
+    document.getElementById('fichaje-list').innerHTML = res.length ? res.map(f => `<div class="list-item"><span><b>${f.u}</b></span><span>${f.h} (${f.tipo})</span></div>`).join('') : 'Sin fichajes hoy';
   };
 
+  window.renderAdminLists = () => {
+    document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item"><span>${s.n}</span><button class="btn-del" onclick="delDoc('staff','${s.id}')">🗑</button></div>`).join('');
+    document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>${p.n} ($${p.p})</span><button class="btn-del" onclick="delDoc('productos','${p.id}')">🗑</button></div>`).join('');
+    const unicos = [...new Map(db_local.insumos.map(i => [i.n, i])).values()];
+    document.getElementById('insumo-admin-list').innerHTML = unicos.map(i => `<div class="glass-card" style="padding:12px; margin-bottom:8px"><div style="display:flex; justify-content:space-between"><b>${i.n}</b><button class="btn-del" onclick="delDoc('insumos','${i.id}')">🗑</button></div><small>Costo actual: $${i.costoUni.toFixed(2)} por ${i.uni}</small></div>`).join('');
+  };
+
+  // --- VENTAS ---
+  window.renderProductos = () => { document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}', ${p.p})">${p.n}<br>$${p.p}</div>`).join(''); };
+  window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
+  window.renderCart = () => {
+    document.getElementById('cart-list').innerHTML = cart.map(item => `<div style="display:flex; justify-content:space-between; margin-bottom:5px"><span>${item.n}</span><span>$${item.p}</span></div>`).join('');
+    document.getElementById('total-val').innerText = "$" + cart.reduce((a,b)=>a+b.p, 0);
+  }
   window.confirmarVenta = async () => {
     if(!cart.length) return;
     const t = cart.reduce((a,b)=>a+b.p,0);
     await addDoc(collection(db, "ventas"), { t, u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), ts: serverTimestamp() });
-    cart = []; renderCart(); alert("VENTA OK");
+    cart = []; renderCart(); alert("VENTA CONFIRMADA");
   };
-
-  window.renderProductos = () => { document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}', ${p.p})">${p.n}<br>$${p.p}</div>`).join(''); };
-  window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
-  window.renderCart = () => {
-    document.getElementById('cart-list').innerHTML = cart.map(item => `<div style="display:flex; justify-content:space-between"><span>${item.n}</span><span>$${item.p}</span></div>`).join('');
-    document.getElementById('total-val').innerText = "$" + cart.reduce((a,b)=>a+b.p, 0);
-  }
-
   window.registrarSalida = async () => {
-    if(confirm(`¿CERRAR TURNO?`)){ 
-        await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), tipo: (new Date().getHours() < 14) ? "S_MAÑANA" : "S_TARDE", ts: serverTimestamp() }); 
+    if(confirm(`¿SALIR Y CERRAR TURNO?`)){ 
+        await addDoc(collection(db, "fichajes"), { u: user, f: new Date().toLocaleDateString('es-ES'), h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), tipo: (new Date().getHours() < 14) ? "Salida Mañana" : "Salida Tarde", ts: serverTimestamp() }); 
         location.reload(); 
     }
   };
