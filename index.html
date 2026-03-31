@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - CONTROL TOTAL V11.7</title>
+    <title>LA ÚNICA - CONTROL TOTAL V11.8</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
@@ -14,7 +14,6 @@
         .glass-card { background: var(--glass); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
         .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
         .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-size: 1.1rem; }
-        .stats-grid { display: block; margin-bottom: 15px; }
         .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; margin-bottom: 8px; }
         .stat-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; }
         .stat-val { font-size: 1.3rem; font-weight: 800; color: var(--gold); }
@@ -74,13 +73,15 @@
     
     <div id="tab-v" class="admin-tab">
         <input type="date" id="calendar-filter" class="input-dark" onchange="renderHistorial()">
-        <div id="stats-container" class="stats-grid"></div>
+        <div id="stats-container"></div>
         <div id="historial-list" class="glass-card"></div>
     </div>
     
     <div id="tab-s" class="admin-tab" style="display:none">
+        <h4 style="color:var(--gold); margin:0;">VER ASISTENCIA:</h4>
         <input type="date" id="calendar-staff" class="input-dark" onchange="renderAdminLists()">
-        <div id="fichaje-list" class="glass-card"></div>
+        <div id="fichaje-list" class="glass-card" style="padding:10px;"></div>
+        <h4 style="color:var(--gold); margin:20px 0 10px 0;">LISTA DE STAFF:</h4>
         <div id="staff-list"></div>
         <button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button>
     </div>
@@ -132,23 +133,20 @@
         renderAdminLists();
     });
 
-    // Helper para formatear fechas consistentemente (DD/MM/AAAA)
     function formatFecha(str) {
         if(!str) return "";
         var partes = str.split('/');
         if(partes.length !== 3) return str;
-        var d = partes[0].length === 1 ? '0' + partes[0] : partes[0];
-        var m = partes[1].length === 1 ? '0' + partes[1] : partes[1];
+        var d = partes[0].padStart(2, '0');
+        var m = partes[1].padStart(2, '0');
         return d + '/' + m + '/' + partes[2];
     }
 
     window.handleLogin = function() {
         var pin = document.getElementById('pin-input').value;
         var adminPin = "325606";
-        var found = null;
-        for(var i=0; i<db_local.staff.length; i++) {
-            if(db_local.staff[i].p === pin) { found = db_local.staff[i]; break; }
-        }
+        var found = db_local.staff.find(function(s){ return s.p === pin; });
+        
         if(!found && pin !== adminPin) return alert("PIN INCORRECTO");
         user = (pin === adminPin) ? "Admin" : found.n;
         document.getElementById('navbar').style.display = 'flex';
@@ -167,50 +165,81 @@
         }
     };
 
-    window.confirmarVenta = function() {
-        if(cart.length === 0) return;
-        var total = 0; cart.forEach(function(i){ total += i.p; });
-        var paga = parseFloat(document.getElementById('paga-con').value) || total;
-        var ahora = new Date();
-        var fechaStr = ahora.getDate() + "/" + (ahora.getMonth()+1) + "/" + ahora.getFullYear();
-        var horaStr = ahora.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        
-        db.collection("ventas").add({
-            t: total, u: user, m: document.getElementById('metodo-pago').value,
-            f: fechaStr, h: horaStr, turno: ahora.getHours() < 14 ? "Mañana" : "Tarde",
-            ts: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(function() {
-            var resumen = ""; cart.forEach(function(i){ resumen += i.n + " $" + i.p + "\n"; });
-            ultimoTicketText = "      LA ÚNICA\n--------------------------\nFecha: "+fechaStr+"\nHora: "+horaStr+"\nAtendió: "+user+"\n--------------------------\n"+resumen+"--------------------------\nTOTAL:         $"+total+"\nPagó con:      $"+paga+"\nVuelto:        $"+Math.max(0, paga-total)+"\n--------------------------\n ¡Gracias por tu compra!";
-            document.getElementById('ticket-content').innerText = ultimoTicketText;
-            document.getElementById('modal-ticket').style.display = 'flex';
-            cart = []; document.getElementById('paga-con').value = ""; renderCart();
+    window.renderAdminLists = function() {
+        // Staff lista de edición
+        var hS = "";
+        db_local.staff.forEach(function(s){
+            hS += '<div class="list-item"><span>'+s.n+' (PIN: '+s.p+')</span><button class="btn-del" onclick="borrarDoc(\'staff\',\''+s.id+'\')">🗑</button></div>';
         });
+        document.getElementById('staff-list').innerHTML = hS;
+
+        // Menú lista de edición
+        var hP = "";
+        db_local.productos.forEach(function(p){
+            hP += '<div class="list-item"><span>'+p.n+' ($'+p.p+')</span><button class="btn-del" onclick="borrarDoc(\'productos\',\''+p.id+'\')">🗑</button></div>';
+        });
+        document.getElementById('prod-admin-list').innerHTML = hP;
+
+        // --- LÓGICA DE FICHAJES (CORREGIDA) ---
+        var calendarStaff = document.getElementById('calendar-staff').value; // AAAA-MM-DD
+        if(!calendarStaff) {
+            document.getElementById('fichaje-list').innerHTML = "<p style='opacity:0.5; text-align:center;'>Selecciona una fecha</p>";
+            return;
+        }
+        var dSplit = calendarStaff.split('-');
+        var fBusqueda = dSplit[2] + "/" + dSplit[1] + "/" + dSplit[0];
+
+        var fichasDelDia = db_local.fichajes.filter(function(f){ 
+            return formatFecha(f.f) === fBusqueda; 
+        });
+
+        if(fichasDelDia.length === 0) {
+            document.getElementById('fichaje-list').innerHTML = "<p style='text-align:center;'>Sin registros este día</p>";
+        } else {
+            var res = {};
+            fichasDelDia.forEach(function(f){
+                if(!res[f.u]) res[f.u] = { e: '--:--', s: '--:--' };
+                if(f.tipo === "ENTRADA") res[f.u].e = f.h;
+                if(f.tipo === "SALIDA") res[f.u].s = f.h;
+            });
+
+            var hF = "<table><tr><th>Empleado</th><th>Entrada</th><th>Salida</th></tr>";
+            for(var emp in res) {
+                hF += "<tr><td>"+emp+"</td><td style='color:var(--success)'>"+res[emp].e+"</td><td style='color:var(--danger)'>"+res[emp].s+"</td></tr>";
+            }
+            document.getElementById('fichaje-list').innerHTML = hF + "</table>";
+        }
+    };
+
+    window.registrarSalida = function() { 
+        if(confirm("¿Cerrar turno?")) {
+            var d = new Date();
+            var hoy = d.getDate() + "/" + (d.getMonth()+1) + "/" + d.getFullYear();
+            db.collection("fichajes").add({ 
+                u: user, f: hoy, h: d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), 
+                tipo: "SALIDA", ts: firebase.firestore.FieldValue.serverTimestamp() 
+            }).then(function(){
+                location.reload();
+            });
+        }
     };
 
     window.renderHistorial = function() {
         var val = document.getElementById('calendar-filter').value;
         if(!val) return;
-        var dSplit = val.split('-'); // AAAA-MM-DD
+        var dSplit = val.split('-');
         var fBusqueda = dSplit[2] + "/" + dSplit[1] + "/" + dSplit[0];
-        
-        // Filtramos normalizando ambas fechas para que coincidan siempre
-        var vD = db_local.ventas.filter(function(v){ 
-            return formatFecha(v.f) === fBusqueda; 
-        });
-
+        var vD = db_local.ventas.filter(function(v){ return formatFecha(v.f) === fBusqueda; });
         var m=0, t=0;
         var tabla = "<table><tr><th>Hora</th><th>Pago</th><th>$</th></tr>";
         vD.forEach(function(v){
             if(v.turno === "Mañana") m += v.t; else t += v.t;
             tabla += "<tr><td>"+v.h+"</td><td>"+v.m+"</td><td>$"+v.t+"</td></tr>";
         });
-        
         document.getElementById('stats-container').innerHTML = '<div class="stat-box"><div class="stat-label">TOTAL</div><div class="stat-val">$'+(m+t)+'</div></div><div style="display:flex; gap:5px;"><div class="stat-box" style="flex:1"><div class="stat-label">MAÑANA</div><div class="stat-val">$'+m+'</div></div><div class="stat-box" style="flex:1"><div class="stat-label">TARDE</div><div class="stat-val">$'+t+'</div></div></div>';
         document.getElementById('historial-list').innerHTML = tabla + "</table>";
     };
 
-    // --- Resto de funciones se mantienen iguales pero verificadas ---
     window.renderProductos = function() {
         var h = "";
         db_local.productos.forEach(function(p) { h += '<div class="btn-item" onclick="addCart(\''+p.n+'\','+p.p+')">🍩<br>'+p.n+'<br>$'+p.p+'</div>'; });
@@ -230,6 +259,21 @@
         var paga = parseFloat(document.getElementById('paga-con').value) || 0;
         document.getElementById('vuelto-val').innerText = "$" + Math.max(0, paga - total);
     };
+    window.confirmarVenta = function() {
+        if(cart.length === 0) return;
+        var total = 0; cart.forEach(function(i){ total += i.p; });
+        var paga = parseFloat(document.getElementById('paga-con').value) || total;
+        var ahora = new Date();
+        var fechaStr = ahora.getDate() + "/" + (ahora.getMonth()+1) + "/" + ahora.getFullYear();
+        var horaStr = ahora.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        db.collection("ventas").add({ t: total, u: user, m: document.getElementById('metodo-pago').value, f: fechaStr, h: horaStr, turno: ahora.getHours() < 14 ? "Mañana" : "Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() }).then(function() {
+            var resumen = ""; cart.forEach(function(i){ resumen += i.n + " $" + i.p + "\n"; });
+            ultimoTicketText = "      LA ÚNICA\n--------------------------\nFecha: "+fechaStr+"\nHora: "+horaStr+"\nAtendió: "+user+"\n--------------------------\n"+resumen+"--------------------------\nTOTAL:         $"+total+"\nPagó con:      $"+paga+"\nVuelto:        $"+Math.max(0, paga-total)+"\n--------------------------\n ¡Gracias por tu compra!";
+            document.getElementById('ticket-content').innerText = ultimoTicketText;
+            document.getElementById('modal-ticket').style.display = 'flex';
+            cart = []; document.getElementById('paga-con').value = ""; renderCart();
+        });
+    };
     window.showView = function(id) {
         document.getElementById('view-login').style.display = 'none'; document.getElementById('view-ventas').style.display = 'none'; document.getElementById('view-admin').style.display = 'none';
         document.getElementById(id).style.display = 'block';
@@ -244,22 +288,9 @@
         if(tel) window.open("https://wa.me/549"+tel+"?text="+encodeURIComponent(ultimoTicketText), "_blank");
     };
     window.cerrarTicket = function() { document.getElementById('modal-ticket').style.display = 'none'; };
-    window.renderAdminLists = function() {
-        var hS = ""; db_local.staff.forEach(function(s){ hS += '<div class="list-item"><span>'+s.n+' (PIN: '+s.p+')</span><button class="btn-del" onclick="borrarDoc(\'staff\',\''+s.id+'\')">🗑</button></div>'; });
-        document.getElementById('staff-list').innerHTML = hS;
-        var hP = ""; db_local.productos.forEach(function(p){ hP += '<div class="list-item"><span>'+p.n+' ($'+p.p+')</span><button class="btn-del" onclick="borrarDoc(\'productos\',\''+p.id+'\')">🗑</button></div>'; });
-        document.getElementById('prod-admin-list').innerHTML = hP;
-    };
     window.borrarDoc = function(col, id) { if(confirm("¿Eliminar?")) db.collection(col).doc(id).delete(); };
     window.nuevoEmp = function() { var n=prompt("Nombre:"), p=prompt("PIN:"); if(n&&p) db.collection("staff").add({n:n, p:p}); };
     window.nuevoProd = function() { var n=prompt("Producto:"), p=parseInt(prompt("Precio:")); if(n&&p) db.collection("productos").add({n:n, p:p}); };
-    window.registrarSalida = function() { 
-        if(confirm("¿Cerrar turno?")) {
-            var d = new Date();
-            db.collection("fichajes").add({ u: user, f: d.getDate() + "/" + (d.getMonth()+1) + "/" + d.getFullYear(), h: d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), tipo: "SALIDA", ts: firebase.firestore.FieldValue.serverTimestamp() });
-            location.reload();
-        }
-    };
     window.reiniciarSistema = function() {
         if(confirm("¿BORRAR TODAS LAS VENTAS Y FICHAJES?")) {
             db.collection("ventas").get().then(function(s){ s.forEach(function(d){ d.ref.delete(); }); });
