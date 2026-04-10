@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - CONTROL TOTAL V13.5</title>
+    <title>LA ÚNICA - CONTROL TOTAL V13.5 OFFLINE</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
     <style>
         :root { 
             --cactus: #2D362F; 
@@ -16,8 +18,7 @@
             --danger: #FF6B6B; 
             --success: #51CF66; 
             --glass: rgba(255,255,255,0.08);
-            --glass-heavy: rgba(0,0,0,0.5);
-            --border: rgba(197, 160, 89, 0.25);
+            --glass-heavy: rgba(0,0,0,0.4);
         }
         
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -30,18 +31,21 @@
             min-height: 100vh;
         }
 
+        /* Ajuste para los nuevos iconos */
+        .material-symbols-outlined { font-size: 1.2rem; vertical-align: middle; }
+
         .container { padding: 20px; display: none; max-width: 500px; margin: auto; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .glass-card { 
             background: var(--glass); 
-            backdrop-filter: blur(25px); 
-            -webkit-backdrop-filter: blur(25px);
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 24px; 
             padding: 20px; 
-            border: 1px solid var(--border); 
+            border: 1px solid rgba(255,255,255,0.12); 
             margin-bottom: 18px; 
-            box-shadow: 0 12px 40px rgba(0,0,0,0.4); 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3); 
         }
         
         .btn-gold { 
@@ -50,31 +54,52 @@
             border: none; 
             padding: 16px; 
             border-radius: 16px; 
-            font-weight: 800; 
+            font-weight: 700; 
             width: 100%; 
             cursor: pointer; 
             font-size: 0.9rem;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.2);
             transition: 0.3s;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
         }
         .btn-gold:active { transform: scale(0.96); }
 
         .btn-del {
-            background: rgba(255, 107, 107, 0.1);
+            background: rgba(255, 107, 107, 0.15);
             color: var(--danger);
-            border: 1px solid rgba(255, 107, 107, 0.2);
-            border-radius: 12px;
-            padding: 8px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 10px;
+            padding: 8px 12px;
             cursor: pointer;
+            transition: 0.2s;
             font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
+        .btn-del:active { background: var(--danger); color: white; transform: scale(0.95); }
+
+        .btn-outline {
+            background: rgba(255,255,255,0.05);
+            color: var(--white);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 14px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-outline:active { background: rgba(255,255,255,0.15); }
 
         .input-dark { 
             width: 100%; 
             background: var(--glass-heavy); 
-            border: 1px solid var(--border); 
+            border: 1px solid rgba(255,255,255,0.1); 
             padding: 14px; 
             border-radius: 14px; 
             color: white; 
@@ -82,71 +107,95 @@
             font-size: 1rem;
             outline: none;
         }
-        .input-dark:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(197, 160, 89, 0.2); }
+        .input-dark:focus { border-color: var(--gold); }
         
         .nav-tabs { 
-            display: flex; gap: 8px; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 18px; border: 1px solid var(--border);
+            display: flex; gap: 6px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 15px; overflow-x: auto; white-space: nowrap; 
         }
-        .tab-btn { 
-            flex: 1; padding: 12px 5px; border-radius: 12px; border: none; background: transparent; 
-            color: #999; font-weight: 700; cursor: pointer; font-size: 0.65rem; transition: 0.3s;
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-        }
-        .tab-btn i { font-size: 1.2rem; }
+        .nav-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 12px; border: none; background: transparent; color: #888; font-weight: 600; cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.3s; }
         .tab-btn.active { background: var(--gold); color: #1a1a1a; }
 
         .btn-item { 
-            width: 48%; background: var(--glass); border: 1px solid var(--border); 
-            border-radius: 22px; padding: 20px 10px; text-align: center; margin-bottom: 12px;
+            width: 48%; 
+            background: var(--glass); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 22px; 
+            padding: 20px 10px; 
+            text-align: center; 
+            margin-bottom: 12px;
+            transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
         }
+        .btn-item:active { background: rgba(255,255,255,0.15); transform: scale(0.95); }
 
         .list-item { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 15px; background: rgba(255,255,255,0.03); border-radius: 16px; 
-            margin-bottom: 10px; border-left: 4px solid var(--gold); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px; 
+            background: rgba(255,255,255,0.03); 
+            border-radius: 16px; 
+            margin-bottom: 10px; 
+            border-left: 4px solid var(--gold); 
         }
 
-        .stat-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 20px; border: 1px solid var(--border); text-align: center; margin-bottom: 10px; }
-        .stat-val { font-size: 1.5rem; font-weight: 800; color: var(--gold); }
-        .stat-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; margin-bottom: 8px; display: flex; flex-direction: column; justify-content: center;}
+        .stat-val { font-size: 1.3rem; font-weight: 800; color: var(--gold); }
+        .stat-label { font-size: 0.65rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
 
         nav { 
             position: fixed; bottom: 0; width: 100%; 
-            background: rgba(20, 24, 21, 0.95); backdrop-filter: blur(15px);
+            background: rgba(13, 13, 13, 0.8); 
+            backdrop-filter: blur(10px);
             display: none; justify-content: space-around; 
-            padding: 12px 0 25px 0; border-top: 1px solid var(--border); z-index: 1000; 
+            padding: 12px 0 25px 0; 
+            border-top: 1px solid rgba(197, 160, 89, 0.3); 
+            z-index: 1000; 
         }
-        .nav-item { text-align: center; font-size: 0.7rem; color: #777; font-weight: 700; cursor: pointer; flex:1; transition: 0.3s; }
+        .nav-item { text-align: center; font-size: 0.65rem; color: #777; font-weight: 700; cursor: pointer; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-item.active { color: var(--gold); }
+        .nav-item .material-symbols-outlined { font-size: 1.6rem; }
 
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; display:none; justify-content:center; align-items:center; }
-        .modal-content { background: var(--cactus); padding: 25px; border-radius: 28px; width: 90%; max-width: 400px; border: 1px solid var(--gold); }
+        .badge-cost { background: var(--gold); color: #000; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th { color: var(--gold); text-align: left; padding: 10px; border-bottom: 1px solid var(--glass); }
+        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; display:none; justify-content:center; align-items:center; }
+        .modal-content { background: var(--cactus); padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid var(--gold); max-height: 80vh; overflow-y: auto; }
+        
+        /* Botones de acción en listas */
+        .icon-btn { background:none; border:none; color:var(--white); cursor:pointer; padding: 5px; opacity: 0.7; transition: 0.2s; }
+        .icon-btn:hover { opacity: 1; transform: scale(1.1); }
+        .icon-btn.edit { color: var(--gold); }
+        .icon-btn.delete { color: var(--danger); }
     </style>
 </head>
 <body>
 
 <div id="view-login" style="padding-top: 100px; text-align: center;">
     <div class="glass-card" style="width: 85%; margin: auto;">
-        <i data-lucide="chef-hat" style="width: 50px; height: 50px; color: var(--gold); margin-bottom: 15px;"></i>
-        <h1 style="color:var(--gold); letter-spacing: 4px; margin:0; font-size: 1.8rem;">LA ÚNICA</h1>
-        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 25px; letter-spacing: 1px;">SISTEMA DE GESTIÓN EMPRESARIAL</p>
-        <input type="password" id="pin-input" class="input-dark" placeholder="PIN DE ACCESO" inputmode="numeric" style="text-align: center; letter-spacing: 8px; font-size: 1.5rem;">
-        <button onclick="handleLogin()" class="btn-gold" style="margin-top: 20px;">INICIAR SESIÓN</button>
+        <span class="material-symbols-outlined" style="font-size: 4rem; color: var(--gold); margin-bottom: 10px;">storefront</span>
+        <h1 style="color:var(--gold); letter-spacing: 3px; margin:0;">LA ÚNICA</h1>
+        <p style="font-size: 0.8rem; opacity: 0.6; margin-bottom: 20px;">CONTROL DE GESTIÓN PROFESIONAL</p>
+        <input type="password" id="pin-input" class="input-dark" placeholder="PIN DE ACCESO" inputmode="numeric" style="text-align: center; letter-spacing: 5px;">
+        <button onclick="handleLogin()" class="btn-gold" style="margin-top: 10px;">
+            <span class="material-symbols-outlined">login</span> ENTRAR
+        </button>
     </div>
 </div>
 
 <div id="view-admin" class="container">
-    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
-        <i data-lucide="calendar" style="color:var(--gold); width: 20px;"></i>
-        <input type="date" id="calendar-filter" class="input-dark" onchange="renderAllViews()" style="margin:0;">
-    </div>
+    <input type="date" id="calendar-filter" class="input-dark" onchange="renderAllViews()" style="margin-bottom: 15px;">
 
-    <div class="nav-tabs">
-        <button class="tab-btn active" id="btn-tab-v" onclick="switchAdminTab('v')"><i data-lucide="bar-chart-3"></i>VENTAS</button>
-        <button class="tab-btn" id="btn-tab-g" onclick="switchAdminTab('g')"><i data-lucide="package"></i>PROD.</button>
-        <button class="tab-btn" id="btn-tab-f" onclick="switchAdminTab('f')"><i data-lucide="building-2"></i>FIJOS</button>
-        <button class="tab-btn" id="btn-tab-s" onclick="switchAdminTab('s')"><i data-lucide="users"></i>STAFF</button>
-        <button class="tab-btn" id="btn-tab-p" onclick="switchAdminTab('p')"><i data-lucide="utensils"></i>MENÚ</button>
+    <div class="nav-tabs" id="main-admin-tabs">
+        <button class="tab-btn active" id="btn-tab-v" onclick="switchAdminTab('v')"><span class="material-symbols-outlined">point_of_sale</span> VENTAS</button>
+        <button class="tab-btn" id="btn-tab-g" onclick="switchAdminTab('g')"><span class="material-symbols-outlined">inventory_2</span> PROD.</button>
+        <button class="tab-btn" id="btn-tab-f" onclick="switchAdminTab('f')"><span class="material-symbols-outlined">account_balance</span> FIJOS</button>
+        <button class="tab-btn" id="btn-tab-s" onclick="switchAdminTab('s')"><span class="material-symbols-outlined">badge</span> STAFF</button>
+        <button class="tab-btn" id="btn-tab-p" onclick="switchAdminTab('p')"><span class="material-symbols-outlined">restaurant</span> MENÚ</button>
     </div>
 
     <div id="tab-v" class="admin-content">
@@ -155,217 +204,392 @@
     </div>
 
     <div id="tab-g" class="admin-content" style="display:none">
-        <div class="nav-tabs" style="background: rgba(255,255,255,0.05); margin-bottom: 15px;">
-            <button class="tab-btn active" id="btn-sub-precios" onclick="switchSubTab('precios')">INVENTARIO</button>
-            <button class="tab-btn" id="btn-sub-produccion" onclick="switchSubTab('produccion')">FABRICACIÓN</button>
+        <div class="nav-tabs" style="background: rgba(255,255,255,0.05);">
+            <button class="tab-btn active" id="btn-sub-precios" onclick="switchSubTab('precios')"><span class="material-symbols-outlined">list_alt</span> INVENTARIO</button>
+            <button class="tab-btn" id="btn-sub-produccion" onclick="switchSubTab('produccion')"><span class="material-symbols-outlined">precision_manufacturing</span> FABRICACIÓN</button>
         </div>
+
         <div id="sub-precios">
             <div id="insumos-list"></div>
-            <button class="btn-gold" onclick="nuevoInsumo()"><i data-lucide="plus"></i> CARGAR INSUMO</button>
+            <button class="btn-gold" onclick="nuevoInsumo()"><span class="material-symbols-outlined">add</span> CARGAR INSUMO</button>
         </div>
+
         <div id="sub-produccion" style="display:none">
-            <div class="glass-card">
-                <h4 style="margin-top:0; color:var(--gold); text-align:center;">NUEVA TANDA</h4>
+            <div class="glass-card" style="padding-bottom:10px;">
+                <h4 style="margin-top:0; color:var(--gold); text-align:center;">NUEVA TANDA (ADMIN)</h4>
                 <input type="text" id="nombre-produccion" class="input-dark" placeholder="Producto (Ej: Churros)">
-                <div id="receta-inputs"></div>
-                <input type="number" id="cant-producida" class="input-dark" placeholder="Unidades obtenidas">
-                <div id="resultado-produccion" class="glass-card" style="background:rgba(0,0,0,0.2); display:none;">
-                    <p style="margin:5px 0; font-size:0.85rem;">Costo Total: <b id="costo-tanda-total" style="color:var(--danger)"></b></p>
-                    <p style="margin:5px 0; font-size:0.85rem;">Costo Unidad: <b id="costo-por-unidad" style="color:var(--success)"></b></p>
+                <div id="receta-inputs" style="margin-top:10px;"></div>
+                <input type="number" id="cant-producida" class="input-dark" placeholder="Unidades obtenidas (ej: 120)">
+                
+                <div id="resultado-produccion" class="glass-card" style="background:rgba(0,0,0,0.2); margin-top:10px; display:none; padding:10px;">
+                    <p style="margin:5px 0; font-size:0.85rem;">Costo Materia: <b id="costo-tanda-total" style="color:var(--danger)">$0</b></p>
+                    <p style="margin:5px 0; font-size:0.85rem;">Costo Unidad: <b id="costo-por-unidad" style="color:var(--success)">$0</b></p>
                 </div>
-                <div style="display:flex; gap:8px;">
-                    <button class="btn-gold" onclick="calcularProduccion()">CALCULAR</button>
-                    <button class="btn-gold" onclick="guardarProduccion()" style="background:var(--success); color:black;">GUARDAR</button>
+                
+                <div style="display:flex; gap:5px; margin-top:10px;">
+                    <button class="btn-gold" onclick="calcularProduccion()" style="padding:10px; flex:1;"><span class="material-symbols-outlined">calculate</span> CALCULAR</button>
+                    <button class="btn-gold" onclick="guardarProduccion()" style="background:var(--success); color:black; padding:10px; flex:1;"><span class="material-symbols-outlined">save</span> GUARDAR</button>
                 </div>
             </div>
-            <div id="produccion-empleados-list"></div>
+
+            <div class="glass-card">
+                <h4 style="margin-top:0; color:var(--success); text-align:center; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-symbols-outlined">assignment_turned_in</span> REPORTADO POR EMPLEADOS</h4>
+                <div id="produccion-empleados-list"></div>
+            </div>
+
+            <h4 style="color:var(--gold); font-size:0.9rem; text-align:center;">HISTORIAL DE PRODUCCIÓN (ADMIN)</h4>
+            <div style="display:flex; gap:5px; margin-bottom:15px;">
+                <button class="btn-gold" style="font-size:0.7rem; background:rgba(255,255,255,0.1); color:white; padding:10px;" onclick="verReporteProduccion('semana')">VER SEMANA</button>
+                <button class="btn-gold" style="font-size:0.7rem; background:rgba(255,255,255,0.1); color:white; padding:10px;" onclick="verReporteProduccion('mes')">VER MES</button>
+            </div>
             <div id="produccion-dia-list"></div>
         </div>
     </div>
 
     <div id="tab-f" class="admin-content" style="display:none">
-        <div class="glass-card">
+        <div class="glass-card" style="padding: 15px;">
+            <h4 style="margin-top:0; margin-bottom: 10px; color:var(--gold)">PARÁMETROS DEL MES</h4>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.85rem">Días laborables:</span>
-                <input type="number" id="dias-trabajo" class="input-dark" value="24" oninput="renderAllViews()" style="width:70px; text-align:center; margin:0;">
+                <span style="font-size:0.85rem">Días trabajados o a trabajar:</span>
+                <input type="number" id="dias-trabajo" class="input-dark" value="24" oninput="renderAllViews()" style="width:70px; padding:8px; margin:0; text-align:center;">
             </div>
         </div>
-        <div id="fijos-resumen"></div>
+        <div id="fijos-resumen" class="glass-card"></div>
+        <h4 style="color:var(--gold); font-size:0.9rem;">TUS COSTOS FIJOS MENSUALES</h4>
         <div id="fijos-list"></div>
-        <button class="btn-gold" onclick="nuevoGastoFijo()"><i data-lucide="plus"></i> CARGAR GASTO FIJO</button>
+        <button class="btn-gold" onclick="nuevoGastoFijo()"><span class="material-symbols-outlined">add</span> CARGAR GASTO FIJO</button>
     </div>
 
-    <div id="tab-s" class="admin-content" style="display:none"><div id="fichaje-list"></div><div id="staff-list"></div><button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button></div>
-    <div id="tab-p" class="admin-content" style="display:none"><div id="prod-admin-list"></div><button class="btn-gold" onclick="nuevoProd()">+ AGREGAR AL MENÚ</button></div>
+    <div id="tab-s" class="admin-content" style="display:none">
+        <div id="fichaje-list" class="glass-card"></div>
+        <div id="staff-list"></div>
+        <button class="btn-gold" onclick="nuevoEmp()"><span class="material-symbols-outlined">person_add</span> AGREGAR EMPLEADO</button>
+    </div>
+
+    <div id="tab-p" class="admin-content" style="display:none">
+        <div id="prod-admin-list"></div>
+        <button class="btn-gold" onclick="nuevoProd()"><span class="material-symbols-outlined">add_circle</span> AGREGAR AL MENÚ</button>
+    </div>
+
+    <hr style="border:0; border-top:1px solid rgba(255,107,107,0.3); margin:30px 0 15px 0;">
+    <button onclick="iniciarReinicio()" class="btn-del" style="width:100%; padding:15px; font-size:0.9rem; border:2px solid var(--danger);">
+        <span class="material-symbols-outlined">warning</span> REINICIAR SISTEMA DE CERO <span class="material-symbols-outlined">warning</span>
+    </button>
 </div>
 
 <div id="view-ventas" class="container">
-    <h2 id="welcome-msg" style="color:var(--gold); font-size: 1.2rem;"></h2>
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 id="welcome-msg" style="margin:0; font-size:1.1rem; color:var(--gold)"></h2>
+        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V13.5</span>
+    </div>
+    
     <div id="grid-productos" style="display: flex; flex-wrap: wrap; justify-content: space-between;"></div>
-    <div class="glass-card">
+    
+    <div class="glass-card" style="margin-top:20px;">
         <div id="cart-list"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin:20px 0;">
-            <span style="opacity:0.7">TOTAL</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin:15px 0;">
+            <span style="font-weight:bold; opacity: 0.7;">TOTAL A COBRAR</span>
             <span id="total-val" style="color:var(--gold); font-size: 2.2rem; font-weight: 800;">$0</span>
         </div>
-        <button onclick="confirmarVenta()" class="btn-gold" style="font-size:1.1rem; padding:20px;">FINALIZAR VENTA</button>
-        <button onclick="ficharSalida()" style="background:none; border:none; color:var(--danger); width:100%; margin-top:20px; font-weight:bold;">CERRAR TURNO</button>
+        <div style="display:flex; gap:10px;">
+            <select id="metodo-pago" class="input-dark" style="flex:1"><option value="Efectivo">💵 EFECTIVO</option><option value="Transferencia">📱 TRANSF.</option></select>
+            <input type="number" id="paga-con" class="input-dark" style="flex:1" placeholder="RECIBÍ $" oninput="calcVuelto()">
+        </div>
+        <div style="text-align:center; padding: 10px;">Vuelto: <span id="vuelto-val" style="color:var(--success); font-weight:bold; font-size:1.5rem;">$0</span></div>
+        <button onclick="confirmarVenta()" class="btn-gold"><span class="material-symbols-outlined">send</span> FINALIZAR VENTA</button>
+        
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">
+        
+        <button onclick="document.getElementById('modal-prod-emp').style.display='flex'" class="btn-outline" style="margin-bottom: 10px;"><span class="material-symbols-outlined">assignment</span> REPORTAR PRODUCCIÓN</button>
+        <button onclick="cargarGasto()" class="btn-del" style="width:100%; margin-bottom: 15px; padding: 14px; font-size: 0.85rem;"><span class="material-symbols-outlined">receipt_long</span> REGISTRAR GASTO DIARIO</button>
+        <button onclick="ficharSalida()" style="background:none; border:none; color:var(--danger); width:100%; font-weight:bold; font-size:0.75rem; display:flex; justify-content:center; align-items:center; gap:5px;"><span class="material-symbols-outlined">logout</span> CERRAR TURNO / SALIDA</button>
     </div>
 </div>
 
 <nav id="navbar">
-    <div id="nav-ventas-btn" class="nav-item active" onclick="showView('view-ventas')"><i data-lucide="shopping-cart"></i><br>CAJA</div>
-    <div id="nav-admin-btn" class="nav-item" style="display:none" onclick="showView('view-admin')"><i data-lucide="settings"></i><br>ADMIN</div>
-    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)"><i data-lucide="log-out"></i><br>SALIR</div>
+    <div id="nav-ventas-btn" class="nav-item" onclick="showView('view-ventas')"><span class="material-symbols-outlined">point_of_sale</span> CAJA</div>
+    <div id="nav-admin-btn" class="nav-item" style="display:none" onclick="showView('view-admin')"><span class="material-symbols-outlined">admin_panel_settings</span> PANEL ADMIN</div>
+    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)"><span class="material-symbols-outlined">exit_to_app</span> SALIR</div>
 </nav>
 
+<div class="modal-overlay" id="modal-reporte">
+    <div class="modal-content">
+        <h3 id="modal-titulo" style="color:var(--gold); margin-top:0; text-align:center;">REPORTE</h3>
+        <div id="modal-body" style="font-size:0.85rem; margin-bottom:20px;"></div>
+        <button class="btn-gold" onclick="document.getElementById('modal-reporte').style.display='none'">CERRAR</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-prod-emp">
+    <div class="modal-content">
+        <h3 style="color:var(--gold); margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;"><span class="material-symbols-outlined">assignment_add</span> CARGAR PRODUCCIÓN</h3>
+        <input type="text" id="emp-prod-nombre" class="input-dark" placeholder="¿Qué elaboraste? (Ej: Churros)">
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <input type="number" id="emp-prod-cant" class="input-dark" placeholder="Cantidad" style="flex:1">
+            <select id="emp-prod-tipo" class="input-dark" style="flex:1">
+                <option value="Unidades">Unidades</option>
+                <option value="Docenas">Docenas</option>
+            </select>
+        </div>
+        <button class="btn-gold" onclick="guardarProdEmpleado()" style="margin-top:20px;"><span class="material-symbols-outlined">send</span> ENVIAR REPORTE</button>
+        <button class="btn-del" onclick="document.getElementById('modal-prod-emp').style.display='none'" style="width:100%; margin-top:10px; padding:12px;">CANCELAR</button>
+    </div>
+</div>
+
 <script>
-    const firebaseConfig = { apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", projectId: "churrerialaunica-a2888", appId: "1:721969833627:web:8c0db201407a05f82c483e" };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", 
+        projectId: "churrerialaunica-a2888", 
+        appId: "1:721969833627:web:8c0db201407a05f82c483e" 
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    db.enablePersistence().catch(() => {});
+
+    db.enablePersistence().catch((err) => { console.log("Fallo persistencia:", err.code); });
 
     let user = ""; let cart = [];
     let db_local = { productos: [], ventas: [], gastos: [], produccion: [], gastos_fijos: [], staff: [], fichajes: [], insumos: [], reportes_emp: [] };
 
-    document.getElementById('calendar-filter').value = new Date().toISOString().split('T')[0];
+    function getHoyISO() { return new Date().toISOString().split('T')[0]; }
+    document.getElementById('calendar-filter').value = getHoyISO();
 
-    // Snapshot Listeners
     db.collection("productos").onSnapshot(s => { db_local.productos = s.docs.map(d => ({...d.data(), id: d.id})); renderProductos(); renderAdminLists(); });
-    db.collection("staff").onSnapshot(s => { db_local.staff = s.docs.map(d => ({...d.data(), id: d.id})); });
+    db.collection("staff").onSnapshot(s => { db_local.staff = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
     db.collection("insumos").onSnapshot(s => { db_local.insumos = s.docs.map(d => ({...d.data(), id: d.id})); renderInsumos(); renderRecetaInputs(); });
-    db.collection("ventas").onSnapshot(s => { db_local.ventas = s.docs.map(d => d.data()); renderAllViews(); });
-    db.collection("gastos_fijos").onSnapshot(s => { db_local.gastos_fijos = s.docs.map(d => ({...d.data(), id: d.id})); renderGastosFijos(); });
-    db.collection("reportes_produccion").onSnapshot(s => { db_local.reportes_emp = s.docs.map(d => ({...d.data(), id: d.id})); });
+    db.collection("fichajes").orderBy("ts", "desc").limit(50).onSnapshot(s => { db_local.fichajes = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
+    db.collection("ventas").orderBy("ts", "desc").onSnapshot(s => { db_local.ventas = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
+    db.collection("gastos").orderBy("ts", "desc").onSnapshot(s => { db_local.gastos = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
+    db.collection("produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.produccion = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
+    db.collection("gastos_fijos").onSnapshot(s => { db_local.gastos_fijos = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
+    db.collection("reportes_produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.reportes_emp = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
 
-    function handleLogin() {
+    window.handleLogin = function() {
         const pin = document.getElementById('pin-input').value;
         const found = db_local.staff.find(s => s.p === pin);
         if(!found && pin !== "325606") return alert("PIN INCORRECTO");
         user = (pin === "325606") ? "Admin" : found.n;
         document.getElementById('navbar').style.display = 'flex';
-        lucide.createIcons();
         if(user === "Admin") {
             document.getElementById('nav-ventas-btn').style.display = 'none';
             document.getElementById('nav-admin-btn').style.display = 'block';
             showView('view-admin');
-            switchAdminTab('v');
+            renderAllViews();
         } else {
+            document.getElementById('nav-admin-btn').style.display = 'none';
+            document.getElementById('nav-ventas-btn').style.display = 'block';
             showView('view-ventas');
             document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
+            fichar("ENTRADA");
         }
-    }
-
-    // --- CORRECCIÓN NAVEGACIÓN ---
-    function switchAdminTab(tab) {
-        document.querySelectorAll('.admin-content').forEach(c => c.style.display = 'none');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-' + tab).style.display = 'block';
-        document.getElementById('btn-tab-' + tab).classList.add('active');
-    }
-
-    function switchSubTab(sub) {
-        document.getElementById('sub-precios').style.display = (sub === 'precios') ? 'block' : 'none';
-        document.getElementById('sub-produccion').style.display = (sub === 'produccion') ? 'block' : 'none';
-        document.getElementById('btn-sub-precios').classList.toggle('active', sub === 'precios');
-        document.getElementById('btn-sub-produccion').classList.toggle('active', sub === 'produccion');
-    }
-
-    function showView(id) {
-        document.querySelectorAll('.container, #view-login').forEach(v => v.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(id === 'view-admin') document.getElementById('nav-admin-btn').classList.add('active');
-        if(id === 'view-ventas') document.getElementById('nav-ventas-btn').classList.add('active');
-    }
-
-    // --- CORRECCIÓN COSTOS FIJOS (EDITAR) ---
-    function renderGastosFijos() {
-        let totalF = db_local.gastos_fijos.reduce((a,b)=>a+b.m, 0);
-        let dias = parseInt(document.getElementById('dias-trabajo').value) || 24;
-        document.getElementById('fijos-list').innerHTML = db_local.gastos_fijos.map(g => `
-            <div class="list-item">
-                <div onclick="editarGastoFijo('${g.id}', '${g.n}', ${g.m})">
-                    <b>${g.n}</b><br><small>$${g.m}</small>
-                </div>
-                <button class="btn-del" onclick="borrarDoc('gastos_fijos','${g.id}')">🗑️</button>
-            </div>`).join('');
-        document.getElementById('fijos-resumen').innerHTML = `<div class="stat-box"><div class="stat-label">FIJO DIARIO</div><div class="stat-val">$${(totalF/dias).toFixed(2)}</div></div>`;
-    }
-
-    window.editarGastoFijo = (id, n, m) => {
-        let nuevoN = prompt("Nombre del gasto:", n);
-        let nuevoM = parseFloat(prompt("Monto mensual:", m));
-        if(nuevoN && !isNaN(nuevoM)) db.collection("gastos_fijos").doc(id).update({n: nuevoN.toUpperCase(), m: nuevoM});
     };
 
-    window.nuevoGastoFijo = () => {
-        let n = prompt("Gasto:");
-        let m = parseFloat(prompt("Monto:"));
-        if(n && m) db.collection("gastos_fijos").add({n: n.toUpperCase(), m});
-    };
-
-    // --- REFINAMIENTO DE UI ---
-    function renderProductos() {
-        document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
-            <div class="btn-item" onclick="addCart('${p.n}',${p.p})">
-                <div style="font-size:1.5rem; margin-bottom:5px;">🍩</div>
-                <div style="font-size:0.8rem; font-weight:700;">${p.n}</div>
-                <div style="color:var(--gold);">$${p.p}</div>
-            </div>`).join('');
-    }
-
-    function renderAdminLists() {
-        document.getElementById('staff-list').innerHTML = "<h4>PERSONAL</h4>" + db_local.staff.map(s => `<div class="list-item"><span>${s.n}</span> <button class="btn-del" onclick="borrarDoc('staff','${s.id}')">ELIMINAR</button></div>`).join('');
-        document.getElementById('prod-admin-list').innerHTML = "<h4>MENÚ</h4>" + db_local.productos.map(p => `<div class="list-item"><span>${p.n} ($${p.p})</span> <button class="btn-del" onclick="borrarDoc('productos','${p.id}')">ELIMINAR</button></div>`).join('');
-    }
-
-    window.borrarDoc = (c, i) => confirm("¿ELIMINAR?") && db.collection(c).doc(i).delete();
-
-    // Inicializar iconos al cargar
-    window.onload = () => lucide.createIcons();
-
-    // El resto de tus funciones de lógica de negocio (calcularProduccion, confirmarVenta, etc.) se mantienen igual.
-    // Asegúrate de copiar las funciones de cálculo que ya tenías funcionando.
-    
-    function addCart(n, p) { cart.push({n, p}); renderCart(); }
-    function renderCart() {
-        let t = cart.reduce((a,b)=>a+b.p,0);
-        document.getElementById('cart-list').innerHTML = cart.map((it, i) => `<div class="list-item">${it.n} <b>$${it.p}</b> <button onclick="cart.splice(${i},1);renderCart()">✕</button></div>`).join('');
-        document.getElementById('total-val').innerText = "$"+t;
-    }
-
-    function renderInsumos() { 
-        document.getElementById('insumos-list').innerHTML = db_local.insumos.map(i => `<div class="list-item"><span>${i.n}</span><b>$${i.cu.toFixed(2)}/${i.u}</b></div>`).join(''); 
+    function fichar(tipoForzado = null) {
+        if(user === "Admin") return;
+        const d = new Date();
+        const fStr = d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
+        const hStr = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        let tipo = tipoForzado;
+        if(!tipo) {
+            const miUltimo = db_local.fichajes.find(f => f.u === user);
+            tipo = (miUltimo && miUltimo.tipo === "ENTRADA") ? "SALIDA" : "ENTRADA";
+        }
+        db.collection("fichajes").add({ u: user, f: fStr, h: hStr, tipo: tipo, ts: firebase.firestore.FieldValue.serverTimestamp() }).then(() => {
+            const msj = `Hola Michel, soy ${user}. Acabo de marcar mi ${tipo} el día ${fStr} a las ${hStr}.`;
+            const numAdmin = "5491155135012";
+            const urlWA = `https://wa.me/${numAdmin}?text=${encodeURIComponent(msj)}`;
+            window.open(urlWA, '_blank');
+            if(tipo === "SALIDA") setTimeout(() => location.reload(), 2000); 
+        });
     }
     
-    function renderRecetaInputs() { 
-        document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-size:0.8rem;">${i.n}</span>
-                <input type="number" step="0.01" class="input-dark receta-cant" data-cu="${i.cu}" style="width:80px; padding:5px; margin:0;">
-            </div>`).join(''); 
-    }
-
-    let ultC = 0;
-    window.calcularProduccion = () => {
-        let t = 0; document.querySelectorAll('.receta-cant').forEach(i => t += (parseFloat(i.value)||0)*parseFloat(i.dataset.cu));
-        ultC = t;
-        let u = parseFloat(document.getElementById('cant-producida').value)||1;
-        document.getElementById('resultado-produccion').style.display = 'block';
-        document.getElementById('costo-tanda-total').innerText = "$"+t.toFixed(2);
-        document.getElementById('costo-por-unidad').innerText = "$"+(t/u).toFixed(2);
-    };
+    window.ficharSalida = () => { if(confirm("¿MARCAR SALIDA Y AVISAR A MICHEL?")) fichar("SALIDA"); };
 
     window.renderAllViews = () => {
-        if(user === "Admin") {
-            const val = document.getElementById('calendar-filter').value;
-            const [y, m, d] = val.split('-');
-            const fBus = `${parseInt(d)}/${parseInt(m)}/${y}`;
-            const vD = db_local.ventas.filter(v => v.f === fBus);
-            let total = vD.reduce((a,b)=>a+b.t,0);
-            document.getElementById('stats-container').innerHTML = `<div class="stat-box"><div class="stat-label">VENTAS DEL DÍA</div><div class="stat-val">$${total}</div></div>`;
+        renderHistorial();
+        renderProduccionList();
+        renderGastosFijos();
+        renderAdminLists();
+    };
+
+    window.guardarProdEmpleado = () => {
+        const n = document.getElementById('emp-prod-nombre').value;
+        const c = document.getElementById('emp-prod-cant').value;
+        const tipoMedida = document.getElementById('emp-prod-tipo').value;
+        if(!n || !c) return alert("Completa producto y cantidad.");
+        const d = new Date();
+        const fStr = d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
+        db.collection("reportes_produccion").add({
+            u: user, n: n.toUpperCase(), c: parseFloat(c), tipo: tipoMedida,
+            turno: d.getHours() < 14 ? "Mañana" : "Tarde", f: fStr, ts: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            alert("REGISTRADO ✅");
+            document.getElementById('modal-prod-emp').style.display='none';
+        });
+    };
+
+    window.renderHistorial = function() {
+        const val = document.getElementById('calendar-filter').value;
+        if(!val) return;
+        const [y, m, d] = val.split('-');
+        const fBus = `${parseInt(d)}/${parseInt(m)}/${y}`;
+        const fBusZero = `${parseInt(d).toString().padStart(2,'0')}/${parseInt(m).toString().padStart(2,'0')}/${y}`;
+        const vD = db_local.ventas.filter(v => v.f === fBus || v.f === fBusZero);
+        const gD = db_local.gastos.filter(g => g.f === fBus || g.f === fBusZero);
+        const pD = db_local.produccion.filter(p => p.f === fBus || p.f === fBusZero);
+        let vM = 0, vT = 0, gT = 0, cP = 0;
+        let tabla = "<table><tr><th>Hora</th><th>Mov</th><th>Monto</th></tr>";
+        vD.slice().reverse().forEach(v => {
+            if(v.turno === "Mañana") vM += v.t; else vT += v.t;
+            tabla += `<tr><td>${v.h}</td><td>Venta (${v.m})</td><td style="color:var(--success)">+$${v.t}</td></tr>`;
+        });
+        gD.forEach(g => { gT += g.monto; tabla += `<tr><td>${g.h}</td><td>${g.desc}</td><td style="color:var(--danger)">-$${g.monto}</td></tr>`; });
+        pD.forEach(p => cP += (p.costoTanda || 0));
+        let neto = (vM + vT) - gT - cP;
+        document.getElementById('stats-container').innerHTML = `
+            <div class="stat-box" style="border-color:var(--success);">
+                <div class="stat-label">GANANCIA OPERATIVA (DÍA)</div>
+                <div class="stat-val">$${neto.toFixed(2)}</div>
+            </div>`;
+        document.getElementById('historial-list').innerHTML = tabla + "</table>";
+    };
+
+    window.renderProduccionList = function() {
+        const val = document.getElementById('calendar-filter').value;
+        const [y, m, d] = val.split('-');
+        const fBus = `${parseInt(d)}/${parseInt(m)}/${y}`;
+        const fBusZero = `${parseInt(d).toString().padStart(2,'0')}/${parseInt(m).toString().padStart(2,'0')}/${y}`;
+        const pD = db_local.produccion.filter(p => p.f === fBus || p.f === fBusZero);
+        document.getElementById('produccion-dia-list').innerHTML = pD.map(p => `<div class="list-item"><div><b>${p.n}</b><br><small>${p.unidades} u.</small></div><div>$${p.costoTanda.toFixed(2)}</div></div>`).join('');
+        const empD = db_local.reportes_emp.filter(r => r.f === fBus || r.f === fBusZero);
+        document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => `<div class="list-item"><div><b>${r.n}</b></div><div>${r.c} ${r.tipo}</div></div>`).join('');
+    };
+
+    // CORRECCIÓN: Renderizado de gastos fijos con botones de edición y borrado
+    window.renderGastosFijos = function() {
+        let totalF = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0);
+        let dias = parseInt(document.getElementById('dias-trabajo').value) || 24;
+        let cD = totalF / dias;
+        document.getElementById('fijos-list').innerHTML = db_local.gastos_fijos.map(g => `
+            <div class="list-item">
+                <span>${g.n}</span> 
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <b>$${g.m}</b>
+                    <button class="icon-btn edit" onclick="editarGastoFijo('${g.id}', '${g.n}', ${g.m})"><span class="material-symbols-outlined">edit</span></button>
+                    <button class="icon-btn delete" onclick="borrarDoc('gastos_fijos','${g.id}')"><span class="material-symbols-outlined">delete</span></button>
+                </div>
+            </div>`).join('');
+        document.getElementById('fijos-resumen').innerHTML = `<div class="stat-box"><div class="stat-label">FIJO DIARIO PRORRATEADO</div><div class="stat-val">$${cD.toFixed(2)}</div></div>`;
+    };
+
+    // NUEVO: Función para editar gasto fijo
+    window.editarGastoFijo = (id, nombreActual, montoActual) => {
+        let n = prompt("Editar nombre del gasto fijo:", nombreActual);
+        if (!n) return;
+        let m = parseFloat(prompt("Editar monto mensual:", montoActual));
+        if (m) {
+            db.collection("gastos_fijos").doc(id).update({ n: n.toUpperCase(), m: m });
         }
+    };
+
+    window.nuevoGastoFijo = () => { let n = prompt("Gasto:"); if(!n) return; let m = parseFloat(prompt("Monto:")); m && db.collection("gastos_fijos").add({n:n.toUpperCase(), m}); };
+    window.nuevoInsumo = () => { let n=prompt("Insumo:"); if(!n) return; let p=parseFloat(prompt("Precio:")), q=parseFloat(prompt("Cant:")), u=prompt("u (kg/lt):"); p&&q&&db.collection("insumos").add({n:n.toUpperCase(),p,q,u,cu:p/q}); };
+    function renderInsumos() { document.getElementById('insumos-list').innerHTML = db_local.insumos.map(i => `<div class="list-item"><span>${i.n}</span><div style="display:flex; align-items:center; gap:10px;"><b>$${i.cu.toFixed(2)}/${i.u}</b><button class="icon-btn delete" onclick="borrarDoc('insumos','${i.id}')"><span class="material-symbols-outlined">delete</span></button></div></div>`).join(''); }
+    function renderRecetaInputs() { document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => `<div style="display:flex; gap:5px; margin-bottom:5px;"><span>${i.n}</span><input type="number" step="0.01" class="input-dark receta-cant" data-id="${i.id}" data-cu="${i.cu}" style="padding:5px;"></div>`).join(''); }
+
+    let ultC = 0, ultU = 0;
+    window.calcularProduccion = () => {
+        let t = 0; document.querySelectorAll('.receta-cant').forEach(i => t += (parseFloat(i.value)||0)*parseFloat(i.dataset.cu));
+        ultU = parseFloat(document.getElementById('cant-producida').value)||0;
+        ultC = t;
+        document.getElementById('resultado-produccion').style.display = 'block';
+        document.getElementById('costo-tanda-total').innerText = "$"+t.toFixed(2);
+        if(ultU > 0) document.getElementById('costo-por-unidad').innerText = "$"+(t/ultU).toFixed(2);
+    };
+
+    window.guardarProduccion = () => {
+        let n = document.getElementById('nombre-produccion').value;
+        if(!n || ultC<=0) return alert("Calcula y pon nombre.");
+        const d = new Date();
+        db.collection("produccion").add({ n:n.toUpperCase(), costoTanda:ultC, unidades:ultU, f:d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear(), ts:firebase.firestore.FieldValue.serverTimestamp() })
+        .then(() => { alert("GUARDADO ✅"); document.getElementById('resultado-produccion').style.display='none'; document.getElementById('nombre-produccion').value=''; document.getElementById('cant-producida').value=''; document.querySelectorAll('.receta-cant').forEach(i=>i.value=''); });
+    };
+
+    window.cargarGasto = () => {
+        let d=prompt("¿Qué se compró?"); if(!d) return; 
+        let m=parseFloat(prompt("Monto:"));
+        if(m) {
+            const now = new Date();
+            db.collection("gastos").add({ desc: d.toUpperCase(), monto: m, u: user, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<14?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() });
+        }
+    };
+
+    window.showView = (id) => {
+        document.querySelectorAll('.container, #view-login').forEach(v => v.style.display='none');
+        document.getElementById(id).style.display='block';
+    };
+
+    // CORRECCIÓN: Actualización visual del botón activo en Pestañas Principales Admin
+    window.switchAdminTab = (t) => {
+        document.querySelectorAll('.admin-content').forEach(c => c.style.display='none');
+        document.getElementById('tab-'+t).style.display='block';
+        
+        document.querySelectorAll('#main-admin-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('btn-tab-'+t).classList.add('active');
+    };
+
+    // CORRECCIÓN: Función agregada para alternar sub-pestañas en Producción
+    window.switchSubTab = (t) => {
+        document.getElementById('sub-precios').style.display = (t === 'precios') ? 'block' : 'none';
+        document.getElementById('sub-produccion').style.display = (t === 'produccion') ? 'block' : 'none';
+        
+        document.getElementById('btn-sub-precios').classList.remove('active');
+        document.getElementById('btn-sub-produccion').classList.remove('active');
+        document.getElementById('btn-sub-'+t).classList.add('active');
+    };
+
+    window.renderProductos = () => {
+        document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}',${p.p})"><span class="material-symbols-outlined" style="font-size:2rem; color:var(--gold); margin-bottom:5px;">bakery_dining</span>${p.n}<br><b>$${p.p}</b></div>`).join('');
+    };
+
+    window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
+    window.renderCart = () => {
+        let t = cart.reduce((a,b)=>a+b.p,0);
+        document.getElementById('cart-list').innerHTML = cart.map((it, i) => `<div class="list-item">${it.n} <b>$${it.p}</b> <button class="icon-btn delete" onclick="cart.splice(${i},1);renderCart()"><span class="material-symbols-outlined">close</span></button></div>`).join('');
+        document.getElementById('total-val').innerText = "$"+t;
+        calcVuelto();
+    };
+
+    window.calcVuelto = () => {
+        let t = cart.reduce((a,b)=>a+b.p,0);
+        let paga = parseFloat(document.getElementById('paga-con').value) || 0;
+        let v = paga - t;
+        document.getElementById('vuelto-val').innerText = v >= 0 ? "$"+v : "$0";
+    };
+
+    window.confirmarVenta = () => {
+        if(!cart.length) return;
+        const t = cart.reduce((a,b)=>a+b.p,0); const now = new Date();
+        db.collection("ventas").add({ t, u: user, m: document.getElementById('metodo-pago').value, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<14?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() })
+        .then(() => { alert("VENTA OK ✅"); cart=[]; renderCart(); document.getElementById('paga-con').value=''; calcVuelto();});
+    };
+
+    window.renderAdminLists = () => {
+        document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item">${s.n} <button class="icon-btn delete" onclick="borrarDoc('staff','${s.id}')"><span class="material-symbols-outlined">delete</span></button></div>`).join('');
+        document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item">${p.n} ($${p.p}) <button class="icon-btn delete" onclick="borrarDoc('productos','${p.id}')"><span class="material-symbols-outlined">delete</span></button></div>`).join('');
+    };
+
+    window.borrarDoc = (c, i) => confirm("¿ELIMINAR?") && db.collection(c).doc(i).delete();
+    window.nuevoEmp = () => { let n=prompt("Nombre:"); if(!n) return; let p=prompt("PIN:"); p && db.collection("staff").add({n:n.toUpperCase(), p}); };
+    window.nuevoProd = () => { let n=prompt("Prod:"); if(!n) return; let p=prompt("Precio:"); p && db.collection("productos").add({n:n.toUpperCase(), p:parseInt(p)}); };
+
+    window.iniciarReinicio = async () => {
+        if(!confirm("⚠️ ¿BORRAR TODO?")) return;
+        const cols = ['ventas', 'gastos', 'produccion', 'fichajes', 'reportes_produccion'];
+        for(let c of cols) {
+            let snap = await db.collection(c).get();
+            snap.docs.forEach(d => d.ref.delete());
+        }
+        alert("SISTEMA LIMPIO ✅");
     };
 </script>
 </body>
