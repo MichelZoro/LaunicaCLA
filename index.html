@@ -3,299 +3,534 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - CONTROL TOTAL V11.8</title>
+    <title>LA ÚNICA - CONTROL TOTAL V13.4 OFFLINE</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --cactus: #3D4B3F; --gold: #C5A059; --white: #F8F9FA; --danger: #FF6B6B; --success: #51CF66; --glass: rgba(255,255,255,0.1); }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--cactus); color: var(--white); margin: 0; padding-bottom: 90px; overflow-x: hidden; }
-        .container { padding: 15px; display: none; max-width: 500px; margin: auto; }
-        .glass-card { background: var(--glass); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
-        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #1a1a1a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
-        .input-dark { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-size: 1.1rem; }
-        .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; margin-bottom: 8px; }
-        .stat-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; }
+        :root { 
+            --cactus: #2D362F; 
+            --gold: #C5A059; 
+            --white: #F8F9FA; 
+            --danger: #FF6B6B; 
+            --success: #51CF66; 
+            --glass: rgba(255,255,255,0.08);
+            --glass-heavy: rgba(0,0,0,0.4);
+        }
+        
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: radial-gradient(circle at top, #3d4940, var(--cactus)); 
+            color: var(--white); 
+            margin: 0; 
+            padding-bottom: 100px; 
+            min-height: 100vh;
+        }
+
+        .container { padding: 20px; display: none; max-width: 500px; margin: auto; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .glass-card { 
+            background: var(--glass); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px; 
+            padding: 20px; 
+            border: 1px solid rgba(255,255,255,0.12); 
+            margin-bottom: 18px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3); 
+        }
+        
+        .btn-gold { 
+            background: linear-gradient(145deg, #D4AF37, #C5A059); 
+            color: #1a1a1a; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 16px; 
+            font-weight: 700; 
+            width: 100%; 
+            cursor: pointer; 
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.2);
+            transition: 0.3s;
+        }
+        .btn-gold:active { transform: scale(0.96); }
+
+        .btn-del {
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .btn-del:active { background: var(--danger); color: white; transform: scale(0.95); }
+
+        .btn-outline {
+            background: rgba(255,255,255,0.05);
+            color: var(--white);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 14px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-outline:active { background: rgba(255,255,255,0.15); }
+
+        .input-dark { 
+            width: 100%; 
+            background: var(--glass-heavy); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            padding: 14px; 
+            border-radius: 14px; 
+            color: white; 
+            margin: 8px 0; 
+            font-size: 1rem;
+            outline: none;
+        }
+        .input-dark:focus { border-color: var(--gold); }
+        
+        .nav-tabs { 
+            display: flex; gap: 6px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 15px; overflow-x: auto; white-space: nowrap; 
+        }
+        .nav-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 12px; border: none; background: transparent; color: #888; font-weight: 600; cursor: pointer; font-size: 0.7rem; }
+        .tab-btn.active { background: var(--gold); color: #1a1a1a; }
+
+        .btn-item { 
+            width: 48%; 
+            background: var(--glass); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 22px; 
+            padding: 20px 10px; 
+            text-align: center; 
+            margin-bottom: 12px;
+            transition: 0.2s;
+        }
+        .btn-item:active { background: rgba(255,255,255,0.15); transform: scale(0.95); }
+
+        .list-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px; 
+            background: rgba(255,255,255,0.03); 
+            border-radius: 16px; 
+            margin-bottom: 10px; 
+            border-left: 4px solid var(--gold); 
+        }
+
+        .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; margin-bottom: 8px; display: flex; flex-direction: column; justify-content: center;}
         .stat-val { font-size: 1.3rem; font-weight: 800; color: var(--gold); }
-        .grid-pos { display: flex; flex-wrap: wrap; justify-content: space-between; }
-        .btn-item { width: 48%; background: var(--glass); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 20px 10px; text-align: center; margin-bottom: 10px; cursor: pointer; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); }
-        .btn-del { background: rgba(255, 107, 107, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
-        nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--gold); z-index: 1000; }
-        .nav-item { text-align: center; font-size: 0.7rem; color: #888; font-weight: 800; cursor: pointer; }
+        .stat-label { font-size: 0.65rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+
+        nav { 
+            position: fixed; bottom: 0; width: 100%; 
+            background: rgba(13, 13, 13, 0.8); 
+            backdrop-filter: blur(10px);
+            display: none; justify-content: space-around; 
+            padding: 12px 0 25px 0; 
+            border-top: 1px solid rgba(197, 160, 89, 0.3); 
+            z-index: 1000; 
+        }
+        .nav-item { text-align: center; font-size: 0.65rem; color: #777; font-weight: 700; cursor: pointer; width: 100%; }
         .nav-item.active { color: var(--gold); }
+        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+
+        .badge-cost { background: var(--gold); color: #000; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; }
+        
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        th { color: var(--gold); text-align: left; padding: 8px; border-bottom: 1px solid var(--glass); }
-        td { padding: 8px; border-bottom: 1px solid var(--glass); }
-        #modal-ticket { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; padding: 10px; }
-        #ticket-paper { text-align: left; font-family: monospace; background: #fff; color: #000; padding: 15px; border-radius: 2px; font-size: 0.8rem; line-height: 1.2; }
+        th { color: var(--gold); text-align: left; padding: 10px; border-bottom: 1px solid var(--glass); }
+        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; display:none; justify-content:center; align-items:center; }
+        .modal-content { background: var(--cactus); padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid var(--gold); max-height: 80vh; overflow-y: auto; }
     </style>
 </head>
 <body>
 
-<div id="modal-ticket">
-    <div style="width: 100%; max-width: 350px;">
-        <div id="ticket-paper"><pre id="ticket-content" style="white-space: pre-wrap; margin:0;"></pre></div>
-        <input type="tel" id="whatsapp-cliente" class="input-dark" placeholder="WhatsApp (ej: 1122334455)">
-        <button onclick="enviarTicketWA()" class="btn-gold" style="background:#25D366; color:white;">📱 ENVIAR WHATSAPP</button>
-        <button onclick="cerrarTicket()" class="btn-gold" style="background:none; border: 1px solid #888; color:#ccc; margin-top:10px;">CERRAR</button>
-    </div>
-</div>
-
-<div id="view-login" style="padding-top: 50px; text-align: center;">
+<div id="view-login" style="padding-top: 100px; text-align: center;">
     <div class="glass-card" style="width: 85%; margin: auto;">
-        <h1 style="color:var(--gold);">LA ÚNICA</h1>
-        <input type="password" id="pin-input" class="input-dark" placeholder="PIN" inputmode="numeric">
-        <button onclick="handleLogin()" class="btn-gold">ENTRAR</button>
-    </div>
-</div>
-
-<div id="view-ventas" class="container">
-    <h2 id="welcome-msg" style="color:var(--gold); text-align: center; font-size: 1.1rem;"></h2>
-    <div id="grid-productos" class="grid-pos"></div>
-    <div class="glass-card" style="margin-top:20px;">
-        <div id="cart-list"></div>
-        <h3 style="text-align:right;">Total: <span id="total-val" style="color:var(--gold); font-size: 1.8rem;">$0</span></h3>
-        <select id="metodo-pago" class="input-dark"><option value="Efectivo">💵 EFECTIVO</option><option value="Transferencia">📱 TRANSFERENCIA</option></select>
-        <input type="number" id="paga-con" class="input-dark" placeholder="RECIBIDO $" oninput="calcVuelto()">
-        <p style="text-align:center;">Vuelto: <span id="vuelto-val" style="color:var(--success); font-weight:bold; font-size:1.4rem;">$0</span></p>
-        <button onclick="confirmarVenta()" class="btn-gold">✓ CONFIRMAR VENTA</button>
-        <button onclick="registrarSalida()" class="btn-gold" style="background:none; border:1px solid var(--danger); color:var(--danger); margin-top:20px; font-size:0.7rem;">CERRAR TURNO</button>
+        <div style="font-size: 3rem; margin-bottom: 10px;">👨‍🍳</div>
+        <h1 style="color:var(--gold); letter-spacing: 3px; margin:0;">LA ÚNICA</h1>
+        <p style="font-size: 0.8rem; opacity: 0.6; margin-bottom: 20px;">CONTROL DE GESTIÓN PROFESIONAL</p>
+        <input type="password" id="pin-input" class="input-dark" placeholder="PIN DE ACCESO" inputmode="numeric" style="text-align: center; letter-spacing: 5px;">
+        <button onclick="handleLogin()" class="btn-gold" style="margin-top: 10px;">ENTRAR</button>
     </div>
 </div>
 
 <div id="view-admin" class="container">
-    <div style="display:flex; gap:5px; margin-bottom:15px;">
-        <button class="btn-gold" style="font-size:0.7rem;" onclick="switchTab('v')">VENTAS</button>
-        <button class="btn-gold" style="font-size:0.7rem;" onclick="switchTab('s')">STAFF</button>
-        <button class="btn-gold" style="font-size:0.7rem;" onclick="switchTab('p')">MENÚ</button>
+    <input type="date" id="calendar-filter" class="input-dark" onchange="renderAllViews()" style="margin-bottom: 15px;">
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" id="btn-tab-v" onclick="switchAdminTab('v')">📊 VENTAS</button>
+        <button class="tab-btn" id="btn-tab-g" onclick="switchAdminTab('g')">📦 PROD.</button>
+        <button class="tab-btn" id="btn-tab-f" onclick="switchAdminTab('f')">🏢 FIJOS</button>
+        <button class="tab-btn" id="btn-tab-s" onclick="switchAdminTab('s')">👥 STAFF</button>
+        <button class="tab-btn" id="btn-tab-p" onclick="switchAdminTab('p')">🍴 MENÚ</button>
     </div>
-    
-    <div id="tab-v" class="admin-tab">
-        <input type="date" id="calendar-filter" class="input-dark" onchange="renderHistorial()">
+
+    <div id="tab-v" class="admin-content">
         <div id="stats-container"></div>
         <div id="historial-list" class="glass-card"></div>
     </div>
-    
-    <div id="tab-s" class="admin-tab" style="display:none">
-        <h4 style="color:var(--gold); margin:0;">VER ASISTENCIA:</h4>
-        <input type="date" id="calendar-staff" class="input-dark" onchange="renderAdminLists()">
-        <div id="fichaje-list" class="glass-card" style="padding:10px;"></div>
-        <h4 style="color:var(--gold); margin:20px 0 10px 0;">LISTA DE STAFF:</h4>
+
+    <div id="tab-g" class="admin-content" style="display:none">
+        <div class="nav-tabs" style="background: rgba(255,255,255,0.05);">
+            <button class="tab-btn active" id="btn-sub-precios" onclick="switchSubTab('precios')">INVENTARIO</button>
+            <button class="tab-btn" id="btn-sub-produccion" onclick="switchSubTab('produccion')">FABRICACIÓN</button>
+        </div>
+
+        <div id="sub-precios">
+            <div id="insumos-list"></div>
+            <button class="btn-gold" onclick="nuevoInsumo()">+ CARGAR INSUMO</button>
+        </div>
+
+        <div id="sub-produccion" style="display:none">
+            <div class="glass-card" style="padding-bottom:10px;">
+                <h4 style="margin-top:0; color:var(--gold); text-align:center;">NUEVA TANDA (ADMIN)</h4>
+                <input type="text" id="nombre-produccion" class="input-dark" placeholder="Producto (Ej: Churros)">
+                <div id="receta-inputs" style="margin-top:10px;"></div>
+                <input type="number" id="cant-producida" class="input-dark" placeholder="Unidades obtenidas (ej: 120)">
+                
+                <div id="resultado-produccion" class="glass-card" style="background:rgba(0,0,0,0.2); margin-top:10px; display:none; padding:10px;">
+                    <p style="margin:5px 0; font-size:0.85rem;">Costo Materia: <b id="costo-tanda-total" style="color:var(--danger)">$0</b></p>
+                    <p style="margin:5px 0; font-size:0.85rem;">Costo Unidad: <b id="costo-por-unidad" style="color:var(--success)">$0</b></p>
+                </div>
+                
+                <div style="display:flex; gap:5px; margin-top:10px;">
+                    <button class="btn-gold" onclick="calcularProduccion()" style="padding:10px; flex:1;">🧮 CALCULAR</button>
+                    <button class="btn-gold" onclick="guardarProduccion()" style="background:var(--success); color:black; padding:10px; flex:1;">💾 GUARDAR</button>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h4 style="margin-top:0; color:var(--success); text-align:center;">📋 REPORTADO POR EMPLEADOS</h4>
+                <div id="produccion-empleados-list"></div>
+            </div>
+
+            <h4 style="color:var(--gold); font-size:0.9rem; text-align:center;">HISTORIAL DE PRODUCCIÓN (ADMIN)</h4>
+            <div style="display:flex; gap:5px; margin-bottom:15px;">
+                <button class="btn-gold" style="font-size:0.7rem; background:rgba(255,255,255,0.1); color:white; padding:10px;" onclick="verReporteProduccion('semana')">VER SEMANA</button>
+                <button class="btn-gold" style="font-size:0.7rem; background:rgba(255,255,255,0.1); color:white; padding:10px;" onclick="verReporteProduccion('mes')">VER MES</button>
+            </div>
+            <div id="produccion-dia-list"></div>
+        </div>
+    </div>
+
+    <div id="tab-f" class="admin-content" style="display:none">
+        <div class="glass-card" style="padding: 15px;">
+            <h4 style="margin-top:0; margin-bottom: 10px; color:var(--gold)">PARÁMETROS DEL MES</h4>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.85rem">Días trabajados o a trabajar:</span>
+                <input type="number" id="dias-trabajo" class="input-dark" value="24" oninput="renderAllViews()" style="width:70px; padding:8px; margin:0; text-align:center;">
+            </div>
+        </div>
+        <div id="fijos-resumen" class="glass-card"></div>
+        <h4 style="color:var(--gold); font-size:0.9rem;">TUS COSTOS FIJOS MENSUALES</h4>
+        <div id="fijos-list"></div>
+        <button class="btn-gold" onclick="nuevoGastoFijo()">+ CARGAR GASTO FIJO</button>
+    </div>
+
+    <div id="tab-s" class="admin-content" style="display:none">
+        <div id="fichaje-list" class="glass-card"></div>
         <div id="staff-list"></div>
         <button class="btn-gold" onclick="nuevoEmp()">+ AGREGAR EMPLEADO</button>
     </div>
 
-    <div id="tab-p" class="admin-tab" style="display:none">
+    <div id="tab-p" class="admin-content" style="display:none">
         <div id="prod-admin-list"></div>
-        <button class="btn-gold" onclick="nuevoProd()">+ AGREGAR PRODUCTO</button>
-        <button onclick="reiniciarSistema()" class="btn-gold" style="background:var(--danger); color:white; margin-top:30px; font-size:0.6rem;">⚠️ REINICIAR TODO</button>
+        <button class="btn-gold" onclick="nuevoProd()">+ AGREGAR AL MENÚ</button>
+    </div>
+
+    <hr style="border:0; border-top:1px solid rgba(255,107,107,0.3); margin:30px 0 15px 0;">
+    <button onclick="iniciarReinicio()" class="btn-del" style="width:100%; padding:15px; font-size:0.9rem; border:2px solid var(--danger);">
+        ⚠️ REINICIAR SISTEMA DE CERO ⚠️
+    </button>
+</div>
+
+<div id="view-ventas" class="container">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 id="welcome-msg" style="margin:0; font-size:1.1rem; color:var(--gold)"></h2>
+        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V13.4</span>
+    </div>
+    
+    <div id="grid-productos" style="display: flex; flex-wrap: wrap; justify-content: space-between;"></div>
+    
+    <div class="glass-card" style="margin-top:20px;">
+        <div id="cart-list"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin:15px 0;">
+            <span style="font-weight:bold; opacity: 0.7;">TOTAL A COBRAR</span>
+            <span id="total-val" style="color:var(--gold); font-size: 2.2rem; font-weight: 800;">$0</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <select id="metodo-pago" class="input-dark" style="flex:1"><option value="Efectivo">💵 EFECTIVO</option><option value="Transferencia">📱 TRANSF.</option></select>
+            <input type="number" id="paga-con" class="input-dark" style="flex:1" placeholder="RECIBÍ $" oninput="calcVuelto()">
+        </div>
+        <div style="text-align:center; padding: 10px;">Vuelto: <span id="vuelto-val" style="color:var(--success); font-weight:bold; font-size:1.5rem;">$0</span></div>
+        <button onclick="confirmarVenta()" class="btn-gold">🚀 FINALIZAR VENTA</button>
+        
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">
+        
+        <button onclick="document.getElementById('modal-prod-emp').style.display='flex'" class="btn-outline" style="margin-bottom: 10px;">📋 REPORTAR PRODUCCIÓN</button>
+        <button onclick="cargarGasto()" class="btn-del" style="width:100%; margin-bottom: 15px; padding: 14px; font-size: 0.85rem;">💸 REGISTRAR GASTO DIARIO</button>
+        <button onclick="ficharSalida()" style="background:none; border:none; color:var(--danger); width:100%; font-weight:bold; font-size:0.75rem;">CERRAR TURNO / SALIDA</button>
     </div>
 </div>
 
 <nav id="navbar">
-    <div class="nav-item" id="nav-v" onclick="showView('view-ventas')">💰 VENTAS</div>
-    <div id="nav-admin-btn" class="nav-item" style="display:none" onclick="showView('view-admin')">⚙️ ADMIN</div>
-    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">🚪 SALIR</div>
+    <div id="nav-ventas-btn" class="nav-item" onclick="showView('view-ventas')"><span>💰</span><br>CAJA</div>
+    <div id="nav-admin-btn" class="nav-item" style="display:none" onclick="showView('view-admin')"><span>⚙️</span><br>PANEL ADMIN</div>
+    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)"><span>🚪</span><br>SALIR</div>
 </nav>
 
+<div class="modal-overlay" id="modal-reporte">
+    <div class="modal-content">
+        <h3 id="modal-titulo" style="color:var(--gold); margin-top:0; text-align:center;">REPORTE</h3>
+        <div id="modal-body" style="font-size:0.85rem; margin-bottom:20px;"></div>
+        <button class="btn-gold" onclick="document.getElementById('modal-reporte').style.display='none'">CERRAR</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-prod-emp">
+    <div class="modal-content">
+        <h3 style="color:var(--gold); margin-top:0; text-align:center;">📋 CARGAR PRODUCCIÓN</h3>
+        <input type="text" id="emp-prod-nombre" class="input-dark" placeholder="¿Qué elaboraste? (Ej: Churros)">
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <input type="number" id="emp-prod-cant" class="input-dark" placeholder="Cantidad" style="flex:1">
+            <select id="emp-prod-tipo" class="input-dark" style="flex:1">
+                <option value="Unidades">Unidades</option>
+                <option value="Docenas">Docenas</option>
+            </select>
+        </div>
+        <button class="btn-gold" onclick="guardarProdEmpleado()" style="margin-top:20px;">🚀 ENVIAR REPORTE</button>
+        <button class="btn-del" onclick="document.getElementById('modal-prod-emp').style.display='none'" style="width:100%; margin-top:10px; padding:12px;">CANCELAR</button>
+    </div>
+</div>
+
 <script>
-    var firebaseConfig = { apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", projectId: "churrerialaunica-a2888", appId: "1:721969833627:web:8c0db201407a05f82c483e" };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", 
+        projectId: "churrerialaunica-a2888", 
+        appId: "1:721969833627:web:8c0db201407a05f82c483e" 
+    };
     firebase.initializeApp(firebaseConfig);
-    var db = firebase.firestore();
+    const db = firebase.firestore();
 
-    var user = ""; var cart = []; 
-    var db_local = { productos: [], ventas: [], staff: [], fichajes: [] };
-    var ultimoTicketText = "";
+    // --- ACTIVAR PERSISTENCIA (OFFLINE) ---
+    db.enablePersistence().catch((err) => { console.log("Fallo persistencia:", err.code); });
 
-    // Sincronización en tiempo real
-    db.collection("productos").onSnapshot(function(s) {
-        db_local.productos = [];
-        s.forEach(function(d) { var p = d.data(); p.id = d.id; db_local.productos.push(p); });
-        renderProductos(); renderAdminLists();
-    });
+    let user = ""; let cart = [];
+    let db_local = { productos: [], ventas: [], gastos: [], produccion: [], gastos_fijos: [], staff: [], fichajes: [], insumos: [], reportes_emp: [] };
 
-    db.collection("staff").onSnapshot(function(s) {
-        db_local.staff = [];
-        s.forEach(function(d) { var st = d.data(); st.id = d.id; db_local.staff.push(st); });
-        renderAdminLists();
-    });
+    function getHoyISO() { return new Date().toISOString().split('T')[0]; }
+    document.getElementById('calendar-filter').value = getHoyISO();
 
-    db.collection("ventas").orderBy("ts", "desc").onSnapshot(function(s) {
-        db_local.ventas = [];
-        s.forEach(function(d) { db_local.ventas.push(d.data()); });
-        renderHistorial();
-    });
-
-    db.collection("fichajes").orderBy("ts", "asc").onSnapshot(function(s) {
-        db_local.fichajes = [];
-        s.forEach(function(d) { var f = d.data(); f.id = d.id; db_local.fichajes.push(f); });
-        renderAdminLists();
-    });
-
-    function formatFecha(str) {
-        if(!str) return "";
-        var partes = str.split('/');
-        if(partes.length !== 3) return str;
-        var d = partes[0].padStart(2, '0');
-        var m = partes[1].padStart(2, '0');
-        return d + '/' + m + '/' + partes[2];
-    }
+    db.collection("productos").onSnapshot(s => { db_local.productos = s.docs.map(d => ({...d.data(), id: d.id})); renderProductos(); renderAdminLists(); });
+    db.collection("staff").onSnapshot(s => { db_local.staff = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
+    db.collection("insumos").onSnapshot(s => { db_local.insumos = s.docs.map(d => ({...d.data(), id: d.id})); renderInsumos(); renderRecetaInputs(); });
+    db.collection("fichajes").orderBy("ts", "desc").limit(50).onSnapshot(s => { db_local.fichajes = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
+    db.collection("ventas").orderBy("ts", "desc").onSnapshot(s => { db_local.ventas = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
+    db.collection("gastos").orderBy("ts", "desc").onSnapshot(s => { db_local.gastos = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
+    db.collection("produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.produccion = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
+    db.collection("gastos_fijos").onSnapshot(s => { db_local.gastos_fijos = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
+    db.collection("reportes_produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.reportes_emp = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
 
     window.handleLogin = function() {
-        var pin = document.getElementById('pin-input').value;
-        var adminPin = "325606";
-        var found = db_local.staff.find(function(s){ return s.p === pin; });
-        
-        if(!found && pin !== adminPin) return alert("PIN INCORRECTO");
-        user = (pin === adminPin) ? "Admin" : found.n;
+        const pin = document.getElementById('pin-input').value;
+        const found = db_local.staff.find(s => s.p === pin);
+        if(!found && pin !== "325606") return alert("PIN INCORRECTO");
+        user = (pin === "325606") ? "Admin" : found.n;
         document.getElementById('navbar').style.display = 'flex';
         if(user === "Admin") {
+            document.getElementById('nav-ventas-btn').style.display = 'none';
             document.getElementById('nav-admin-btn').style.display = 'block';
             showView('view-admin');
+            renderAllViews();
         } else {
+            document.getElementById('nav-admin-btn').style.display = 'none';
+            document.getElementById('nav-ventas-btn').style.display = 'block';
             showView('view-ventas');
             document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
-            var d = new Date();
-            var hoy = d.getDate() + "/" + (d.getMonth()+1) + "/" + d.getFullYear();
-            db.collection("fichajes").add({ 
-                u: user, f: hoy, h: d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), 
-                tipo: "ENTRADA", ts: firebase.firestore.FieldValue.serverTimestamp() 
-            });
+            fichar("ENTRADA");
         }
     };
 
-    window.renderAdminLists = function() {
-        // Staff lista de edición
-        var hS = "";
-        db_local.staff.forEach(function(s){
-            hS += '<div class="list-item"><span>'+s.n+' (PIN: '+s.p+')</span><button class="btn-del" onclick="borrarDoc(\'staff\',\''+s.id+'\')">🗑</button></div>';
-        });
-        document.getElementById('staff-list').innerHTML = hS;
-
-        // Menú lista de edición
-        var hP = "";
-        db_local.productos.forEach(function(p){
-            hP += '<div class="list-item"><span>'+p.n+' ($'+p.p+')</span><button class="btn-del" onclick="borrarDoc(\'productos\',\''+p.id+'\')">🗑</button></div>';
-        });
-        document.getElementById('prod-admin-list').innerHTML = hP;
-
-        // --- LÓGICA DE FICHAJES (CORREGIDA) ---
-        var calendarStaff = document.getElementById('calendar-staff').value; // AAAA-MM-DD
-        if(!calendarStaff) {
-            document.getElementById('fichaje-list').innerHTML = "<p style='opacity:0.5; text-align:center;'>Selecciona una fecha</p>";
-            return;
+    function fichar(tipoForzado = null) {
+        if(user === "Admin") return;
+        const d = new Date();
+        const fStr = d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
+        const hStr = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        let tipo = tipoForzado;
+        if(!tipo) {
+            const miUltimo = db_local.fichajes.find(f => f.u === user);
+            tipo = (miUltimo && miUltimo.tipo === "ENTRADA") ? "SALIDA" : "ENTRADA";
         }
-        var dSplit = calendarStaff.split('-');
-        var fBusqueda = dSplit[2] + "/" + dSplit[1] + "/" + dSplit[0];
-
-        var fichasDelDia = db_local.fichajes.filter(function(f){ 
-            return formatFecha(f.f) === fBusqueda; 
+        db.collection("fichajes").add({ u: user, f: fStr, h: hStr, tipo: tipo, ts: firebase.firestore.FieldValue.serverTimestamp() }).then(() => {
+            const msj = `Hola Michel, soy ${user}. Acabo de marcar mi ${tipo} el día ${fStr} a las ${hStr}.`;
+            const numAdmin = "5491155135012";
+            const urlWA = `https://wa.me/${numAdmin}?text=${encodeURIComponent(msj)}`;
+            window.open(urlWA, '_blank');
+            if(tipo === "SALIDA") setTimeout(() => location.reload(), 2000); 
         });
+    }
+    
+    window.ficharSalida = () => { if(confirm("¿MARCAR SALIDA Y AVISAR A MICHEL?")) fichar("SALIDA"); };
 
-        if(fichasDelDia.length === 0) {
-            document.getElementById('fichaje-list').innerHTML = "<p style='text-align:center;'>Sin registros este día</p>";
-        } else {
-            var res = {};
-            fichasDelDia.forEach(function(f){
-                if(!res[f.u]) res[f.u] = { e: '--:--', s: '--:--' };
-                if(f.tipo === "ENTRADA") res[f.u].e = f.h;
-                if(f.tipo === "SALIDA") res[f.u].s = f.h;
-            });
-
-            var hF = "<table><tr><th>Empleado</th><th>Entrada</th><th>Salida</th></tr>";
-            for(var emp in res) {
-                hF += "<tr><td>"+emp+"</td><td style='color:var(--success)'>"+res[emp].e+"</td><td style='color:var(--danger)'>"+res[emp].s+"</td></tr>";
-            }
-            document.getElementById('fichaje-list').innerHTML = hF + "</table>";
-        }
+    window.renderAllViews = () => {
+        renderHistorial();
+        renderProduccionList();
+        renderGastosFijos();
+        renderAdminLists();
     };
 
-    window.registrarSalida = function() { 
-        if(confirm("¿Cerrar turno?")) {
-            var d = new Date();
-            var hoy = d.getDate() + "/" + (d.getMonth()+1) + "/" + d.getFullYear();
-            db.collection("fichajes").add({ 
-                u: user, f: hoy, h: d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), 
-                tipo: "SALIDA", ts: firebase.firestore.FieldValue.serverTimestamp() 
-            }).then(function(){
-                location.reload();
-            });
-        }
+    window.guardarProdEmpleado = () => {
+        const n = document.getElementById('emp-prod-nombre').value;
+        const c = document.getElementById('emp-prod-cant').value;
+        const tipoMedida = document.getElementById('emp-prod-tipo').value;
+        if(!n || !c) return alert("Completa producto y cantidad.");
+        const d = new Date();
+        const fStr = d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
+        db.collection("reportes_produccion").add({
+            u: user, n: n.toUpperCase(), c: parseFloat(c), tipo: tipoMedida,
+            turno: d.getHours() < 14 ? "Mañana" : "Tarde", f: fStr, ts: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            alert("REGISTRADO ✅");
+            document.getElementById('modal-prod-emp').style.display='none';
+        });
     };
 
     window.renderHistorial = function() {
-        var val = document.getElementById('calendar-filter').value;
+        const val = document.getElementById('calendar-filter').value;
         if(!val) return;
-        var dSplit = val.split('-');
-        var fBusqueda = dSplit[2] + "/" + dSplit[1] + "/" + dSplit[0];
-        var vD = db_local.ventas.filter(function(v){ return formatFecha(v.f) === fBusqueda; });
-        var m=0, t=0;
-        var tabla = "<table><tr><th>Hora</th><th>Pago</th><th>$</th></tr>";
-        vD.forEach(function(v){
-            if(v.turno === "Mañana") m += v.t; else t += v.t;
-            tabla += "<tr><td>"+v.h+"</td><td>"+v.m+"</td><td>$"+v.t+"</td></tr>";
+        const [y, m, d] = val.split('-');
+        const fBus = `${parseInt(d)}/${parseInt(m)}/${y}`;
+        const fBusZero = `${parseInt(d).toString().padStart(2,'0')}/${parseInt(m).toString().padStart(2,'0')}/${y}`;
+        const vD = db_local.ventas.filter(v => v.f === fBus || v.f === fBusZero);
+        const gD = db_local.gastos.filter(g => g.f === fBus || g.f === fBusZero);
+        const pD = db_local.produccion.filter(p => p.f === fBus || p.f === fBusZero);
+        let vM = 0, vT = 0, gT = 0, cP = 0;
+        let tabla = "<table><tr><th>Hora</th><th>Mov</th><th>Monto</th></tr>";
+        vD.slice().reverse().forEach(v => {
+            if(v.turno === "Mañana") vM += v.t; else vT += v.t;
+            tabla += `<tr><td>${v.h}</td><td>Venta (${v.m})</td><td style="color:var(--success)">+$${v.t}</td></tr>`;
         });
-        document.getElementById('stats-container').innerHTML = '<div class="stat-box"><div class="stat-label">TOTAL</div><div class="stat-val">$'+(m+t)+'</div></div><div style="display:flex; gap:5px;"><div class="stat-box" style="flex:1"><div class="stat-label">MAÑANA</div><div class="stat-val">$'+m+'</div></div><div class="stat-box" style="flex:1"><div class="stat-label">TARDE</div><div class="stat-val">$'+t+'</div></div></div>';
+        gD.forEach(g => { gT += g.monto; tabla += `<tr><td>${g.h}</td><td>${g.desc}</td><td style="color:var(--danger)">-$${g.monto}</td></tr>`; });
+        pD.forEach(p => cP += (p.costoTanda || 0));
+        let neto = (vM + vT) - gT - cP;
+        document.getElementById('stats-container').innerHTML = `
+            <div class="stat-box" style="border-color:var(--success);">
+                <div class="stat-label">GANANCIA OPERATIVA (DÍA)</div>
+                <div class="stat-val">$${neto.toFixed(2)}</div>
+            </div>`;
         document.getElementById('historial-list').innerHTML = tabla + "</table>";
     };
 
-    window.renderProductos = function() {
-        var h = "";
-        db_local.productos.forEach(function(p) { h += '<div class="btn-item" onclick="addCart(\''+p.n+'\','+p.p+')">🍩<br>'+p.n+'<br>$'+p.p+'</div>'; });
-        document.getElementById('grid-productos').innerHTML = h;
+    window.renderProduccionList = function() {
+        const val = document.getElementById('calendar-filter').value;
+        const [y, m, d] = val.split('-');
+        const fBus = `${parseInt(d)}/${parseInt(m)}/${y}`;
+        const fBusZero = `${parseInt(d).toString().padStart(2,'0')}/${parseInt(m).toString().padStart(2,'0')}/${y}`;
+        const pD = db_local.produccion.filter(p => p.f === fBus || p.f === fBusZero);
+        document.getElementById('produccion-dia-list').innerHTML = pD.map(p => `<div class="list-item"><div><b>${p.n}</b><br><small>${p.unidades} u.</small></div><div>$${p.costoTanda.toFixed(2)}</div></div>`).join('');
+        const empD = db_local.reportes_emp.filter(r => r.f === fBus || r.f === fBusZero);
+        document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => `<div class="list-item"><div><b>${r.n}</b></div><div>${r.c} ${r.tipo}</div></div>`).join('');
     };
-    window.addCart = function(n, p) { cart.push({n:n, p:p}); renderCart(); };
-    window.borrarDelCarrito = function(idx) { cart.splice(idx, 1); renderCart(); };
-    window.renderCart = function() {
-        var h = ""; cart.forEach(function(item, i) { h += '<div class="list-item"><span>'+item.n+' ($'+item.p+')</span><button class="btn-del" onclick="borrarDelCarrito('+i+')">🗑</button></div>'; });
-        document.getElementById('cart-list').innerHTML = h;
-        var total = 0; cart.forEach(function(i){ total += i.p; });
-        document.getElementById('total-val').innerText = "$" + total;
-        calcVuelto();
+
+    window.renderGastosFijos = function() {
+        let totalF = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0);
+        let dias = parseInt(document.getElementById('dias-trabajo').value) || 24;
+        let cD = totalF / dias;
+        document.getElementById('fijos-list').innerHTML = db_local.gastos_fijos.map(g => `<div class="list-item"><span>${g.n}</span> <b>$${g.m}</b></div>`).join('');
+        document.getElementById('fijos-resumen').innerHTML = `<div class="stat-box"><div class="stat-label">FIJO DIARIO PRORRATEADO</div><div class="stat-val">$${cD.toFixed(2)}</div></div>`;
     };
-    window.calcVuelto = function() {
-        var total = 0; cart.forEach(function(i){ total += i.p; });
-        var paga = parseFloat(document.getElementById('paga-con').value) || 0;
-        document.getElementById('vuelto-val').innerText = "$" + Math.max(0, paga - total);
+
+    window.nuevoGastoFijo = () => { let n = prompt("Gasto:"), m = parseFloat(prompt("Monto:")); n&&m && db.collection("gastos_fijos").add({n:n.toUpperCase(), m}); };
+    window.nuevoInsumo = () => { let n=prompt("Insumo:"), p=parseFloat(prompt("Precio:")), q=parseFloat(prompt("Cant:")), u=prompt("u (kg/lt):"); n&&p&&q&&db.collection("insumos").add({n:n.toUpperCase(),p,q,u,cu:p/q}); };
+    function renderInsumos() { document.getElementById('insumos-list').innerHTML = db_local.insumos.map(i => `<div class="list-item"><span>${i.n}</span><b>$${i.cu.toFixed(2)}/${i.u}</b></div>`).join(''); }
+    function renderRecetaInputs() { document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => `<div style="display:flex; gap:5px; margin-bottom:5px;"><span>${i.n}</span><input type="number" step="0.01" class="input-dark receta-cant" data-id="${i.id}" data-cu="${i.cu}" style="padding:5px;"></div>`).join(''); }
+
+    let ultC = 0, ultU = 0;
+    window.calcularProduccion = () => {
+        let t = 0; document.querySelectorAll('.receta-cant').forEach(i => t += (parseFloat(i.value)||0)*parseFloat(i.dataset.cu));
+        ultU = parseFloat(document.getElementById('cant-producida').value)||0;
+        ultC = t;
+        document.getElementById('resultado-produccion').style.display = 'block';
+        document.getElementById('costo-tanda-total').innerText = "$"+t.toFixed(2);
     };
-    window.confirmarVenta = function() {
-        if(cart.length === 0) return;
-        var total = 0; cart.forEach(function(i){ total += i.p; });
-        var paga = parseFloat(document.getElementById('paga-con').value) || total;
-        var ahora = new Date();
-        var fechaStr = ahora.getDate() + "/" + (ahora.getMonth()+1) + "/" + ahora.getFullYear();
-        var horaStr = ahora.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        db.collection("ventas").add({ t: total, u: user, m: document.getElementById('metodo-pago').value, f: fechaStr, h: horaStr, turno: ahora.getHours() < 14 ? "Mañana" : "Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() }).then(function() {
-            var resumen = ""; cart.forEach(function(i){ resumen += i.n + " $" + i.p + "\n"; });
-            ultimoTicketText = "      LA ÚNICA\n--------------------------\nFecha: "+fechaStr+"\nHora: "+horaStr+"\nAtendió: "+user+"\n--------------------------\n"+resumen+"--------------------------\nTOTAL:         $"+total+"\nPagó con:      $"+paga+"\nVuelto:        $"+Math.max(0, paga-total)+"\n--------------------------\n ¡Gracias por tu compra!";
-            document.getElementById('ticket-content').innerText = ultimoTicketText;
-            document.getElementById('modal-ticket').style.display = 'flex';
-            cart = []; document.getElementById('paga-con').value = ""; renderCart();
-        });
+
+    window.guardarProduccion = () => {
+        let n = document.getElementById('nombre-produccion').value;
+        if(!n || ultC<=0) return alert("Calcula y pon nombre.");
+        const d = new Date();
+        db.collection("produccion").add({ n:n.toUpperCase(), costoTanda:ultC, unidades:ultU, f:d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear(), ts:firebase.firestore.FieldValue.serverTimestamp() })
+        .then(() => { alert("GUARDADO ✅"); document.getElementById('resultado-produccion').style.display='none'; });
     };
-    window.showView = function(id) {
-        document.getElementById('view-login').style.display = 'none'; document.getElementById('view-ventas').style.display = 'none'; document.getElementById('view-admin').style.display = 'none';
-        document.getElementById(id).style.display = 'block';
-    };
-    window.switchTab = function(t) {
-        document.getElementById('tab-v').style.display = t === 'v' ? 'block' : 'none';
-        document.getElementById('tab-s').style.display = t === 's' ? 'block' : 'none';
-        document.getElementById('tab-p').style.display = t === 'p' ? 'block' : 'none';
-    };
-    window.enviarTicketWA = function() {
-        var tel = document.getElementById('whatsapp-cliente').value;
-        if(tel) window.open("https://wa.me/549"+tel+"?text="+encodeURIComponent(ultimoTicketText), "_blank");
-    };
-    window.cerrarTicket = function() { document.getElementById('modal-ticket').style.display = 'none'; };
-    window.borrarDoc = function(col, id) { if(confirm("¿Eliminar?")) db.collection(col).doc(id).delete(); };
-    window.nuevoEmp = function() { var n=prompt("Nombre:"), p=prompt("PIN:"); if(n&&p) db.collection("staff").add({n:n, p:p}); };
-    window.nuevoProd = function() { var n=prompt("Producto:"), p=parseInt(prompt("Precio:")); if(n&&p) db.collection("productos").add({n:n, p:p}); };
-    window.reiniciarSistema = function() {
-        if(confirm("¿BORRAR TODAS LAS VENTAS Y FICHAJES?")) {
-            db.collection("ventas").get().then(function(s){ s.forEach(function(d){ d.ref.delete(); }); });
-            db.collection("fichajes").get().then(function(s){ s.forEach(function(d){ d.ref.delete(); }); });
+
+    window.cargarGasto = () => {
+        let d=prompt("¿Qué se compró?"), m=parseFloat(prompt("Monto:"));
+        if(d&&m) {
+            const now = new Date();
+            db.collection("gastos").add({ desc: d.toUpperCase(), monto: m, u: user, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<14?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() });
         }
+    };
+
+    window.showView = (id) => {
+        document.querySelectorAll('.container, #view-login').forEach(v => v.style.display='none');
+        document.getElementById(id).style.display='block';
+    };
+
+    window.switchAdminTab = (t) => {
+        document.querySelectorAll('.admin-content').forEach(c => c.style.display='none');
+        document.getElementById('tab-'+t).style.display='block';
+    };
+
+    window.renderProductos = () => {
+        document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}',${p.p})">🍩<br>${p.n}<br><b>$${p.p}</b></div>`).join('');
+    };
+
+    window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
+    window.renderCart = () => {
+        let t = cart.reduce((a,b)=>a+b.p,0);
+        document.getElementById('cart-list').innerHTML = cart.map((it, i) => `<div class="list-item">${it.n} <b>$${it.p}</b> <button onclick="cart.splice(${i},1);renderCart()">✕</button></div>`).join('');
+        document.getElementById('total-val').innerText = "$"+t;
+    };
+
+    window.confirmarVenta = () => {
+        if(!cart.length) return;
+        const t = cart.reduce((a,b)=>a+b.p,0); const now = new Date();
+        db.collection("ventas").add({ t, u: user, m: document.getElementById('metodo-pago').value, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<14?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() })
+        .then(() => { alert("VENTA OK ✅"); cart=[]; renderCart(); });
+    };
+
+    window.renderAdminLists = () => {
+        document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item">${s.n} <button onclick="borrarDoc('staff','${s.id}')">🗑️</button></div>`).join('');
+        document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item">${p.n} ($${p.p}) <button onclick="borrarDoc('productos','${p.id}')">🗑️</button></div>`).join('');
+    };
+
+    window.borrarDoc = (c, i) => confirm("¿ELIMINAR?") && db.collection(c).doc(i).delete();
+    window.nuevoEmp = () => { let n=prompt("Nombre:"), p=prompt("PIN:"); n&&p && db.collection("staff").add({n:n.toUpperCase(), p}); };
+    window.nuevoProd = () => { let n=prompt("Prod:"), p=prompt("Precio:"); n&&p && db.collection("productos").add({n:n.toUpperCase(), p:parseInt(p)}); };
+
+    window.iniciarReinicio = async () => {
+        if(!confirm("⚠️ ¿BORRAR TODO?")) return;
+        const cols = ['ventas', 'gastos', 'produccion', 'fichajes', 'reportes_produccion'];
+        for(let c of cols) {
+            let snap = await db.collection(c).get();
+            snap.docs.forEach(d => d.ref.delete());
+        }
+        alert("SISTEMA LIMPIO ✅");
     };
 </script>
 </body>
