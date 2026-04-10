@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - CONTROL TOTAL V13.6 OFFLINE</title>
+    <title>LA ÚNICA - CONTROL TOTAL V13.7 OFFLINE</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -156,8 +156,6 @@
         .nav-item.active { color: var(--gold); }
         .nav-item .material-symbols-outlined { font-size: 1.6rem; }
 
-        .badge-cost { background: var(--gold); color: #000; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; }
-        
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th { color: var(--gold); text-align: left; padding: 10px; border-bottom: 1px solid var(--glass); }
         td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -186,7 +184,14 @@
 </div>
 
 <div id="view-admin" class="container">
-    <input type="date" id="calendar-filter" class="input-dark" onchange="renderAllViews()" style="margin-bottom: 15px;">
+    <div style="display:flex; gap:10px; margin-bottom: 15px;">
+        <input type="date" id="calendar-filter" class="input-dark" onchange="renderAllViews()" style="flex:1;">
+        <select id="rango-tiempo" class="input-dark" onchange="renderAllViews()" style="flex:1;">
+            <option value="dia">VER DÍA</option>
+            <option value="semana">VER ÚLT. 7 DÍAS</option>
+            <option value="mes">VER MES ACTUAL</option>
+        </select>
+    </div>
 
     <div class="nav-tabs" id="main-admin-tabs">
         <button class="tab-btn active" id="btn-tab-v" onclick="switchAdminTab('v')"><span class="material-symbols-outlined">point_of_sale</span> VENTAS</button>
@@ -197,6 +202,10 @@
     </div>
 
     <div id="tab-v" class="admin-content">
+        <button onclick="exportarExcel()" class="btn-gold" style="background:var(--success); color:black; margin-bottom:15px; box-shadow: 0 4px 15px rgba(81, 207, 102, 0.2);">
+            <span class="material-symbols-outlined">table_view</span> EXPORTAR EXCEL
+        </button>
+        
         <div id="stats-container"></div>
         <div id="historial-list" class="glass-card"></div>
     </div>
@@ -217,11 +226,12 @@
                 <h4 style="margin-top:0; color:var(--gold); text-align:center;">NUEVA TANDA (ADMIN)</h4>
                 <input type="text" id="nombre-produccion" class="input-dark" placeholder="Producto (Ej: Churros)">
                 <div id="receta-inputs" style="margin-top:10px;"></div>
-                <input type="number" id="cant-producida" class="input-dark" placeholder="Unidades obtenidas (ej: 120)">
+                <input type="number" id="cant-producida" class="input-dark" placeholder="Unidades totales obtenidas">
                 
                 <div id="resultado-produccion" class="glass-card" style="background:rgba(0,0,0,0.2); margin-top:10px; display:none; padding:10px;">
-                    <p style="margin:5px 0; font-size:0.85rem;">Costo Materia: <b id="costo-tanda-total" style="color:var(--danger)">$0</b></p>
-                    <p style="margin:5px 0; font-size:0.85rem;">Costo Unidad: <b id="costo-por-unidad" style="color:var(--success)">$0</b></p>
+                    <p style="margin:5px 0; font-size:0.85rem;">Costo Total Materia: <b id="costo-tanda-total" style="color:var(--danger)">$0</b></p>
+                    <p style="margin:5px 0; font-size:0.85rem;">Costo x Unidad: <b id="costo-por-unidad" style="color:var(--white)">$0</b></p>
+                    <p style="margin:5px 0; font-size:0.85rem;">Costo x Docena: <b id="costo-por-docena" style="color:var(--gold); font-size:1.1rem;">$0</b></p>
                 </div>
                 
                 <div style="display:flex; gap:5px; margin-top:10px;">
@@ -235,11 +245,7 @@
                 <div id="produccion-empleados-list"></div>
             </div>
 
-            <h4 style="color:var(--gold); font-size:0.9rem; text-align:center;">HISTORIAL DE PRODUCCIÓN (ADMIN)</h4>
-            <div style="display:flex; gap:5px; margin-bottom:15px;">
-                <button class="btn-gold" style="font-size:0.7rem; background:rgba(255,255,255,0.1); color:white; padding:10px;" onclick="verReporteProduccion('semana')">VER SEMANA</button>
-                <button class="btn-gold" style="font-size:0.7rem; background:rgba(255,255,255,0.1); color:white; padding:10px;" onclick="verReporteProduccion('mes')">VER MES</button>
-            </div>
+            <h4 style="color:var(--gold); font-size:0.9rem; text-align:center;">HISTORIAL DE PRODUCCIÓN / COSTOS</h4>
             <div id="produccion-dia-list"></div>
         </div>
     </div>
@@ -260,7 +266,7 @@
 
     <div id="tab-s" class="admin-content" style="display:none">
         <div class="glass-card" style="padding:15px;">
-            <h4 style="margin-top:0; color:var(--gold); text-align:center;">RELOJ DE FICHADAS (DÍA)</h4>
+            <h4 style="margin-top:0; color:var(--gold); text-align:center;">RELOJ DE FICHADAS</h4>
             <div id="fichaje-list"></div>
         </div>
         <h4 style="color:var(--gold); font-size:0.9rem;">GESTIÓN DE PERSONAL</h4>
@@ -282,7 +288,7 @@
 <div id="view-ventas" class="container">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 id="welcome-msg" style="margin:0; font-size:1.1rem; color:var(--gold)"></h2>
-        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V13.6</span>
+        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V13.7</span>
     </div>
     
     <div id="grid-productos" style="display: flex; flex-wrap: wrap; justify-content: space-between;"></div>
@@ -314,17 +320,9 @@
     <div class="nav-item" onclick="location.reload()" style="color:var(--danger)"><span class="material-symbols-outlined">exit_to_app</span> SALIR</div>
 </nav>
 
-<div class="modal-overlay" id="modal-reporte">
-    <div class="modal-content">
-        <h3 id="modal-titulo" style="color:var(--gold); margin-top:0; text-align:center;">REPORTE</h3>
-        <div id="modal-body" style="font-size:0.85rem; margin-bottom:20px;"></div>
-        <button class="btn-gold" onclick="document.getElementById('modal-reporte').style.display='none'">CERRAR</button>
-    </div>
-</div>
-
 <div class="modal-overlay" id="modal-prod-emp">
     <div class="modal-content">
-        <h3 style="color:var(--gold); margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;"><span class="material-symbols-outlined">assignment_add</span> CARGAR PRODUCCIÓN</h3>
+        <h3 style="color:var(--gold); margin-top:0; text-align:center;">CARGAR PRODUCCIÓN</h3>
         <input type="text" id="emp-prod-nombre" class="input-dark" placeholder="¿Qué elaboraste? (Ej: Churros)">
         <div style="display:flex; gap:10px; margin-top:10px;">
             <input type="number" id="emp-prod-cant" class="input-dark" placeholder="Cantidad" style="flex:1">
@@ -345,7 +343,7 @@
         projectId: "churrerialaunica-a2888", 
         appId: "1:721969833627:web:8c0db201407a05f82c483e" 
     };
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.firestore();
 
     db.enablePersistence().catch((err) => { console.log("Fallo persistencia:", err.code); });
@@ -359,12 +357,32 @@
     db.collection("productos").onSnapshot(s => { db_local.productos = s.docs.map(d => ({...d.data(), id: d.id})); renderProductos(); renderAdminLists(); });
     db.collection("staff").onSnapshot(s => { db_local.staff = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
     db.collection("insumos").onSnapshot(s => { db_local.insumos = s.docs.map(d => ({...d.data(), id: d.id})); renderInsumos(); renderRecetaInputs(); });
-    db.collection("fichajes").orderBy("ts", "desc").limit(100).onSnapshot(s => { db_local.fichajes = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
+    db.collection("fichajes").orderBy("ts", "desc").limit(200).onSnapshot(s => { db_local.fichajes = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
     db.collection("ventas").orderBy("ts", "desc").onSnapshot(s => { db_local.ventas = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
     db.collection("gastos").orderBy("ts", "desc").onSnapshot(s => { db_local.gastos = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
     db.collection("produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.produccion = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
     db.collection("gastos_fijos").onSnapshot(s => { db_local.gastos_fijos = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
     db.collection("reportes_produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.reportes_emp = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
+
+    // Lógica para filtrar por día, semana o mes
+    function isDateInRange(fStr, rango, fechaBaseISO) {
+        if(!fStr) return false;
+        let [d, m, y] = fStr.split('/');
+        let docDate = new Date(y, m-1, d);
+        let [by, bm, bd] = fechaBaseISO.split('-');
+        let baseDate = new Date(by, bm-1, bd);
+
+        if (rango === 'dia') {
+            return docDate.getDate() === baseDate.getDate() && docDate.getMonth() === baseDate.getMonth() && docDate.getFullYear() === baseDate.getFullYear();
+        } else if (rango === 'semana') {
+            let weekAgo = new Date(baseDate);
+            weekAgo.setDate(baseDate.getDate() - 6);
+            return docDate >= weekAgo && docDate <= baseDate;
+        } else if (rango === 'mes') {
+            return docDate.getMonth() === baseDate.getMonth() && docDate.getFullYear() === baseDate.getFullYear();
+        }
+        return false;
+    }
 
     window.handleLogin = function() {
         const pin = document.getElementById('pin-input').value;
@@ -398,8 +416,7 @@
         }
         db.collection("fichajes").add({ u: user, f: fStr, h: hStr, tipo: tipo, ts: firebase.firestore.FieldValue.serverTimestamp() }).then(() => {
             const msj = `Hola Michel, soy ${user}. Acabo de marcar mi ${tipo} el día ${fStr} a las ${hStr}.`;
-            const numAdmin = "5491155135012";
-            const urlWA = `https://wa.me/${numAdmin}?text=${encodeURIComponent(msj)}`;
+            const urlWA = `https://wa.me/5491155135012?text=${encodeURIComponent(msj)}`;
             window.open(urlWA, '_blank');
             if(tipo === "SALIDA") setTimeout(() => location.reload(), 2000); 
         });
@@ -432,74 +449,79 @@
         });
     };
 
-    // CORRECCIÓN: Cálculo de ganancia restando todo (producción y prorrateo de fijos)
     window.renderHistorial = function() {
         const val = document.getElementById('calendar-filter').value;
+        const rango = document.getElementById('rango-tiempo').value;
         if(!val) return;
-        const [y, m, d] = val.split('-');
-        const fBus = `${parseInt(d)}/${parseInt(m)}/${y}`;
-        const fBusZero = `${parseInt(d).toString().padStart(2,'0')}/${parseInt(m).toString().padStart(2,'0')}/${y}`;
         
-        const vD = db_local.ventas.filter(v => v.f === fBus || v.f === fBusZero);
-        const gD = db_local.gastos.filter(g => g.f === fBus || g.f === fBusZero);
-        const pD = db_local.produccion.filter(p => p.f === fBus || p.f === fBusZero);
+        const vD = db_local.ventas.filter(v => isDateInRange(v.f, rango, val));
+        const gD = db_local.gastos.filter(g => isDateInRange(g.f, rango, val));
+        const pD = db_local.produccion.filter(p => isDateInRange(p.f, rango, val));
         
         let vM = 0, vT = 0, gT = 0, cP = 0;
-        let tabla = "<table><tr><th>Hora</th><th>Mov</th><th>Monto</th></tr>";
+        let tabla = "<table><tr><th>Fecha/Hora</th><th>Movimiento</th><th>Monto</th></tr>";
         
         vD.slice().reverse().forEach(v => {
             if(v.turno === "Mañana") vM += v.t; else vT += v.t;
-            tabla += `<tr><td>${v.h}</td><td>Venta (${v.m})</td><td style="color:var(--success)">+$${v.t}</td></tr>`;
+            tabla += `<tr><td>${v.f} ${v.h}</td><td>Venta (${v.m})</td><td style="color:var(--success)">+$${v.t}</td></tr>`;
         });
         
         gD.forEach(g => { 
             gT += g.monto; 
-            tabla += `<tr><td>${g.h}</td><td>${g.desc}</td><td style="color:var(--danger)">-$${g.monto}</td></tr>`; 
+            tabla += `<tr><td>${g.f} ${g.h}</td><td>${g.desc}</td><td style="color:var(--danger)">-$${g.monto}</td></tr>`; 
         });
         
         pD.forEach(p => cP += (p.costoTanda || 0));
         
         let diasFijos = parseInt(document.getElementById('dias-trabajo').value) || 24;
         let cFijoDiario = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0) / diasFijos;
+        let multiplicadorFijo = rango === 'dia' ? 1 : (rango === 'semana' ? 7 : 30);
+        let cFijoAplicado = cFijoDiario * multiplicadorFijo;
         
-        let neto = (vM + vT) - gT - cP - cFijoDiario;
+        let neto = (vM + vT) - gT - cP - cFijoAplicado;
         let colorNeto = neto >= 0 ? 'var(--success)' : 'var(--danger)';
+        
+        let tituloRango = rango === 'dia' ? 'DÍA' : (rango === 'semana' ? 'SEMANA' : 'MES');
 
         document.getElementById('stats-container').innerHTML = `
             <div class="stat-box" style="border-color:${colorNeto};">
-                <div class="stat-label">GANANCIA OPERATIVA NETA (DÍA)</div>
+                <div class="stat-label">GANANCIA OPERATIVA NETA (${tituloRango})</div>
                 <div class="stat-val" style="color:${colorNeto}">$${neto.toFixed(2)}</div>
-                <div style="font-size:0.65rem; color:#aaa; margin-top:5px;">Ventas: $${(vM+vT)} | Gastos Diarios: -$${gT} | Producción: -$${cP.toFixed(2)} | Fijo Prorrateado: -$${cFijoDiario.toFixed(2)}</div>
+                <div style="font-size:0.65rem; color:#aaa; margin-top:5px;">Ventas: $${(vM+vT)} | Gastos: -$${gT} | Prod: -$${cP.toFixed(2)} | Fijos Prorr: -$${cFijoAplicado.toFixed(2)}</div>
             </div>`;
         document.getElementById('historial-list').innerHTML = tabla + "</table>";
     };
 
     window.renderProduccionList = function() {
         const val = document.getElementById('calendar-filter').value;
-        const [y, m, d] = val.split('-');
-        const fBus = `${parseInt(d)}/${parseInt(m)}/${y}`;
-        const fBusZero = `${parseInt(d).toString().padStart(2,'0')}/${parseInt(m).toString().padStart(2,'0')}/${y}`;
-        const pD = db_local.produccion.filter(p => p.f === fBus || p.f === fBusZero);
-        document.getElementById('produccion-dia-list').innerHTML = pD.map(p => `<div class="list-item"><div><b>${p.n}</b><br><small>${p.unidades} u.</small></div><div>$${p.costoTanda.toFixed(2)}</div></div>`).join('');
-        const empD = db_local.reportes_emp.filter(r => r.f === fBus || r.f === fBusZero);
-        document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => `<div class="list-item"><div><b>${r.n}</b><br><small style="color:var(--gold)">${r.u} (${r.turno})</small></div><div>${r.c} ${r.tipo}</div></div>`).join('');
+        const rango = document.getElementById('rango-tiempo').value;
+        
+        const pD = db_local.produccion.filter(p => isDateInRange(p.f, rango, val));
+        document.getElementById('produccion-dia-list').innerHTML = pD.map(p => {
+            let cUni = p.unidades > 0 ? (p.costoTanda / p.unidades).toFixed(2) : 0;
+            let cDoc = p.unidades > 0 ? ((p.costoTanda / p.unidades) * 12).toFixed(2) : 0;
+            return `<div class="list-item">
+                <div>
+                    <b>${p.n}</b> <span style="font-size:0.7rem; color:#aaa">(${p.f})</span><br>
+                    <small>${p.unidades} u. | <b style="color:var(--success)">$${cUni} c/u</b> | <b style="color:var(--gold)">$${cDoc} x docena</b></small>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <b style="color:var(--danger)">-$${p.costoTanda.toFixed(2)}</b>
+                    <button class="icon-btn edit" onclick="editarCostoProduccion('${p.id}', '${p.n}', ${p.costoTanda})"><span class="material-symbols-outlined">edit</span></button>
+                    <button class="icon-btn delete" onclick="borrarDoc('produccion','${p.id}')"><span class="material-symbols-outlined">delete</span></button>
+                </div>
+            </div>`;
+        }).join('') || '<p style="text-align:center; font-size:0.8rem;">No hay registros en esta fecha.</p>';
+        
+        const empD = db_local.reportes_emp.filter(r => isDateInRange(r.f, rango, val));
+        document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => `<div class="list-item"><div><b>${r.n}</b> <span style="font-size:0.7rem; color:#aaa">(${r.f})</span><br><small style="color:var(--gold)">${r.u} (${r.turno})</small></div><div>${r.c} ${r.tipo}</div></div>`).join('');
     };
 
-    // NUEVO: Función para ver reporte de empleados en modal
-    window.verReporteProduccion = (rango) => {
-        let maxResultados = rango === 'semana' ? 20 : 50; 
-        let empD = db_local.reportes_emp.slice(0, maxResultados); // Toma los últimos registrados
-        
-        let html = empD.map(r => `
-            <div style="border-bottom:1px solid rgba(255,255,255,0.1); padding:10px 0;">
-                <b style="color:var(--gold)">${r.f}</b> - ${r.u} <br>
-                Elaboró: ${r.c} ${r.tipo} de ${r.n} (${r.turno})
-            </div>
-        `).join('');
-        
-        document.getElementById('modal-titulo').innerText = "REPORTE DE PRODUCCIÓN";
-        document.getElementById('modal-body').innerHTML = html || "<p style='text-align:center'>No hay reportes recientes.</p>";
-        document.getElementById('modal-reporte').style.display = 'flex';
+    window.editarCostoProduccion = (id, nombre, costoActual) => {
+        let nuevoCosto = prompt(`Editar COSTO TOTAL de materia prima para la tanda de ${nombre}:\n(Se ajustará la ganancia neta automáticamente)`, costoActual);
+        if(nuevoCosto && !isNaN(nuevoCosto)) {
+            db.collection("produccion").doc(id).update({ costoTanda: parseFloat(nuevoCosto) });
+        }
     };
 
     window.renderGastosFijos = function() {
@@ -519,15 +541,12 @@
     };
 
     window.editarGastoFijo = (id, nombreActual, montoActual) => {
-        let n = prompt("Editar nombre del gasto fijo:", nombreActual);
+        let n = prompt("Editar nombre:", nombreActual);
         if (!n) return;
         let m = parseFloat(prompt("Editar monto mensual:", montoActual));
-        if (m) {
-            db.collection("gastos_fijos").doc(id).update({ n: n.toUpperCase(), m: m });
-        }
+        if (m) db.collection("gastos_fijos").doc(id).update({ n: n.toUpperCase(), m: m });
     };
 
-    // CORRECCIÓN: Nuevo insumo pide explícitamente unidad y renderiza con su equivalente en gramos/ml
     window.nuevoGastoFijo = () => { let n = prompt("Gasto:"); if(!n) return; let m = parseFloat(prompt("Monto:")); m && db.collection("gastos_fijos").add({n:n.toUpperCase(), m}); };
     window.nuevoInsumo = () => { 
         let n=prompt("Nombre Insumo:"); if(!n) return; 
@@ -542,25 +561,14 @@
             let esKiloLitro = (i.u === 'kg' || i.u === 'lt');
             let unidadMenor = i.u === 'kg' ? 'g' : (i.u === 'lt' ? 'ml' : 'u');
             let costoMenor = esKiloLitro ? (i.cu / 1000) : i.cu;
-            
-            return `<div class="list-item">
-                <span>${i.n}</span>
-                <div style="text-align:right; margin-right:10px;">
-                    <b>$${i.cu.toFixed(2)} / ${i.u}</b>
-                    ${esKiloLitro ? `<br><small style="color:var(--gold); font-size:0.75rem;">$${costoMenor.toFixed(2)} / ${unidadMenor}</small>` : ''}
-                </div>
-                <button class="icon-btn delete" onclick="borrarDoc('insumos','${i.id}')"><span class="material-symbols-outlined">delete</span></button>
-            </div>`;
+            return `<div class="list-item"><span>${i.n}</span><div style="text-align:right; margin-right:10px;"><b>$${i.cu.toFixed(2)} / ${i.u}</b>${esKiloLitro ? `<br><small style="color:var(--gold); font-size:0.75rem;">$${costoMenor.toFixed(2)} / ${unidadMenor}</small>` : ''}</div><button class="icon-btn delete" onclick="borrarDoc('insumos','${i.id}')"><span class="material-symbols-outlined">delete</span></button></div>`;
         }).join(''); 
     }
     
     function renderRecetaInputs() { 
         document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => {
             let inputPlaceholder = i.u === 'kg' ? 'Cant. en Kg (ej: 0.5 para 500g)' : `Cant. en ${i.u}`;
-            return `<div style="display:flex; gap:5px; margin-bottom:5px;">
-                <span style="flex:1; align-self:center; font-size:0.85rem">${i.n}</span>
-                <input type="number" step="0.001" class="input-dark receta-cant" data-id="${i.id}" data-cu="${i.cu}" placeholder="${inputPlaceholder}" style="flex:2; padding:8px; margin:0;">
-            </div>`;
+            return `<div style="display:flex; gap:5px; margin-bottom:5px;"><span style="flex:1; align-self:center; font-size:0.85rem">${i.n}</span><input type="number" step="0.001" class="input-dark receta-cant" data-id="${i.id}" data-cu="${i.cu}" placeholder="${inputPlaceholder}" style="flex:2; padding:8px; margin:0;"></div>`;
         }).join(''); 
     }
 
@@ -571,129 +579,93 @@
         ultC = t;
         document.getElementById('resultado-produccion').style.display = 'block';
         document.getElementById('costo-tanda-total').innerText = "$"+t.toFixed(2);
-        if(ultU > 0) document.getElementById('costo-por-unidad').innerText = "$"+(t/ultU).toFixed(2);
+        if(ultU > 0) {
+            document.getElementById('costo-por-unidad').innerText = "$"+(t/ultU).toFixed(2);
+            document.getElementById('costo-por-docena').innerText = "$"+((t/ultU)*12).toFixed(2);
+        }
     };
 
     window.guardarProduccion = () => {
         let n = document.getElementById('nombre-produccion').value;
-        if(!n || ultC<=0) return alert("Calcula y pon nombre.");
+        if(!n || ultC<=0 || ultU<=0) return alert("Falta calcular, nombre o unidades totales.");
         const d = new Date();
         db.collection("produccion").add({ n:n.toUpperCase(), costoTanda:ultC, unidades:ultU, f:d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear(), ts:firebase.firestore.FieldValue.serverTimestamp() })
         .then(() => { alert("GUARDADO ✅"); document.getElementById('resultado-produccion').style.display='none'; document.getElementById('nombre-produccion').value=''; document.getElementById('cant-producida').value=''; document.querySelectorAll('.receta-cant').forEach(i=>i.value=''); });
     };
 
     window.cargarGasto = () => {
-        let d=prompt("¿Qué se compró?"); if(!d) return; 
-        let m=parseFloat(prompt("Monto:"));
-        if(m) {
-            const now = new Date();
-            db.collection("gastos").add({ desc: d.toUpperCase(), monto: m, u: user, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<14?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() });
-        }
+        let d=prompt("¿Qué se compró?"); if(!d) return; let m=parseFloat(prompt("Monto:"));
+        if(m) { const now = new Date(); db.collection("gastos").add({ desc: d.toUpperCase(), monto: m, u: user, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<14?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() }); }
     };
 
-    window.showView = (id) => {
-        document.querySelectorAll('.container, #view-login').forEach(v => v.style.display='none');
-        document.getElementById(id).style.display='block';
-    };
-
-    window.switchAdminTab = (t) => {
-        document.querySelectorAll('.admin-content').forEach(c => c.style.display='none');
-        document.getElementById('tab-'+t).style.display='block';
+    // EXPORTACIÓN A EXCEL
+    window.exportarExcel = () => {
+        const val = document.getElementById('calendar-filter').value;
+        const rango = document.getElementById('rango-tiempo').value;
         
-        document.querySelectorAll('#main-admin-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('btn-tab-'+t).classList.add('active');
-    };
-
-    window.switchSubTab = (t) => {
-        document.getElementById('sub-precios').style.display = (t === 'precios') ? 'block' : 'none';
-        document.getElementById('sub-produccion').style.display = (t === 'produccion') ? 'block' : 'none';
+        let vD = db_local.ventas.filter(v => isDateInRange(v.f, rango, val));
+        let gD = db_local.gastos.filter(g => isDateInRange(g.f, rango, val));
+        let pD = db_local.produccion.filter(p => isDateInRange(p.f, rango, val));
         
-        document.getElementById('btn-sub-precios').classList.remove('active');
-        document.getElementById('btn-sub-produccion').classList.remove('active');
-        document.getElementById('btn-sub-'+t).classList.add('active');
+        let ws_ventas = XLSX.utils.json_to_sheet(vD.map(v => ({ Fecha: v.f, Hora: v.h, Monto: v.t, Metodo: v.m, Turno: v.turno, Vendedor: v.u })));
+        let ws_gastos = XLSX.utils.json_to_sheet(gD.map(g => ({ Fecha: g.f, Hora: g.h, Monto: g.monto, Descripcion: g.desc, Registro: g.u })));
+        let ws_prod = XLSX.utils.json_to_sheet(pD.map(p => ({ Fecha: p.f, Producto: p.n, UnidadesTotales: p.unidades, CostoMateriaTotal: p.costoTanda, CostoPorUnidad: (p.costoTanda/p.unidades).toFixed(2), CostoPorDocena: ((p.costoTanda/p.unidades)*12).toFixed(2) })));
+        
+        let totalV = vD.reduce((acc, v) => acc + v.t, 0);
+        let totalG = gD.reduce((acc, g) => acc + g.monto, 0);
+        let totalP = pD.reduce((acc, p) => acc + (p.costoTanda||0), 0);
+        
+        let diasFijos = parseInt(document.getElementById('dias-trabajo').value) || 24;
+        let cFijoDiario = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0) / diasFijos;
+        let diasRango = rango === 'dia' ? 1 : (rango === 'semana' ? 7 : 30); 
+        let cFijoTotal = cFijoDiario * diasRango;
+        
+        let neto = totalV - totalG - totalP - cFijoTotal;
+        
+        let ws_resumen = XLSX.utils.json_to_sheet([
+            { Concepto: "Ventas Totales", Monto: totalV },
+            { Concepto: "Gastos Operativos Diarios", Monto: -totalG },
+            { Concepto: "Costo Producción Total", Monto: -totalP },
+            { Concepto: "Gastos Fijos Prorrateados", Monto: -cFijoTotal },
+            { Concepto: "GANANCIA OPERATIVA NETA", Monto: neto }
+        ]);
+
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws_resumen, "Resumen Ganancias");
+        XLSX.utils.book_append_sheet(wb, ws_ventas, "Ventas");
+        XLSX.utils.book_append_sheet(wb, ws_gastos, "Gastos Diarios");
+        XLSX.utils.book_append_sheet(wb, ws_prod, "Producción y Costos");
+        
+        let tituloRango = rango === 'dia' ? 'Dia' : (rango === 'semana' ? 'Semana' : 'Mes');
+        XLSX.writeFile(wb, `Reporte_LaUnica_${tituloRango}_${val}.xlsx`);
     };
 
-    // CORRECCIÓN: Dona glaseada rosa con efecto elegante
-    window.renderProductos = () => {
-        document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
-            <div class="btn-item" onclick="addCart('${p.n}',${p.p})">
-                <span style="font-size:2.8rem; text-shadow: 0 0 15px rgba(255,105,180,0.6); margin-bottom:5px;">🍩</span>
-                <span style="font-weight:600; font-size:0.9rem;">${p.n}</span>
-                <b style="color:var(--gold); font-size:1.1rem; margin-top:3px;">$${p.p}</b>
-            </div>`).join('');
-    };
-
+    window.showView = (id) => { document.querySelectorAll('.container, #view-login').forEach(v => v.style.display='none'); document.getElementById(id).style.display='block'; };
+    window.switchAdminTab = (t) => { document.querySelectorAll('.admin-content').forEach(c => c.style.display='none'); document.getElementById('tab-'+t).style.display='block'; document.querySelectorAll('#main-admin-tabs .tab-btn').forEach(btn => btn.classList.remove('active')); document.getElementById('btn-tab-'+t).classList.add('active'); };
+    window.switchSubTab = (t) => { document.getElementById('sub-precios').style.display = (t === 'precios') ? 'block' : 'none'; document.getElementById('sub-produccion').style.display = (t === 'produccion') ? 'block' : 'none'; document.getElementById('btn-sub-precios').classList.remove('active'); document.getElementById('btn-sub-produccion').classList.remove('active'); document.getElementById('btn-sub-'+t).classList.add('active'); };
+    window.renderProductos = () => { document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}',${p.p})"><span style="font-size:2.8rem; text-shadow: 0 0 15px rgba(255,105,180,0.6); margin-bottom:5px;">🍩</span><span style="font-weight:600; font-size:0.9rem;">${p.n}</span><b style="color:var(--gold); font-size:1.1rem; margin-top:3px;">$${p.p}</b></div>`).join(''); };
     window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
-    window.renderCart = () => {
-        let t = cart.reduce((a,b)=>a+b.p,0);
-        document.getElementById('cart-list').innerHTML = cart.map((it, i) => `<div class="list-item">${it.n} <b>$${it.p}</b> <button class="icon-btn delete" onclick="cart.splice(${i},1);renderCart()"><span class="material-symbols-outlined">close</span></button></div>`).join('');
-        document.getElementById('total-val').innerText = "$"+t;
-        calcVuelto();
-    };
-
-    window.calcVuelto = () => {
-        let t = cart.reduce((a,b)=>a+b.p,0);
-        let paga = parseFloat(document.getElementById('paga-con').value) || 0;
-        let v = paga - t;
-        document.getElementById('vuelto-val').innerText = v >= 0 ? "$"+v : "$0";
-    };
-
-    window.confirmarVenta = () => {
-        if(!cart.length) return;
-        const t = cart.reduce((a,b)=>a+b.p,0); const now = new Date();
-        db.collection("ventas").add({ t, u: user, m: document.getElementById('metodo-pago').value, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<12?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() })
-        .then(() => { alert("VENTA OK ✅"); cart=[]; renderCart(); document.getElementById('paga-con').value=''; calcVuelto();});
-    };
-
-    // CORRECCIÓN: Separación de staff por turnos y validación de las 12 PM
+    window.renderCart = () => { let t = cart.reduce((a,b)=>a+b.p,0); document.getElementById('cart-list').innerHTML = cart.map((it, i) => `<div class="list-item">${it.n} <b>$${it.p}</b> <button class="icon-btn delete" onclick="cart.splice(${i},1);renderCart()"><span class="material-symbols-outlined">close</span></button></div>`).join(''); document.getElementById('total-val').innerText = "$"+t; calcVuelto(); };
+    window.calcVuelto = () => { let t = cart.reduce((a,b)=>a+b.p,0); let paga = parseFloat(document.getElementById('paga-con').value) || 0; let v = paga - t; document.getElementById('vuelto-val').innerText = v >= 0 ? "$"+v : "$0"; };
+    window.confirmarVenta = () => { if(!cart.length) return; const t = cart.reduce((a,b)=>a+b.p,0); const now = new Date(); db.collection("ventas").add({ t, u: user, m: document.getElementById('metodo-pago').value, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<12?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() }).then(() => { alert("VENTA OK ✅"); cart=[]; renderCart(); document.getElementById('paga-con').value=''; calcVuelto();}); };
     window.renderAdminLists = () => {
         document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item">${s.n} <button class="icon-btn delete" onclick="borrarDoc('staff','${s.id}')"><span class="material-symbols-outlined">delete</span></button></div>`).join('');
         document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item">${p.n} ($${p.p}) <button class="icon-btn delete" onclick="borrarDoc('productos','${p.id}')"><span class="material-symbols-outlined">delete</span></button></div>`).join('');
         
-        let fHoy = document.getElementById('calendar-filter').value;
-        let [y, m, d] = fHoy.split('-');
-        let fBus = `${parseInt(d)}/${parseInt(m)}/${y}`;
-        let fBusZero = `${parseInt(d).toString().padStart(2,'0')}/${parseInt(m).toString().padStart(2,'0')}/${y}`;
+        const val = document.getElementById('calendar-filter').value;
+        const rango = document.getElementById('rango-tiempo').value;
+        let fichajesFiltro = db_local.fichajes.filter(f => isDateInRange(f.f, rango, val));
         
-        let fichajesHoy = db_local.fichajes.filter(f => f.f === fBus || f.f === fBusZero);
-        
-        let htmlMañana = fichajesHoy.filter(f => parseInt(f.h.split(':')[0]) < 12).map(f => `
-            <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;">
-                <span>🕒 ${f.h} - <b>${f.u}</b></span>
-                <span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span>
-            </div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
+        let htmlMañana = fichajesFiltro.filter(f => parseInt(f.h.split(':')[0]) < 12).map(f => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;"><span>🕒 ${f.f} ${f.h} - <b>${f.u}</b></span><span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span></div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
+        let htmlTarde = fichajesFiltro.filter(f => parseInt(f.h.split(':')[0]) >= 12).map(f => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;"><span>🕒 ${f.f} ${f.h} - <b>${f.u}</b></span><span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span></div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
             
-        let htmlTarde = fichajesHoy.filter(f => parseInt(f.h.split(':')[0]) >= 12).map(f => `
-            <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;">
-                <span>🕒 ${f.h} - <b>${f.u}</b></span>
-                <span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span>
-            </div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
-            
-        document.getElementById('fichaje-list').innerHTML = `
-            <div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px; margin-bottom:10px;">
-                <h5 style="margin:0 0 10px 0; color:#51CF66;">🌤️ TURNO MAÑANA (Antes de las 12 PM)</h5>
-                ${htmlMañana}
-            </div>
-            <div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px;">
-                <h5 style="margin:0 0 10px 0; color:#FF6B6B;">🌙 TURNO TARDE (Desde las 12 PM)</h5>
-                ${htmlTarde}
-            </div>
-        `;
+        document.getElementById('fichaje-list').innerHTML = `<div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px; margin-bottom:10px;"><h5 style="margin:0 0 10px 0; color:#51CF66;">🌤️ TURNO MAÑANA</h5>${htmlMañana}</div><div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px;"><h5 style="margin:0 0 10px 0; color:#FF6B6B;">🌙 TURNO TARDE</h5>${htmlTarde}</div>`;
     };
 
     window.borrarDoc = (c, i) => confirm("¿ELIMINAR?") && db.collection(c).doc(i).delete();
     window.nuevoEmp = () => { let n=prompt("Nombre:"); if(!n) return; let p=prompt("PIN:"); p && db.collection("staff").add({n:n.toUpperCase(), p}); };
     window.nuevoProd = () => { let n=prompt("Prod:"); if(!n) return; let p=prompt("Precio:"); p && db.collection("productos").add({n:n.toUpperCase(), p:parseInt(p)}); };
-
-    window.iniciarReinicio = async () => {
-        if(!confirm("⚠️ ¿BORRAR TODO?")) return;
-        const cols = ['ventas', 'gastos', 'produccion', 'fichajes', 'reportes_produccion'];
-        for(let c of cols) {
-            let snap = await db.collection(c).get();
-            snap.docs.forEach(d => d.ref.delete());
-        }
-        alert("SISTEMA LIMPIO ✅");
-    };
+    window.iniciarReinicio = async () => { if(!confirm("⚠️ ¿BORRAR TODO?")) return; const cols = ['ventas', 'gastos', 'produccion', 'fichajes', 'reportes_produccion']; for(let c of cols) { let snap = await db.collection(c).get(); snap.docs.forEach(d => d.ref.delete()); } alert("SISTEMA LIMPIO ✅"); };
 </script>
 </body>
 </html>
