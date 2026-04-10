@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - CONTROL TOTAL V13.5 OFFLINE</title>
+    <title>LA ÚNICA - CONTROL TOTAL V13.6 OFFLINE</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -31,7 +31,6 @@
             min-height: 100vh;
         }
 
-        /* Ajuste para los nuevos iconos */
         .material-symbols-outlined { font-size: 1.2rem; vertical-align: middle; }
 
         .container { padding: 20px; display: none; max-width: 500px; margin: auto; animation: slideUp 0.4s ease-out; }
@@ -166,7 +165,6 @@
         .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; display:none; justify-content:center; align-items:center; }
         .modal-content { background: var(--cactus); padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid var(--gold); max-height: 80vh; overflow-y: auto; }
         
-        /* Botones de acción en listas */
         .icon-btn { background:none; border:none; color:var(--white); cursor:pointer; padding: 5px; opacity: 0.7; transition: 0.2s; }
         .icon-btn:hover { opacity: 1; transform: scale(1.1); }
         .icon-btn.edit { color: var(--gold); }
@@ -261,7 +259,11 @@
     </div>
 
     <div id="tab-s" class="admin-content" style="display:none">
-        <div id="fichaje-list" class="glass-card"></div>
+        <div class="glass-card" style="padding:15px;">
+            <h4 style="margin-top:0; color:var(--gold); text-align:center;">RELOJ DE FICHADAS (DÍA)</h4>
+            <div id="fichaje-list"></div>
+        </div>
+        <h4 style="color:var(--gold); font-size:0.9rem;">GESTIÓN DE PERSONAL</h4>
         <div id="staff-list"></div>
         <button class="btn-gold" onclick="nuevoEmp()"><span class="material-symbols-outlined">person_add</span> AGREGAR EMPLEADO</button>
     </div>
@@ -280,7 +282,7 @@
 <div id="view-ventas" class="container">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 id="welcome-msg" style="margin:0; font-size:1.1rem; color:var(--gold)"></h2>
-        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V13.5</span>
+        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V13.6</span>
     </div>
     
     <div id="grid-productos" style="display: flex; flex-wrap: wrap; justify-content: space-between;"></div>
@@ -329,6 +331,7 @@
             <select id="emp-prod-tipo" class="input-dark" style="flex:1">
                 <option value="Unidades">Unidades</option>
                 <option value="Docenas">Docenas</option>
+                <option value="Kilos">Kilos</option>
             </select>
         </div>
         <button class="btn-gold" onclick="guardarProdEmpleado()" style="margin-top:20px;"><span class="material-symbols-outlined">send</span> ENVIAR REPORTE</button>
@@ -356,7 +359,7 @@
     db.collection("productos").onSnapshot(s => { db_local.productos = s.docs.map(d => ({...d.data(), id: d.id})); renderProductos(); renderAdminLists(); });
     db.collection("staff").onSnapshot(s => { db_local.staff = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
     db.collection("insumos").onSnapshot(s => { db_local.insumos = s.docs.map(d => ({...d.data(), id: d.id})); renderInsumos(); renderRecetaInputs(); });
-    db.collection("fichajes").orderBy("ts", "desc").limit(50).onSnapshot(s => { db_local.fichajes = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
+    db.collection("fichajes").orderBy("ts", "desc").limit(100).onSnapshot(s => { db_local.fichajes = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
     db.collection("ventas").orderBy("ts", "desc").onSnapshot(s => { db_local.ventas = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
     db.collection("gastos").orderBy("ts", "desc").onSnapshot(s => { db_local.gastos = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
     db.collection("produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.produccion = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
@@ -420,35 +423,53 @@
         const fStr = d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
         db.collection("reportes_produccion").add({
             u: user, n: n.toUpperCase(), c: parseFloat(c), tipo: tipoMedida,
-            turno: d.getHours() < 14 ? "Mañana" : "Tarde", f: fStr, ts: firebase.firestore.FieldValue.serverTimestamp()
+            turno: d.getHours() < 12 ? "Mañana" : "Tarde", f: fStr, ts: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
             alert("REGISTRADO ✅");
             document.getElementById('modal-prod-emp').style.display='none';
+            document.getElementById('emp-prod-nombre').value='';
+            document.getElementById('emp-prod-cant').value='';
         });
     };
 
+    // CORRECCIÓN: Cálculo de ganancia restando todo (producción y prorrateo de fijos)
     window.renderHistorial = function() {
         const val = document.getElementById('calendar-filter').value;
         if(!val) return;
         const [y, m, d] = val.split('-');
         const fBus = `${parseInt(d)}/${parseInt(m)}/${y}`;
         const fBusZero = `${parseInt(d).toString().padStart(2,'0')}/${parseInt(m).toString().padStart(2,'0')}/${y}`;
+        
         const vD = db_local.ventas.filter(v => v.f === fBus || v.f === fBusZero);
         const gD = db_local.gastos.filter(g => g.f === fBus || g.f === fBusZero);
         const pD = db_local.produccion.filter(p => p.f === fBus || p.f === fBusZero);
+        
         let vM = 0, vT = 0, gT = 0, cP = 0;
         let tabla = "<table><tr><th>Hora</th><th>Mov</th><th>Monto</th></tr>";
+        
         vD.slice().reverse().forEach(v => {
             if(v.turno === "Mañana") vM += v.t; else vT += v.t;
             tabla += `<tr><td>${v.h}</td><td>Venta (${v.m})</td><td style="color:var(--success)">+$${v.t}</td></tr>`;
         });
-        gD.forEach(g => { gT += g.monto; tabla += `<tr><td>${g.h}</td><td>${g.desc}</td><td style="color:var(--danger)">-$${g.monto}</td></tr>`; });
+        
+        gD.forEach(g => { 
+            gT += g.monto; 
+            tabla += `<tr><td>${g.h}</td><td>${g.desc}</td><td style="color:var(--danger)">-$${g.monto}</td></tr>`; 
+        });
+        
         pD.forEach(p => cP += (p.costoTanda || 0));
-        let neto = (vM + vT) - gT - cP;
+        
+        let diasFijos = parseInt(document.getElementById('dias-trabajo').value) || 24;
+        let cFijoDiario = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0) / diasFijos;
+        
+        let neto = (vM + vT) - gT - cP - cFijoDiario;
+        let colorNeto = neto >= 0 ? 'var(--success)' : 'var(--danger)';
+
         document.getElementById('stats-container').innerHTML = `
-            <div class="stat-box" style="border-color:var(--success);">
-                <div class="stat-label">GANANCIA OPERATIVA (DÍA)</div>
-                <div class="stat-val">$${neto.toFixed(2)}</div>
+            <div class="stat-box" style="border-color:${colorNeto};">
+                <div class="stat-label">GANANCIA OPERATIVA NETA (DÍA)</div>
+                <div class="stat-val" style="color:${colorNeto}">$${neto.toFixed(2)}</div>
+                <div style="font-size:0.65rem; color:#aaa; margin-top:5px;">Ventas: $${(vM+vT)} | Gastos Diarios: -$${gT} | Producción: -$${cP.toFixed(2)} | Fijo Prorrateado: -$${cFijoDiario.toFixed(2)}</div>
             </div>`;
         document.getElementById('historial-list').innerHTML = tabla + "</table>";
     };
@@ -461,10 +482,26 @@
         const pD = db_local.produccion.filter(p => p.f === fBus || p.f === fBusZero);
         document.getElementById('produccion-dia-list').innerHTML = pD.map(p => `<div class="list-item"><div><b>${p.n}</b><br><small>${p.unidades} u.</small></div><div>$${p.costoTanda.toFixed(2)}</div></div>`).join('');
         const empD = db_local.reportes_emp.filter(r => r.f === fBus || r.f === fBusZero);
-        document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => `<div class="list-item"><div><b>${r.n}</b></div><div>${r.c} ${r.tipo}</div></div>`).join('');
+        document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => `<div class="list-item"><div><b>${r.n}</b><br><small style="color:var(--gold)">${r.u} (${r.turno})</small></div><div>${r.c} ${r.tipo}</div></div>`).join('');
     };
 
-    // CORRECCIÓN: Renderizado de gastos fijos con botones de edición y borrado
+    // NUEVO: Función para ver reporte de empleados en modal
+    window.verReporteProduccion = (rango) => {
+        let maxResultados = rango === 'semana' ? 20 : 50; 
+        let empD = db_local.reportes_emp.slice(0, maxResultados); // Toma los últimos registrados
+        
+        let html = empD.map(r => `
+            <div style="border-bottom:1px solid rgba(255,255,255,0.1); padding:10px 0;">
+                <b style="color:var(--gold)">${r.f}</b> - ${r.u} <br>
+                Elaboró: ${r.c} ${r.tipo} de ${r.n} (${r.turno})
+            </div>
+        `).join('');
+        
+        document.getElementById('modal-titulo').innerText = "REPORTE DE PRODUCCIÓN";
+        document.getElementById('modal-body').innerHTML = html || "<p style='text-align:center'>No hay reportes recientes.</p>";
+        document.getElementById('modal-reporte').style.display = 'flex';
+    };
+
     window.renderGastosFijos = function() {
         let totalF = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0);
         let dias = parseInt(document.getElementById('dias-trabajo').value) || 24;
@@ -481,7 +518,6 @@
         document.getElementById('fijos-resumen').innerHTML = `<div class="stat-box"><div class="stat-label">FIJO DIARIO PRORRATEADO</div><div class="stat-val">$${cD.toFixed(2)}</div></div>`;
     };
 
-    // NUEVO: Función para editar gasto fijo
     window.editarGastoFijo = (id, nombreActual, montoActual) => {
         let n = prompt("Editar nombre del gasto fijo:", nombreActual);
         if (!n) return;
@@ -491,10 +527,42 @@
         }
     };
 
+    // CORRECCIÓN: Nuevo insumo pide explícitamente unidad y renderiza con su equivalente en gramos/ml
     window.nuevoGastoFijo = () => { let n = prompt("Gasto:"); if(!n) return; let m = parseFloat(prompt("Monto:")); m && db.collection("gastos_fijos").add({n:n.toUpperCase(), m}); };
-    window.nuevoInsumo = () => { let n=prompt("Insumo:"); if(!n) return; let p=parseFloat(prompt("Precio:")), q=parseFloat(prompt("Cant:")), u=prompt("u (kg/lt):"); p&&q&&db.collection("insumos").add({n:n.toUpperCase(),p,q,u,cu:p/q}); };
-    function renderInsumos() { document.getElementById('insumos-list').innerHTML = db_local.insumos.map(i => `<div class="list-item"><span>${i.n}</span><div style="display:flex; align-items:center; gap:10px;"><b>$${i.cu.toFixed(2)}/${i.u}</b><button class="icon-btn delete" onclick="borrarDoc('insumos','${i.id}')"><span class="material-symbols-outlined">delete</span></button></div></div>`).join(''); }
-    function renderRecetaInputs() { document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => `<div style="display:flex; gap:5px; margin-bottom:5px;"><span>${i.n}</span><input type="number" step="0.01" class="input-dark receta-cant" data-id="${i.id}" data-cu="${i.cu}" style="padding:5px;"></div>`).join(''); }
+    window.nuevoInsumo = () => { 
+        let n=prompt("Nombre Insumo:"); if(!n) return; 
+        let p=parseFloat(prompt("Precio Total pagado:")); 
+        let q=parseFloat(prompt("Cantidad (ej: 25 para bolsa de 25kg):")); 
+        let u=prompt("Unidad (escribe 'kg' o 'lt'):"); 
+        if(p&&q&&u) db.collection("insumos").add({n:n.toUpperCase(),p,q,u:u.toLowerCase(),cu:p/q}); 
+    };
+
+    function renderInsumos() { 
+        document.getElementById('insumos-list').innerHTML = db_local.insumos.map(i => {
+            let esKiloLitro = (i.u === 'kg' || i.u === 'lt');
+            let unidadMenor = i.u === 'kg' ? 'g' : (i.u === 'lt' ? 'ml' : 'u');
+            let costoMenor = esKiloLitro ? (i.cu / 1000) : i.cu;
+            
+            return `<div class="list-item">
+                <span>${i.n}</span>
+                <div style="text-align:right; margin-right:10px;">
+                    <b>$${i.cu.toFixed(2)} / ${i.u}</b>
+                    ${esKiloLitro ? `<br><small style="color:var(--gold); font-size:0.75rem;">$${costoMenor.toFixed(2)} / ${unidadMenor}</small>` : ''}
+                </div>
+                <button class="icon-btn delete" onclick="borrarDoc('insumos','${i.id}')"><span class="material-symbols-outlined">delete</span></button>
+            </div>`;
+        }).join(''); 
+    }
+    
+    function renderRecetaInputs() { 
+        document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => {
+            let inputPlaceholder = i.u === 'kg' ? 'Cant. en Kg (ej: 0.5 para 500g)' : `Cant. en ${i.u}`;
+            return `<div style="display:flex; gap:5px; margin-bottom:5px;">
+                <span style="flex:1; align-self:center; font-size:0.85rem">${i.n}</span>
+                <input type="number" step="0.001" class="input-dark receta-cant" data-id="${i.id}" data-cu="${i.cu}" placeholder="${inputPlaceholder}" style="flex:2; padding:8px; margin:0;">
+            </div>`;
+        }).join(''); 
+    }
 
     let ultC = 0, ultU = 0;
     window.calcularProduccion = () => {
@@ -528,7 +596,6 @@
         document.getElementById(id).style.display='block';
     };
 
-    // CORRECCIÓN: Actualización visual del botón activo en Pestañas Principales Admin
     window.switchAdminTab = (t) => {
         document.querySelectorAll('.admin-content').forEach(c => c.style.display='none');
         document.getElementById('tab-'+t).style.display='block';
@@ -537,7 +604,6 @@
         document.getElementById('btn-tab-'+t).classList.add('active');
     };
 
-    // CORRECCIÓN: Función agregada para alternar sub-pestañas en Producción
     window.switchSubTab = (t) => {
         document.getElementById('sub-precios').style.display = (t === 'precios') ? 'block' : 'none';
         document.getElementById('sub-produccion').style.display = (t === 'produccion') ? 'block' : 'none';
@@ -547,8 +613,14 @@
         document.getElementById('btn-sub-'+t).classList.add('active');
     };
 
+    // CORRECCIÓN: Dona glaseada rosa con efecto elegante
     window.renderProductos = () => {
-        document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}',${p.p})"><span class="material-symbols-outlined" style="font-size:2rem; color:var(--gold); margin-bottom:5px;">bakery_dining</span>${p.n}<br><b>$${p.p}</b></div>`).join('');
+        document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `
+            <div class="btn-item" onclick="addCart('${p.n}',${p.p})">
+                <span style="font-size:2.8rem; text-shadow: 0 0 15px rgba(255,105,180,0.6); margin-bottom:5px;">🍩</span>
+                <span style="font-weight:600; font-size:0.9rem;">${p.n}</span>
+                <b style="color:var(--gold); font-size:1.1rem; margin-top:3px;">$${p.p}</b>
+            </div>`).join('');
     };
 
     window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
@@ -569,13 +641,44 @@
     window.confirmarVenta = () => {
         if(!cart.length) return;
         const t = cart.reduce((a,b)=>a+b.p,0); const now = new Date();
-        db.collection("ventas").add({ t, u: user, m: document.getElementById('metodo-pago').value, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<14?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() })
+        db.collection("ventas").add({ t, u: user, m: document.getElementById('metodo-pago').value, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<12?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() })
         .then(() => { alert("VENTA OK ✅"); cart=[]; renderCart(); document.getElementById('paga-con').value=''; calcVuelto();});
     };
 
+    // CORRECCIÓN: Separación de staff por turnos y validación de las 12 PM
     window.renderAdminLists = () => {
         document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item">${s.n} <button class="icon-btn delete" onclick="borrarDoc('staff','${s.id}')"><span class="material-symbols-outlined">delete</span></button></div>`).join('');
         document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item">${p.n} ($${p.p}) <button class="icon-btn delete" onclick="borrarDoc('productos','${p.id}')"><span class="material-symbols-outlined">delete</span></button></div>`).join('');
+        
+        let fHoy = document.getElementById('calendar-filter').value;
+        let [y, m, d] = fHoy.split('-');
+        let fBus = `${parseInt(d)}/${parseInt(m)}/${y}`;
+        let fBusZero = `${parseInt(d).toString().padStart(2,'0')}/${parseInt(m).toString().padStart(2,'0')}/${y}`;
+        
+        let fichajesHoy = db_local.fichajes.filter(f => f.f === fBus || f.f === fBusZero);
+        
+        let htmlMañana = fichajesHoy.filter(f => parseInt(f.h.split(':')[0]) < 12).map(f => `
+            <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;">
+                <span>🕒 ${f.h} - <b>${f.u}</b></span>
+                <span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span>
+            </div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
+            
+        let htmlTarde = fichajesHoy.filter(f => parseInt(f.h.split(':')[0]) >= 12).map(f => `
+            <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;">
+                <span>🕒 ${f.h} - <b>${f.u}</b></span>
+                <span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span>
+            </div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
+            
+        document.getElementById('fichaje-list').innerHTML = `
+            <div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px; margin-bottom:10px;">
+                <h5 style="margin:0 0 10px 0; color:#51CF66;">🌤️ TURNO MAÑANA (Antes de las 12 PM)</h5>
+                ${htmlMañana}
+            </div>
+            <div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px;">
+                <h5 style="margin:0 0 10px 0; color:#FF6B6B;">🌙 TURNO TARDE (Desde las 12 PM)</h5>
+                ${htmlTarde}
+            </div>
+        `;
     };
 
     window.borrarDoc = (c, i) => confirm("¿ELIMINAR?") && db.collection(c).doc(i).delete();
