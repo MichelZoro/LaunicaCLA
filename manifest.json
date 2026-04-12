@@ -1,6 +1,6 @@
 {
-  "short_name": "La Unica",
-  "name": "Churrería La Única - Control",
+  "short_name": "La Única",
+  "name": "CCV by La Churreria la Única",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3443/3443314.png",
@@ -9,11 +9,11 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#3D4B3F",
+  "background_color": "#2D362F",
   "theme_color": "#C5A059",
   "orientation": "portrait",
-  "scope": "/",
-  "lang": "es-ES"
+  "scope": "./",
+  "lang": "es-AR"
 }
