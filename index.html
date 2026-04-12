@@ -207,6 +207,10 @@
             <span class="material-symbols-outlined">table_view</span> EXPORTAR EXCEL
         </button>
         
+        <button onclick="sincronizarVentasOffline()" class="btn-gold" style="background:#4dabf7; color:black; margin-bottom:15px;">
+            <span class="material-symbols-outlined">cloud_sync</span> SINCRONIZAR VENTAS OFFLINE
+        </button>
+
         <div id="stats-container"></div>
         <div id="historial-list" class="glass-card"></div>
     </div>
@@ -355,8 +359,20 @@
     function getHoyISO() { return new Date().toISOString().split('T')[0]; }
     document.getElementById('calendar-filter').value = getHoyISO();
 
-    db.collection("productos").onSnapshot(s => { db_local.productos = s.docs.map(d => ({...d.data(), id: d.id})); renderProductos(); renderAdminLists(); });
-    db.collection("staff").onSnapshot(s => { db_local.staff = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
+    db.collection("productos").onSnapshot(s => { 
+        db_local.productos = s.docs.map(d => ({...d.data(), id: d.id})); 
+        localStorage.setItem('productos_backup', JSON.stringify(db_local.productos)); // Backup por si hay corte de luz/internet
+        renderProductos(); 
+        renderAdminLists(); 
+    });
+    
+    // MEJORA OFFLINE: Se guarda el staff en la memoria del dispositivo en cada inicio para que el PIN funcione sin red
+    db.collection("staff").onSnapshot(s => { 
+        db_local.staff = s.docs.map(d => ({...d.data(), id: d.id})); 
+        localStorage.setItem('staff_backup', JSON.stringify(db_local.staff));
+        renderAdminLists(); 
+    });
+    
     db.collection("insumos").onSnapshot(s => { db_local.insumos = s.docs.map(d => ({...d.data(), id: d.id})); renderInsumos(); renderRecetaInputs(); });
     db.collection("fichajes").orderBy("ts", "desc").limit(200).onSnapshot(s => { db_local.fichajes = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
     db.collection("ventas").orderBy("ts", "desc").onSnapshot(s => { db_local.ventas = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
@@ -364,6 +380,12 @@
     db.collection("produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.produccion = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
     db.collection("gastos_fijos").onSnapshot(s => { db_local.gastos_fijos = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
     db.collection("reportes_produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.reportes_emp = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
+
+    // CARGA DE PRODUCTOS DE EMERGENCIA SI NO HAY INTERNET
+    if (db_local.productos.length === 0) {
+        let backupProds = localStorage.getItem('productos_backup');
+        if (backupProds) db_local.productos = JSON.parse(backupProds);
+    }
 
     function isDateInRange(fStr, rango, fechaBaseISO) {
         if(!fStr) return false;
@@ -377,9 +399,15 @@
         return false;
     }
 
-    // MEJORA 1: LOGIN CON FICHAJE ÚNICO
     window.handleLogin = function() {
         const pin = document.getElementById('pin-input').value;
+        
+        // MEJORA OFFLINE: Recuperar backup local del staff si la base de datos no cargó por falta de internet
+        if (db_local.staff.length === 0) {
+            let backup = localStorage.getItem('staff_backup');
+            if (backup) db_local.staff = JSON.parse(backup);
+        }
+
         const found = db_local.staff.find(s => s.p === pin);
         if(!found && pin !== "325606") return alert("PIN INCORRECTO");
         
@@ -397,7 +425,9 @@
             showView('view-ventas');
             document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
             
-            // Solo fichar entrada si no lo hizo hoy
+            // Renderizar productos por si se cargaron offline
+            renderProductos();
+
             const hoy = new Date();
             const fStr = hoy.getDate()+"/"+(hoy.getMonth()+1)+"/"+hoy.getFullYear();
             const yaFicho = db_local.fichajes.some(f => f.u === user && f.f === fStr && f.tipo === "ENTRADA");
@@ -426,7 +456,6 @@
         });
     }
     
-    // MEJORA 2: SALIDA ÚNICA POR TURNO
     window.ficharSalida = () => { 
         const hoy = new Date();
         const fStr = hoy.getDate()+"/"+(hoy.getMonth()+1)+"/"+hoy.getFullYear();
@@ -441,7 +470,7 @@
         }
     };
 
-    // MEJORA 3: VENTA ROBUSTA (OFFLINE READY)
+    // MEJORA OFFLINE: VENTA HÍBRIDA (Funciona con y sin internet)
     window.confirmarVenta = () => { 
         if(!cart.length) return; 
         const t = cart.reduce((a,b)=>a+b.p,0); 
@@ -450,23 +479,56 @@
         const hStr = now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
         const turno = now.getHours() < 12 ? "Mañana" : "Tarde";
 
-        // Guardamos en Firebase (Firestore lo encola si no hay internet)
-        db.collection("ventas").add({ 
+        const datosDeLaVenta = { 
             t, u: user, m: document.getElementById('metodo-pago').value, 
             f: fStr, h: hStr, turno: turno, 
-            ts: firebase.firestore.FieldValue.serverTimestamp() 
-        });
+            // Si hay internet, usa el reloj del servidor, si no, usa el reloj del teléfono
+            ts: navigator.onLine ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString() 
+        };
 
-        // Limpiamos la pantalla DE INMEDIATO (fuera del .then)
-        alert("VENTA REGISTRADA ✅" + (navigator.onLine ? "" : " (Modo Offline)")); 
+        if (navigator.onLine) {
+            // CON INTERNET: Manda a base de datos de una
+            db.collection("ventas").add(datosDeLaVenta);
+            alert("VENTA REGISTRADA ✅");
+        } else {
+            // SIN INTERNET: Guarda en la memoria del celular
+            let ventasOffline = JSON.parse(localStorage.getItem("ventasOffline")) || [];
+            ventasOffline.push(datosDeLaVenta);
+            localStorage.setItem("ventasOffline", JSON.stringify(ventasOffline));
+            alert("⚠️ SIN CONEXIÓN: Venta guardada localmente en el dispositivo. No olvides sincronizar cuando vuelva el Internet.");
+        }
+
         cart=[]; 
         renderCart(); 
         document.getElementById('paga-con').value=''; 
         calcVuelto();
     };
 
-    // RESTO DE FUNCIONES SE MANTIENEN IGUAL...
+    // MEJORA OFFLINE: FUNCIÓN DE SINCRONIZACIÓN MANUAL
+    window.sincronizarVentasOffline = () => {
+        if (!navigator.onLine) return alert("❌ Aún no tienes conexión a internet para sincronizar.");
+        
+        let ventasOffline = JSON.parse(localStorage.getItem("ventasOffline")) || [];
+        if (ventasOffline.length === 0) return alert("Todo al día ✅ No hay ventas pendientes por sincronizar.");
+
+        let promesas = ventasOffline.map(venta => {
+            // Se actualiza el timestamp al momento real de sincronización
+            venta.ts = firebase.firestore.FieldValue.serverTimestamp();
+            return db.collection("ventas").add(venta);
+        });
+
+        Promise.all(promesas).then(() => {
+            localStorage.removeItem("ventasOffline");
+            alert(`✅ ¡Listo! ${ventasOffline.length} ventas locales fueron subidas a la base de datos.`);
+            renderAllViews();
+        }).catch(err => {
+            console.error(err);
+            alert("Hubo un error sincronizando. Intenta nuevamente.");
+        });
+    };
+
     window.renderAllViews = () => { renderHistorial(); renderProduccionList(); renderGastosFijos(); renderAdminLists(); };
+    
     window.guardarProdEmpleado = () => {
         const n = document.getElementById('emp-prod-nombre').value;
         const c = document.getElementById('emp-prod-cant').value;
