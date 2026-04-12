@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LA ÚNICA - CONTROL TOTAL V13.7 OFFLINE</title>
+    <link rel="manifest" href="./manifest.json">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -667,5 +668,6 @@
     window.nuevoProd = () => { let n=prompt("Prod:"); if(!n) return; let p=prompt("Precio:"); p && db.collection("productos").add({n:n.toUpperCase(), p:parseInt(p)}); };
     window.iniciarReinicio = async () => { if(!confirm("⚠️ ¿BORRAR TODO?")) return; const cols = ['ventas', 'gastos', 'produccion', 'fichajes', 'reportes_produccion']; for(let c of cols) { let snap = await db.collection(c).get(); snap.docs.forEach(d => d.ref.delete()); } alert("SISTEMA LIMPIO ✅"); };
 </script>
+<script src="./app.js"></script>
 </body>
 </html>
