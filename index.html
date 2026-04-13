@@ -470,9 +470,10 @@
         }
     };
 
-    // MEJORA OFFLINE: VENTA HÍBRIDA (Funciona con y sin internet)
+    // MEJORA OFFLINE: VENTA HÍBRIDA A PRUEBA DE FALLOS
     window.confirmarVenta = () => { 
         if(!cart.length) return; 
+        
         const t = cart.reduce((a,b)=>a+b.p,0); 
         const now = new Date(); 
         const fStr = now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear();
@@ -482,26 +483,50 @@
         const datosDeLaVenta = { 
             t, u: user, m: document.getElementById('metodo-pago').value, 
             f: fStr, h: hStr, turno: turno, 
-            // Si hay internet, usa el reloj del servidor, si no, usa el reloj del teléfono
             ts: navigator.onLine ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString() 
         };
 
-        if (navigator.onLine) {
-            // CON INTERNET: Manda a base de datos de una
-            db.collection("ventas").add(datosDeLaVenta);
-            alert("VENTA REGISTRADA ✅");
-        } else {
-            // SIN INTERNET: Guarda en la memoria del celular
-            let ventasOffline = JSON.parse(localStorage.getItem("ventasOffline")) || [];
-            ventasOffline.push(datosDeLaVenta);
-            localStorage.setItem("ventasOffline", JSON.stringify(ventasOffline));
-            alert("⚠️ SIN CONEXIÓN: Venta guardada localmente en el dispositivo. No olvides sincronizar cuando vuelva el Internet.");
-        }
-
-        cart=[]; 
+        // 1. LIMPIEZA INMEDIATA: Vaciamos el carrito y actualizamos la UI PRIMERO.
+        // Esto garantiza que la pantalla jamás quede tildada.
+        cart = []; 
         renderCart(); 
-        document.getElementById('paga-con').value=''; 
+        document.getElementById('paga-con').value = ''; 
         calcVuelto();
+
+        // 2. GUARDADO EN SEGUNDO PLANO: Usamos un setTimeout muy breve.
+        // Esto le da tiempo al celular de dibujar la pantalla en blanco antes de
+        // que el alert() o los procesos de guardado congelen la ejecución.
+        setTimeout(() => {
+            try {
+                if (navigator.onLine) {
+                    // Hay internet: Enviamos a Firebase
+                    db.collection("ventas").add(datosDeLaVenta).catch(err => {
+                        console.log("Firebase lo reintentará:", err);
+                    });
+                    alert("VENTA REGISTRADA ✅");
+                } else {
+                    // No hay internet: Guardamos localmente de forma segura
+                    let ventasOffline = [];
+                    let guardado = localStorage.getItem("ventasOffline");
+                    
+                    // Prevenimos que un dato corrupto en la memoria rompa la app
+                    if (guardado) {
+                        try { 
+                            ventasOffline = JSON.parse(guardado); 
+                        } catch(e) { 
+                            ventasOffline = []; 
+                        }
+                    }
+                    
+                    ventasOffline.push(datosDeLaVenta);
+                    localStorage.setItem("ventasOffline", JSON.stringify(ventasOffline));
+                    alert("⚠️ SIN CONEXIÓN: Venta guardada en el dispositivo. No olvides sincronizar.");
+                }
+            } catch (error) {
+                console.error("Error al procesar la venta:", error);
+                // Si algo catastrófico falla, la caja ya está limpia y pueden seguir trabajando.
+            }
+        }, 50); // 50 milisegundos son imperceptibles pero salvan el renderizado de la UI
     };
 
     // MEJORA OFFLINE: FUNCIÓN DE SINCRONIZACIÓN MANUAL
