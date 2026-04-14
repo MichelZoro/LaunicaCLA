@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - CONTROL TOTAL V13.8</title>
+    <title>LA ÚNICA - CONTROL TOTAL V13.8.1</title>
     <link rel="manifest" href="./manifest.json">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -223,15 +223,17 @@
 
         <div id="sub-precios">
             <div id="insumos-list"></div>
-            <button class="btn-gold" onclick="nuevoInsumo()"><span class="material-symbols-outlined">add</span> CARGAR INSUMO</button>
+            <button class="btn-gold" onclick="abrirModalInsumo()"><span class="material-symbols-outlined">add</span> CARGAR INSUMO</button>
         </div>
 
         <div id="sub-produccion" style="display:none">
             <div class="glass-card" style="padding-bottom:10px;">
                 <h4 style="margin-top:0; color:var(--gold); text-align:center;">NUEVA TANDA (ADMIN)</h4>
                 <input type="text" id="nombre-produccion" class="input-dark" placeholder="Producto (Ej: Churros)">
+                
                 <div id="receta-inputs" style="margin-top:10px;"></div>
-                <input type="number" id="cant-producida" class="input-dark" placeholder="Unidades totales obtenidas">
+                
+                <input type="number" id="cant-producida" class="input-dark" placeholder="Unidades totales obtenidas" style="margin-top: 15px;">
                 
                 <div id="resultado-produccion" class="glass-card" style="background:rgba(0,0,0,0.2); margin-top:10px; display:none; padding:10px;">
                     <p style="margin:5px 0; font-size:0.85rem;">Costo Total Materia: <b id="costo-tanda-total" style="color:var(--danger)">$0</b></p>
@@ -342,6 +344,29 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="modal-insumo">
+    <div class="modal-content">
+        <h3 style="color:var(--gold); margin-top:0; text-align:center;">NUEVO INSUMO</h3>
+        <input type="text" id="ins-nombre" class="input-dark" placeholder="Nombre (Ej: Harina)">
+        <input type="number" id="ins-precio" class="input-dark" placeholder="Precio Total Pagado ($)">
+        
+        <p style="font-size: 0.8rem; margin: 15px 0 5px 0; color: #aaa;">¿Cuánta cantidad trajiste?</p>
+        <div style="display:flex; gap:10px;">
+            <input type="number" id="ins-cant" class="input-dark" placeholder="Cantidad" style="flex:1">
+            <select id="ins-unidad" class="input-dark" style="flex:1">
+                <option value="kg">Kilos (kg)</option>
+                <option value="g">Gramos (g)</option>
+                <option value="lt">Litros (l)</option>
+                <option value="ml">Mililitros (ml)</option>
+                <option value="u">Unidades</option>
+            </select>
+        </div>
+        
+        <button class="btn-gold" onclick="guardarNuevoInsumo()" style="margin-top:25px;"><span class="material-symbols-outlined">save</span> GUARDAR INSUMO</button>
+        <button class="btn-del" onclick="document.getElementById('modal-insumo').style.display='none'" style="width:100%; margin-top:10px; padding:12px;">CANCELAR</button>
+    </div>
+</div>
+
 <script>
     const firebaseConfig = { 
         apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", 
@@ -361,12 +386,11 @@
 
     db.collection("productos").onSnapshot(s => { 
         db_local.productos = s.docs.map(d => ({...d.data(), id: d.id})); 
-        localStorage.setItem('productos_backup', JSON.stringify(db_local.productos)); // Backup por si hay corte de luz/internet
+        localStorage.setItem('productos_backup', JSON.stringify(db_local.productos)); 
         renderProductos(); 
         renderAdminLists(); 
     });
     
-    // MEJORA OFFLINE: Se guarda el staff en la memoria del dispositivo en cada inicio para que el PIN funcione sin red
     db.collection("staff").onSnapshot(s => { 
         db_local.staff = s.docs.map(d => ({...d.data(), id: d.id})); 
         localStorage.setItem('staff_backup', JSON.stringify(db_local.staff));
@@ -381,7 +405,6 @@
     db.collection("gastos_fijos").onSnapshot(s => { db_local.gastos_fijos = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
     db.collection("reportes_produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.reportes_emp = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
 
-    // CARGA DE PRODUCTOS DE EMERGENCIA SI NO HAY INTERNET
     if (db_local.productos.length === 0) {
         let backupProds = localStorage.getItem('productos_backup');
         if (backupProds) db_local.productos = JSON.parse(backupProds);
@@ -401,8 +424,6 @@
 
     window.handleLogin = function() {
         const pin = document.getElementById('pin-input').value;
-        
-        // MEJORA OFFLINE: Recuperar backup local del staff si la base de datos no cargó por falta de internet
         if (db_local.staff.length === 0) {
             let backup = localStorage.getItem('staff_backup');
             if (backup) db_local.staff = JSON.parse(backup);
@@ -425,7 +446,6 @@
             showView('view-ventas');
             document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
             
-            // Renderizar productos por si se cargaron offline
             renderProductos();
 
             const hoy = new Date();
@@ -438,18 +458,23 @@
         }
     };
 
+    // --- CORRECCIÓN DE FICHAJE (TURNOS HORARIOS FIJOS) ---
     function fichar(tipoForzado = null) {
         if(user === "Admin") return;
         const d = new Date();
         const fStr = d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
-        const hStr = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        // Forzamos 24 horas y aseguramos zona horaria de Argentina
+        const hStr = d.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit', hour12: false});
         let tipo = tipoForzado;
         
+        // Asignamos el turno en el momento exacto y lo guardamos
+        let turnoFichaje = d.getHours() < 14 ? "Mañana" : "Tarde";
+        
         db.collection("fichajes").add({ 
-            u: user, f: fStr, h: hStr, tipo: tipo, 
+            u: user, f: fStr, h: hStr, tipo: tipo, turno: turnoFichaje,
             ts: firebase.firestore.FieldValue.serverTimestamp() 
         }).then(() => {
-            const msj = `Hola Michel, soy ${user}. Acabo de marcar mi ${tipo} el día ${fStr} a las ${hStr}.`;
+            const msj = `Hola Michel, soy ${user}. Acabo de marcar mi ${tipo} el día ${fStr} a las ${hStr} (Turno ${turnoFichaje}).`;
             const urlWA = `https://wa.me/5491155135012?text=${encodeURIComponent(msj)}`;
             window.open(urlWA, '_blank');
             if(tipo === "SALIDA") setTimeout(() => location.reload(), 2000); 
@@ -461,24 +486,18 @@
         const fStr = hoy.getDate()+"/"+(hoy.getMonth()+1)+"/"+hoy.getFullYear();
         const yaSalio = db_local.fichajes.some(f => f.u === user && f.f === fStr && f.tipo === "SALIDA");
         
-        if(yaSalio) {
-            return alert("Ya registraste tu salida hoy.");
-        }
-
-        if(confirm("¿MARCAR SALIDA Y AVISAR A MICHEL?")) {
-            fichar("SALIDA");
-        }
+        if(yaSalio) { return alert("Ya registraste tu salida hoy."); }
+        if(confirm("¿MARCAR SALIDA Y AVISAR A MICHEL?")) { fichar("SALIDA"); }
     };
 
-    // MEJORA OFFLINE: VENTA HÍBRIDA A PRUEBA DE FALLOS
     window.confirmarVenta = () => { 
         if(!cart.length) return; 
         
         const t = cart.reduce((a,b)=>a+b.p,0); 
         const now = new Date(); 
         const fStr = now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear();
-        const hStr = now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-        const turno = now.getHours() < 12 ? "Mañana" : "Tarde";
+        const hStr = now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit', hour12:false});
+        const turno = now.getHours() < 14 ? "Mañana" : "Tarde";
 
         const datosDeLaVenta = { 
             t, u: user, m: document.getElementById('metodo-pago').value, 
@@ -486,70 +505,40 @@
             ts: navigator.onLine ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString() 
         };
 
-        // 1. LIMPIEZA INMEDIATA: Vaciamos el carrito y actualizamos la UI PRIMERO.
-        // Esto garantiza que la pantalla jamás quede tildada.
-        cart = []; 
-        renderCart(); 
-        document.getElementById('paga-con').value = ''; 
-        calcVuelto();
+        cart = []; renderCart(); document.getElementById('paga-con').value = ''; calcVuelto();
 
-        // 2. GUARDADO EN SEGUNDO PLANO: Usamos un setTimeout muy breve.
-        // Esto le da tiempo al celular de dibujar la pantalla en blanco antes de
-        // que el alert() o los procesos de guardado congelen la ejecución.
         setTimeout(() => {
             try {
                 if (navigator.onLine) {
-                    // Hay internet: Enviamos a Firebase
-                    db.collection("ventas").add(datosDeLaVenta).catch(err => {
-                        console.log("Firebase lo reintentará:", err);
-                    });
+                    db.collection("ventas").add(datosDeLaVenta).catch(err => console.log("Reintento:", err));
                     alert("VENTA REGISTRADA ✅");
                 } else {
-                    // No hay internet: Guardamos localmente de forma segura
                     let ventasOffline = [];
                     let guardado = localStorage.getItem("ventasOffline");
-                    
-                    // Prevenimos que un dato corrupto en la memoria rompa la app
-                    if (guardado) {
-                        try { 
-                            ventasOffline = JSON.parse(guardado); 
-                        } catch(e) { 
-                            ventasOffline = []; 
-                        }
-                    }
-                    
+                    if (guardado) { try { ventasOffline = JSON.parse(guardado); } catch(e) { ventasOffline = []; } }
                     ventasOffline.push(datosDeLaVenta);
                     localStorage.setItem("ventasOffline", JSON.stringify(ventasOffline));
-                    alert("⚠️ SIN CONEXIÓN: Venta guardada en el dispositivo. No olvides sincronizar.");
+                    alert("⚠️ SIN CONEXIÓN: Venta guardada en el dispositivo.");
                 }
-            } catch (error) {
-                console.error("Error al procesar la venta:", error);
-                // Si algo catastrófico falla, la caja ya está limpia y pueden seguir trabajando.
-            }
-        }, 50); // 50 milisegundos son imperceptibles pero salvan el renderizado de la UI
+            } catch (error) { console.error(error); }
+        }, 50); 
     };
 
-    // MEJORA OFFLINE: FUNCIÓN DE SINCRONIZACIÓN MANUAL
     window.sincronizarVentasOffline = () => {
-        if (!navigator.onLine) return alert("❌ Aún no tienes conexión a internet para sincronizar.");
-        
+        if (!navigator.onLine) return alert("❌ Sin internet.");
         let ventasOffline = JSON.parse(localStorage.getItem("ventasOffline")) || [];
-        if (ventasOffline.length === 0) return alert("Todo al día ✅ No hay ventas pendientes por sincronizar.");
+        if (ventasOffline.length === 0) return alert("Todo al día ✅");
 
         let promesas = ventasOffline.map(venta => {
-            // Se actualiza el timestamp al momento real de sincronización
             venta.ts = firebase.firestore.FieldValue.serverTimestamp();
             return db.collection("ventas").add(venta);
         });
 
         Promise.all(promesas).then(() => {
             localStorage.removeItem("ventasOffline");
-            alert(`✅ ¡Listo! ${ventasOffline.length} ventas locales fueron subidas a la base de datos.`);
+            alert(`✅ ¡Listo! ${ventasOffline.length} ventas locales subidas.`);
             renderAllViews();
-        }).catch(err => {
-            console.error(err);
-            alert("Hubo un error sincronizando. Intenta nuevamente.");
-        });
+        }).catch(err => alert("Error sincronizando. Intenta nuevamente."));
     };
 
     window.renderAllViews = () => { renderHistorial(); renderProduccionList(); renderGastosFijos(); renderAdminLists(); };
@@ -563,7 +552,7 @@
         const fStr = d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
         db.collection("reportes_produccion").add({
             u: user, n: n.toUpperCase(), c: parseFloat(c), tipo: tipoMedida,
-            turno: d.getHours() < 12 ? "Mañana" : "Tarde", f: fStr, ts: firebase.firestore.FieldValue.serverTimestamp()
+            turno: d.getHours() < 14 ? "Mañana" : "Tarde", f: fStr, ts: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
             alert("REGISTRADO ✅");
             document.getElementById('modal-prod-emp').style.display='none';
@@ -627,18 +616,111 @@
         if (m) db.collection("gastos_fijos").doc(id).update({ n: n.toUpperCase(), m: m });
     };
 
-    window.nuevoGastoFijo = () => { let n = prompt("Gasto:"); if(!n) return; let m = parseFloat(prompt("Monto:")); m && db.collection("gastos_fijos").add({n:n.toUpperCase(), m}); };
-    window.nuevoInsumo = () => { let n=prompt("Nombre Insumo:"); if(!n) return; let p=parseFloat(prompt("Precio Total pagado:")); let q=parseFloat(prompt("Cantidad (ej: 25 para bolsa de 25kg):")); let u=prompt("Unidad (escribe 'kg' o 'lt'):"); if(p&&q&&u) db.collection("insumos").add({n:n.toUpperCase(),p,q,u:u.toLowerCase(),cu:p/q}); };
-    function renderInsumos() { document.getElementById('insumos-list').innerHTML = db_local.insumos.map(i => { let esKiloLitro = (i.u === 'kg' || i.u === 'lt'); let unidadMenor = i.u === 'kg' ? 'g' : (i.u === 'lt' ? 'ml' : 'u'); let costoMenor = esKiloLitro ? (i.cu / 1000) : i.cu; return `<div class="list-item"><span>${i.n}</span><div style="text-align:right; margin-right:10px;"><b>$${i.cu.toFixed(2)} / ${i.u}</b>${esKiloLitro ? `<br><small style="color:var(--gold); font-size:0.75rem;">$${costoMenor.toFixed(2)} / ${unidadMenor}</small>` : ''}</div><button class="icon-btn delete" onclick="borrarDoc('insumos','${i.id}')"><span class="material-symbols-outlined">delete</span></button></div>`; }).join(''); }
-    function renderRecetaInputs() { document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => { let inputPlaceholder = i.u === 'kg' ? 'Cant. en Kg (ej: 0.5 para 500g)' : `Cant. en ${i.u}`; return `<div style="display:flex; gap:5px; margin-bottom:5px;"><span style="flex:1; align-self:center; font-size:0.85rem">${i.n}</span><input type="number" step="0.001" class="input-dark receta-cant" data-id="${i.id}" data-cu="${i.cu}" placeholder="${inputPlaceholder}" style="flex:2; padding:8px; margin:0;"></div>`; }).join(''); }
+    // --- NUEVO SISTEMA DE INSUMOS ---
+    window.abrirModalInsumo = () => {
+        document.getElementById('modal-insumo').style.display = 'flex';
+        document.getElementById('ins-nombre').value = '';
+        document.getElementById('ins-precio').value = '';
+        document.getElementById('ins-cant').value = '';
+    };
+
+    window.guardarNuevoInsumo = () => {
+        let n = document.getElementById('ins-nombre').value;
+        let p = parseFloat(document.getElementById('ins-precio').value);
+        let q = parseFloat(document.getElementById('ins-cant').value);
+        let u = document.getElementById('ins-unidad').value;
+
+        if(!n || isNaN(p) || isNaN(q)) return alert("Completá todos los campos por favor.");
+
+        let baseU = u;
+        let cuBase = p / q; 
+
+        // Si compran por Kilo o Litro, sacamos el costo por gramo o mililitro
+        if (u === 'kg') { baseU = 'g'; cuBase = p / (q * 1000); }
+        else if (u === 'lt') { baseU = 'ml'; cuBase = p / (q * 1000); }
+
+        db.collection("insumos").add({
+            n: n.toUpperCase(), 
+            p, q, u, 
+            baseU: baseU, 
+            cuBase: cuBase // Costo base absoluto (por 1g, 1ml, o 1u)
+        }).then(() => {
+            document.getElementById('modal-insumo').style.display = 'none';
+        });
+    };
+
+    function renderInsumos() { 
+        document.getElementById('insumos-list').innerHTML = db_local.insumos.map(i => { 
+            // Manejo de compatibilidad con insumos viejos
+            let base_u = i.baseU || (i.u === 'kg' ? 'g' : (i.u === 'lt' ? 'ml' : i.u));
+            let cu_base = i.cuBase || (i.u === 'kg' || i.u === 'lt' ? i.cu / 1000 : i.cu);
+            let costoOriginal = i.p || (i.cu * i.q);
+            let cantOriginal = i.q || 1;
+
+            return `<div class="list-item">
+                <span>${i.n}</span>
+                <div style="text-align:right; margin-right:10px;">
+                    <b>$${costoOriginal.toFixed(2)} / ${cantOriginal}${i.u}</b><br>
+                    <small style="color:var(--gold); font-size:0.75rem;">$${cu_base.toFixed(2)} / ${base_u}</small>
+                </div>
+                <button class="icon-btn delete" onclick="borrarDoc('insumos','${i.id}')"><span class="material-symbols-outlined">delete</span></button>
+            </div>`; 
+        }).join(''); 
+    }
+
+    // --- NUEVO SISTEMA DE RECETAS CON SELECTOR DINÁMICO ---
+    function renderRecetaInputs() { 
+        document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => { 
+            let base_u = i.baseU || (i.u === 'kg' ? 'g' : (i.u === 'lt' ? 'ml' : i.u));
+            let cu_base = i.cuBase || (i.u === 'kg' || i.u === 'lt' ? i.cu / 1000 : i.cu);
+            
+            // Renderizamos las opciones según si es peso, volumen o unidades
+            let options = '';
+            if (base_u === 'g') options = `<option value="g">Gramos (g)</option><option value="kg">Kilos (kg)</option>`;
+            else if (base_u === 'ml') options = `<option value="ml">Mililitros</option><option value="lt">Litros</option>`;
+            else options = `<option value="u">Unidades</option>`;
+
+            return `<div class="receta-row" style="display:flex; gap:5px; margin-bottom:8px; align-items:center;">
+                <span style="flex:1.2; font-size:0.85rem">${i.n}</span>
+                <input type="number" step="0.001" class="input-dark receta-cant" data-id="${i.id}" data-cubase="${cu_base}" placeholder="Cant." style="flex:1; padding:8px; margin:0;">
+                <select class="input-dark receta-unidad" style="flex:1; padding:8px; margin:0; font-size:0.8rem;">
+                    ${options}
+                </select>
+            </div>`; 
+        }).join(''); 
+    }
 
     let ultC = 0, ultU = 0;
     window.calcularProduccion = () => {
-        let t = 0; document.querySelectorAll('.receta-cant').forEach(i => t += (parseFloat(i.value)||0)*parseFloat(i.dataset.cu));
-        ultU = parseFloat(document.getElementById('cant-producida').value)||0; ultC = t;
+        let t = 0; 
+        const filas = document.querySelectorAll('.receta-row');
+        
+        filas.forEach(fila => {
+            const inputVal = fila.querySelector('.receta-cant').value;
+            if(!inputVal) return; // Salta si está vacío
+            
+            const cantInput = parseFloat(inputVal) || 0;
+            const cuBase = parseFloat(fila.querySelector('.receta-cant').dataset.cubase);
+            const unidadElegida = fila.querySelector('.receta-unidad').value;
+            
+            // Pasamos todo a la unidad mínima antes de multiplicar
+            let cantEnBase = cantInput;
+            if (unidadElegida === 'kg' || unidadElegida === 'lt') {
+                cantEnBase = cantInput * 1000;
+            }
+            
+            t += (cantEnBase * cuBase);
+        });
+
+        ultU = parseFloat(document.getElementById('cant-producida').value)||0; 
+        ultC = t;
+        
         document.getElementById('resultado-produccion').style.display = 'block';
         document.getElementById('costo-tanda-total').innerText = "$"+t.toFixed(2);
-        if(ultU > 0) { document.getElementById('costo-por-unidad').innerText = "$"+(t/ultU).toFixed(2); document.getElementById('costo-por-docena').innerText = "$"+((t/ultU)*12).toFixed(2); }
+        if(ultU > 0) { 
+            document.getElementById('costo-por-unidad').innerText = "$"+(t/ultU).toFixed(2); 
+            document.getElementById('costo-por-docena').innerText = "$"+((t/ultU)*12).toFixed(2); 
+        }
     };
 
     window.guardarProduccion = () => {
@@ -651,7 +733,7 @@
 
     window.cargarGasto = () => {
         let d=prompt("¿Qué se compró?"); if(!d) return; let m=parseFloat(prompt("Monto:"));
-        if(m) { const now = new Date(); db.collection("gastos").add({ desc: d.toUpperCase(), monto: m, u: user, f: now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear(), h: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), turno: now.getHours()<14?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() }); }
+        if(m) { const now = new Date(); db.collection("gastos").add({ desc: d.toUpperCase(), monto: m, u: user, f: now.getDate()+"/"+(now.getMonth()+1)+"/now.getFullYear()", h: now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit', hour12:false}), turno: now.getHours()<14?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() }); }
     };
 
     window.exportarExcel = () => {
@@ -692,11 +774,15 @@
     window.renderAdminLists = () => {
         document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item">${s.n} <button class="icon-btn delete" onclick="borrarDoc('staff','${s.id}')"><span class="material-symbols-outlined">delete</span></button></div>`).join('');
         document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item">${p.n} ($${p.p}) <button class="icon-btn delete" onclick="borrarDoc('productos','${p.id}')"><span class="material-symbols-outlined">delete</span></button></div>`).join('');
+        
         const val = document.getElementById('calendar-filter').value;
         const rango = document.getElementById('rango-tiempo').value;
         let fichajesFiltro = db_local.fichajes.filter(f => isDateInRange(f.f, rango, val));
-        let htmlMañana = fichajesFiltro.filter(f => parseInt(f.h.split(':')[0]) < 12).map(f => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;"><span>🕒 ${f.f} ${f.h} - <b>${f.u}</b></span><span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span></div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
-        let htmlTarde = fichajesFiltro.filter(f => parseInt(f.h.split(':')[0]) >= 12).map(f => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;"><span>🕒 ${f.f} ${f.h} - <b>${f.u}</b></span><span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span></div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
+        
+        // Ahora usamos f.turno directamente desde Firebase en lugar de partir el texto de la hora
+        let htmlMañana = fichajesFiltro.filter(f => (f.turno ? f.turno === "Mañana" : parseInt(f.h.split(':')[0]) < 14)).map(f => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;"><span>🕒 ${f.f} ${f.h} - <b>${f.u}</b></span><span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span></div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
+        let htmlTarde = fichajesFiltro.filter(f => (f.turno ? f.turno === "Tarde" : parseInt(f.h.split(':')[0]) >= 14)).map(f => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;"><span>🕒 ${f.f} ${f.h} - <b>${f.u}</b></span><span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span></div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
+        
         document.getElementById('fichaje-list').innerHTML = `<div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px; margin-bottom:10px;"><h5 style="margin:0 0 10px 0; color:#51CF66;">🌤️ TURNO MAÑANA</h5>${htmlMañana}</div><div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px;"><h5 style="margin:0 0 10px 0; color:#FF6B6B;">🌙 TURNO TARDE</h5>${htmlTarde}</div>`;
     };
 
