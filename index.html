@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - CONTROL TOTAL V14.0</title>
+    <title>LA ÚNICA - CONTROL TOTAL V14.1</title>
     <link rel="manifest" href="./manifest.json">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -891,21 +891,18 @@
 
     // -- SubTab Fabricación (Cálculo Recetas) --
     
-    // Renderiza inputs para cada insumo existente
+    // MODIFICADO: Ahora el selector es genérico para todos los ingredientes con g, kg, l, ml
     function renderRecetaInputs() { 
         document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => { 
-            let base_u = i.baseU;
             let cu_base = i.cuBase;
             
-            // Opciones de selector dinámico según unidad base
-            let options = '';
-            if (base_u === 'g') {
-                options = `<option value="g">g</option><option value="kg">kg</option>`;
-            } else if (base_u === 'ml') {
-                options = `<option value="ml">ml</option><option value="lt">lt</option>`;
-            } else {
-                options = `<option value="u">u</option>`;
-            }
+            // Opciones de selector dinámico solicitadas: kg, g, l (lt), ml
+            let options = `
+                <option value="g">g</option>
+                <option value="kg">kg</option>
+                <option value="ml">ml</option>
+                <option value="lt">l</option>
+            `;
 
             return `<div class="receta-row list-item" style="padding: 8px; margin-bottom:5px; border-left:none; background:rgba(255,255,255,0.01)">
                 <span style="flex:1.5; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis;">${i.n}</span>
@@ -1015,18 +1012,39 @@
         }).join('') || '<p style="text-align:center; font-size:0.8rem; opacity:0.5;">No hay registros.</p>';
     };
 
-    // Reportes recibidos del Staff
+    // MODIFICADO: Reportes recibidos del Staff, integrando cálculo de costo basado en datos de Admin
     window.renderProduccionStaffList = function() {
         const val = document.getElementById('calendar-filter').value;
         const rango = document.getElementById('rango-tiempo').value;
         const empD = db_local.reportes_emp.filter(r => isDateInRange(r.f, rango, val));
         
-        document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => 
-            `<div class="list-item" style="padding:10px; margin-bottom:5px; border-left-color:var(--success); background:none;">
-                <div><b>${r.n}</b> <small style="color:#aaa">(${r.f})</small><br><small style="color:var(--gold)">${r.u} (${r.turno})</small></div>
-                <div style="font-weight:bold; color:var(--success);">${r.c} <small>${r.tipo}</small></div>
-            </div>`
-        ).join('') || '<p style="text-align:center; font-size:0.8rem; opacity:0.5;">Sin reportes hoy.</p>';
+        document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => {
+            // Buscar si existe un cálculo de costo previo de Admin para este producto en esta fecha
+            // Usamos .find para obtener la primera coincidencia (asumiendo un cálculo por día por producto)
+            const costCalc = db_local.produccion.find(p => p.n === r.n && p.f === r.f);
+
+            let displayCost = '<span style="color:#aaa; font-size:0.75rem;">(Sin costo cal.)</span>';
+            if (costCalc && costCalc.unidades > 0) {
+                const costoUnitario = costCalc.costoTanda / costCalc.unidades;
+                let reportedUnits = r.c;
+                // Convertir docenas reportadas a unidades para el cálculo
+                if (r.tipo === "Docenas") reportedUnits = r.c * 12;
+                
+                const reportedCost = reportedUnits * costoUnitario;
+                displayCost = `<b style="color:var(--danger)">$${reportedCost.toFixed(2)}</b> <small style="color:#aaa">(Costo Mat.)</small>`;
+            }
+
+            return `<div class="list-item" style="padding:10px; margin-bottom:5px; border-left-color:var(--success); background:none; align-items:flex-start;">
+                <div style="flex:1; min-width:150px;">
+                    <b>${r.n}</b> <small style="color:#aaa">(${r.f})</small><br>
+                    <small style="color:var(--gold)">${r.u} (${r.turno})</small>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:bold; color:var(--success); font-size:1rem;">${r.c} <small>${r.tipo}</small></div>
+                    <div style="margin-top:2px;">${displayCost}</div>
+                </div>
+            </div>`;
+        }).join('') || '<p style="text-align:center; font-size:0.8rem; opacity:0.5;">Sin reportes hoy.</p>';
     };
 
 
