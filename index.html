@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LA ÚNICA - CONTROL TOTAL V13.8.1</title>
+    <title>LA ÚNICA - CONTROL TOTAL V14.0</title>
     <link rel="manifest" href="./manifest.json">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 
     <style>
@@ -18,6 +17,7 @@
             --white: #F8F9FA; 
             --danger: #FF6B6B; 
             --success: #51CF66; 
+            --info: #4dabf7;
             --glass: rgba(255,255,255,0.08);
             --glass-heavy: rgba(0,0,0,0.4);
         }
@@ -48,119 +48,79 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.3); 
         }
         
-        .btn-gold { 
-            background: linear-gradient(145deg, #D4AF37, #C5A059); 
-            color: #1a1a1a; 
-            border: none; 
-            padding: 16px; 
-            border-radius: 16px; 
-            font-weight: 700; 
-            width: 100%; 
-            cursor: pointer; 
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.2);
-            transition: 0.3s;
+        /* Botones */
+        .btn-gold, .btn-success, .btn-info, .btn-del, .btn-outline {
+            border: none; padding: 16px; border-radius: 16px; font-weight: 700; width: 100%; 
+            cursor: pointer; font-size: 0.9rem; letter-spacing: 0.5px; transition: 0.3s;
             display: flex; justify-content: center; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .btn-gold:active { transform: scale(0.96); }
+        .btn-gold:active, .btn-success:active, .btn-info:active, .btn-del:active, .btn-outline:active { transform: scale(0.96); }
 
+        .btn-gold { background: linear-gradient(145deg, #D4AF37, #C5A059); color: #1a1a1a; }
+        .btn-success { background: var(--success); color: black; }
+        .btn-info { background: var(--info); color: black; }
+        
         .btn-del {
-            background: rgba(255, 107, 107, 0.15);
-            color: var(--danger);
-            border: 1px solid rgba(255, 107, 107, 0.3);
-            border-radius: 10px;
-            padding: 8px 12px;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 0.8rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
+            background: rgba(255, 107, 107, 0.15); color: var(--danger);
+            border: 1px solid rgba(255, 107, 107, 0.3); padding: 8px 12px; font-size: 0.8rem;
         }
-        .btn-del:active { background: var(--danger); color: white; transform: scale(0.95); }
+        .btn-del:active { background: var(--danger); color: white; }
 
         .btn-outline {
-            background: rgba(255,255,255,0.05);
-            color: var(--white);
+            background: rgba(255,255,255,0.05); color: var(--white);
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 16px;
-            padding: 14px;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex; justify-content: center; align-items: center; gap: 8px;
         }
-        .btn-outline:active { background: rgba(255,255,255,0.15); }
 
+        /* Inputs */
         .input-dark { 
-            width: 100%; 
-            background: var(--glass-heavy); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            padding: 14px; 
-            border-radius: 14px; 
-            color: white; 
-            margin: 8px 0; 
-            font-size: 1rem;
-            outline: none;
+            width: 100%; background: var(--glass-heavy); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 14px; border-radius: 14px; color: white; margin: 8px 0; font-size: 1rem; outline: none;
         }
         .input-dark:focus { border-color: var(--gold); }
         
+        /* Tabs */
         .nav-tabs { 
-            display: flex; gap: 6px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 15px; overflow-x: auto; white-space: nowrap; 
+            display: flex; gap: 6px; margin-bottom: 20px; background: rgba(0,0,0,0.2); 
+            padding: 6px; border-radius: 15px; overflow-x: auto; white-space: nowrap; 
         }
         .nav-tabs::-webkit-scrollbar { display: none; }
         .tab-btn { flex: 1; padding: 10px; border-radius: 12px; border: none; background: transparent; color: #888; font-weight: 600; cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.3s; }
         .tab-btn.active { background: var(--gold); color: #1a1a1a; }
 
+        /* Items Listas */
         .btn-item { 
-            width: 48%; 
-            background: var(--glass); 
-            border: 1px solid rgba(255,255,255,0.05); 
-            border-radius: 22px; 
-            padding: 20px 10px; 
-            text-align: center; 
-            margin-bottom: 12px;
-            transition: 0.2s;
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            width: 48%; background: var(--glass); border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 22px; padding: 20px 10px; text-align: center; margin-bottom: 12px;
+            transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 5px;
         }
         .btn-item:active { background: rgba(255,255,255,0.15); transform: scale(0.95); }
 
         .list-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 15px; 
-            background: rgba(255,255,255,0.03); 
-            border-radius: 16px; 
-            margin-bottom: 10px; 
-            border-left: 4px solid var(--gold); 
+            display: flex; justify-content: space-between; align-items: center; padding: 15px; 
+            background: rgba(255,255,255,0.03); border-radius: 16px; margin-bottom: 10px; border-left: 4px solid var(--gold); 
         }
 
+        /* Stats */
         .stat-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); text-align: center; margin-bottom: 8px; display: flex; flex-direction: column; justify-content: center;}
         .stat-val { font-size: 1.3rem; font-weight: 800; color: var(--gold); }
         .stat-label { font-size: 0.65rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
 
+        /* Nav Inferior */
         nav { 
-            position: fixed; bottom: 0; width: 100%; 
-            background: rgba(13, 13, 13, 0.8); 
-            backdrop-filter: blur(10px);
-            display: none; justify-content: space-around; 
-            padding: 12px 0 25px 0; 
-            border-top: 1px solid rgba(197, 160, 89, 0.3); 
-            z-index: 1000; 
+            position: fixed; bottom: 0; width: 100%; background: rgba(13, 13, 13, 0.8); backdrop-filter: blur(10px);
+            display: none; justify-content: space-around; padding: 12px 0 25px 0; border-top: 1px solid rgba(197, 160, 89, 0.3); z-index: 1000; 
         }
         .nav-item { text-align: center; font-size: 0.65rem; color: #777; font-weight: 700; cursor: pointer; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-item.active { color: var(--gold); }
         .nav-item .material-symbols-outlined { font-size: 1.6rem; }
 
+        /* Tablas */
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th { color: var(--gold); text-align: left; padding: 10px; border-bottom: 1px solid var(--glass); }
         td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
+        /* Modales */
         .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; display:none; justify-content:center; align-items:center; }
         .modal-content { background: var(--cactus); padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid var(--gold); max-height: 80vh; overflow-y: auto; }
         
@@ -168,6 +128,10 @@
         .icon-btn:hover { opacity: 1; transform: scale(1.1); }
         .icon-btn.edit { color: var(--gold); }
         .icon-btn.delete { color: var(--danger); }
+
+        /* Helpers */
+        .hidden { display: none !important; }
+        hr { border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0; }
     </style>
 </head>
 <body>
@@ -196,21 +160,21 @@
 
     <div class="nav-tabs" id="main-admin-tabs">
         <button class="tab-btn active" id="btn-tab-v" onclick="switchAdminTab('v')"><span class="material-symbols-outlined">point_of_sale</span> VENTAS</button>
-        <button class="tab-btn" id="btn-tab-g" onclick="switchAdminTab('g')"><span class="material-symbols-outlined">inventory_2</span> PROD.</button>
+        <button class="tab-btn" id="btn-tab-g" onclick="switchAdminTab('g')"><span class="material-symbols-outlined">precision_manufacturing</span> PRODUCCIÓN</button>
         <button class="tab-btn" id="btn-tab-f" onclick="switchAdminTab('f')"><span class="material-symbols-outlined">account_balance</span> FIJOS</button>
         <button class="tab-btn" id="btn-tab-s" onclick="switchAdminTab('s')"><span class="material-symbols-outlined">badge</span> STAFF</button>
         <button class="tab-btn" id="btn-tab-p" onclick="switchAdminTab('p')"><span class="material-symbols-outlined">restaurant</span> MENÚ</button>
     </div>
 
     <div id="tab-v" class="admin-content">
-        <button onclick="exportarExcel()" class="btn-gold" style="background:var(--success); color:black; margin-bottom:15px; box-shadow: 0 4px 15px rgba(81, 207, 102, 0.2);">
-            <span class="material-symbols-outlined">table_view</span> EXPORTAR EXCEL
-        </button>
-        
-        <button onclick="sincronizarVentasOffline()" class="btn-gold" style="background:#4dabf7; color:black; margin-bottom:15px;">
-            <span class="material-symbols-outlined">cloud_sync</span> SINCRONIZAR VENTAS OFFLINE
-        </button>
-
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button onclick="exportarExcel()" class="btn-success" style="flex:1;">
+                <span class="material-symbols-outlined">table_view</span> EXCEL
+            </button>
+            <button onclick="sincronizarVentasOffline()" class="btn-info" style="flex:1;">
+                <span class="material-symbols-outlined">cloud_sync</span> SINCRONIZAR
+            </button>
+        </div>
         <div id="stats-container"></div>
         <div id="historial-list" class="glass-card"></div>
     </div>
@@ -218,7 +182,7 @@
     <div id="tab-g" class="admin-content" style="display:none">
         <div class="nav-tabs" style="background: rgba(255,255,255,0.05);">
             <button class="tab-btn active" id="btn-sub-precios" onclick="switchSubTab('precios')"><span class="material-symbols-outlined">list_alt</span> INVENTARIO</button>
-            <button class="tab-btn" id="btn-sub-produccion" onclick="switchSubTab('produccion')"><span class="material-symbols-outlined">precision_manufacturing</span> FABRICACIÓN</button>
+            <button class="tab-btn" id="btn-sub-produccion" onclick="switchSubTab('produccion')"><span class="material-symbols-outlined">soup_kitchen</span> FABRICACIÓN</button>
         </div>
 
         <div id="sub-precios">
@@ -231,28 +195,35 @@
                 <h4 style="margin-top:0; color:var(--gold); text-align:center;">NUEVA TANDA (ADMIN)</h4>
                 <input type="text" id="nombre-produccion" class="input-dark" placeholder="Producto (Ej: Churros)">
                 
-                <div id="receta-inputs" style="margin-top:10px;"></div>
+                <div id="receta-inputs" style="margin-top:10px; max-height: 200px; overflow-y: auto; padding-right:5px;">
+                    </div>
                 
-                <input type="number" id="cant-producida" class="input-dark" placeholder="Unidades totales obtenidas" style="margin-top: 15px;">
+                <div style="display:flex; gap:10px; margin-top:15px; align-items:center;">
+                    <input type="number" id="cant-producida" class="input-dark" placeholder="Cant. total obtenida" style="flex:1.5; margin:0;">
+                    <select id="unidad-producida" class="input-dark" style="flex:1; margin:0; font-size:0.8rem;">
+                        <option value="Unidades">Unidades</option>
+                        <option value="Docenas">Docenas</option>
+                    </select>
+                </div>
                 
-                <div id="resultado-produccion" class="glass-card" style="background:rgba(0,0,0,0.2); margin-top:10px; display:none; padding:10px;">
+                <div id="resultado-produccion" class="glass-card" style="background:rgba(0,0,0,0.2); margin-top:15px; display:none; padding:10px;">
                     <p style="margin:5px 0; font-size:0.85rem;">Costo Total Materia: <b id="costo-tanda-total" style="color:var(--danger)">$0</b></p>
                     <p style="margin:5px 0; font-size:0.85rem;">Costo x Unidad: <b id="costo-por-unidad" style="color:var(--white)">$0</b></p>
                     <p style="margin:5px 0; font-size:0.85rem;">Costo x Docena: <b id="costo-por-docena" style="color:var(--gold); font-size:1.1rem;">$0</b></p>
                 </div>
                 
                 <div style="display:flex; gap:5px; margin-top:10px;">
-                    <button class="btn-gold" onclick="calcularProduccion()" style="padding:10px; flex:1;"><span class="material-symbols-outlined">calculate</span> CALCULAR</button>
-                    <button class="btn-gold" onclick="guardarProduccion()" style="background:var(--success); color:black; padding:10px; flex:1;"><span class="material-symbols-outlined">save</span> GUARDAR</button>
+                    <button class="btn-outline" onclick="calcularProduccion()" style="padding:10px; flex:1;"><span class="material-symbols-outlined">calculate</span> CALCULAR</button>
+                    <button class="btn-success" onclick="guardarProduccion()" style="padding:10px; flex:1;"><span class="material-symbols-outlined">save</span> GUARDAR</button>
                 </div>
             </div>
 
             <div class="glass-card">
-                <h4 style="margin-top:0; color:var(--success); text-align:center; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-symbols-outlined">assignment_turned_in</span> REPORTADO POR EMPLEADOS</h4>
-                <div id="produccion-empleados-list"></div>
+                <h4 style="margin-top:0; color:var(--success); text-align:center; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-symbols-outlined">assignment_turned_in</span> REPORTADO POR STAFF</h4>
+                <div id="produccion-empleados-list" style="font-size:0.8rem;"></div>
             </div>
 
-            <h4 style="color:var(--gold); font-size:0.9rem; text-align:center;">HISTORIAL DE PRODUCCIÓN / COSTOS</h4>
+            <h4 style="color:var(--gold); font-size:0.9rem; text-align:center;">HISTORIAL DE COSTOS CALCULADOS</h4>
             <div id="produccion-dia-list"></div>
         </div>
     </div>
@@ -261,12 +232,12 @@
         <div class="glass-card" style="padding: 15px;">
             <h4 style="margin-top:0; margin-bottom: 10px; color:var(--gold)">PARÁMETROS DEL MES</h4>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.85rem">Días trabajados o a trabajar:</span>
+                <span style="font-size:0.85rem">Días trabajados en el mes:</span>
                 <input type="number" id="dias-trabajo" class="input-dark" value="24" oninput="renderAllViews()" style="width:70px; padding:8px; margin:0; text-align:center;">
             </div>
         </div>
         <div id="fijos-resumen" class="glass-card"></div>
-        <h4 style="color:var(--gold); font-size:0.9rem;">TUS COSTOS FIJOS MENSUALES</h4>
+        <h4 style="color:var(--gold); font-size:0.9rem;">LISTADO GASTOS FIJOS</h4>
         <div id="fijos-list"></div>
         <button class="btn-gold" onclick="nuevoGastoFijo()"><span class="material-symbols-outlined">add</span> CARGAR GASTO FIJO</button>
     </div>
@@ -286,16 +257,18 @@
         <button class="btn-gold" onclick="nuevoProd()"><span class="material-symbols-outlined">add_circle</span> AGREGAR AL MENÚ</button>
     </div>
 
-    <hr style="border:0; border-top:1px solid rgba(255,107,107,0.3); margin:30px 0 15px 0;">
-    <button onclick="iniciarReinicio()" class="btn-del" style="width:100%; padding:15px; font-size:0.9rem; border:2px solid var(--danger);">
-        <span class="material-symbols-outlined">warning</span> REINICIAR SISTEMA DE CERO <span class="material-symbols-outlined">warning</span>
-    </button>
+    <div style="margin-top:30px; padding:10px; border:1px solid rgba(255,107,107,0.2); border-radius:16px; text-align:center;">
+        <p style="color:var(--danger); font-size:0.8rem; margin-top:0;">Zona de Peligro</p>
+        <button onclick="iniciarReinicio()" class="btn-del" style="width:100%; justify-content:center;">
+            <span class="material-symbols-outlined">warning</span> REINICIAR SISTEMA DE CERO
+        </button>
+    </div>
 </div>
 
 <div id="view-ventas" class="container">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 id="welcome-msg" style="margin:0; font-size:1.1rem; color:var(--gold)"></h2>
-        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V13.8</span>
+        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V14.0</span>
     </div>
     
     <div id="grid-productos" style="display: flex; flex-wrap: wrap; justify-content: space-between;"></div>
@@ -313,23 +286,29 @@
         <div style="text-align:center; padding: 10px;">Vuelto: <span id="vuelto-val" style="color:var(--success); font-weight:bold; font-size:1.5rem;">$0</span></div>
         <button onclick="confirmarVenta()" class="btn-gold"><span class="material-symbols-outlined">send</span> FINALIZAR VENTA</button>
         
-        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">
+        <hr>
         
-        <button onclick="document.getElementById('modal-prod-emp').style.display='flex'" class="btn-outline" style="margin-bottom: 10px;"><span class="material-symbols-outlined">assignment</span> REPORTAR PRODUCCIÓN</button>
-        <button onclick="cargarGasto()" class="btn-del" style="width:100%; margin-bottom: 15px; padding: 14px; font-size: 0.85rem;"><span class="material-symbols-outlined">receipt_long</span> REGISTRAR GASTO DIARIO</button>
-        <button onclick="ficharSalida()" style="background:none; border:none; color:var(--danger); width:100%; font-weight:bold; font-size:0.75rem; display:flex; justify-content:center; align-items:center; gap:5px;"><span class="material-symbols-outlined">logout</span> CERRAR TURNO / SALIDA</button>
+        <button onclick="abrirModalReporteProd()" class="btn-outline" style="margin-bottom: 10px; background: rgba(81, 207, 102, 0.1); border-color: rgba(81, 207, 102, 0.2); color: var(--success);">
+            <span class="material-symbols-outlined">soup_kitchen</span> REPORTAR LO FABRICADO
+        </button>
+        <button onclick="cargarGasto()" class="btn-del" style="width:100%; margin-bottom: 15px; padding: 14px; font-size: 0.85rem;">
+            <span class="material-symbols-outlined">receipt_long</span> REGISTRAR GASTO CAJA
+        </button>
+        <button onclick="ficharSalida()" style="background:none; border:none; color:var(--danger); width:100%; font-weight:bold; font-size:0.75rem; display:flex; justify-content:center; align-items:center; gap:5px; cursor:pointer;">
+            <span class="material-symbols-outlined">logout</span> CERRAR TURNO / SALIDA
+        </button>
     </div>
 </div>
 
 <nav id="navbar">
     <div id="nav-ventas-btn" class="nav-item" onclick="showView('view-ventas')"><span class="material-symbols-outlined">point_of_sale</span> CAJA</div>
-    <div id="nav-admin-btn" class="nav-item" style="display:none" onclick="showView('view-admin')"><span class="material-symbols-outlined">admin_panel_settings</span> PANEL ADMIN</div>
-    <div class="nav-item" onclick="location.reload()" style="color:var(--danger)"><span class="material-symbols-outlined">exit_to_app</span> SALIR</div>
+    <div id="nav-admin-btn" class="nav-item hidden" onclick="showView('view-admin')"><span class="material-symbols-outlined">admin_panel_settings</span> PANEL ADMIN</div>
+    <div class="nav-item" onclick="cerrarSesion()" style="color:var(--danger)"><span class="material-symbols-outlined">exit_to_app</span> SALIR</div>
 </nav>
 
 <div class="modal-overlay" id="modal-prod-emp">
     <div class="modal-content">
-        <h3 style="color:var(--gold); margin-top:0; text-align:center;">CARGAR PRODUCCIÓN</h3>
+        <h3 style="color:var(--gold); margin-top:0; text-align:center;">REPORTE FABRICACIÓN</h3>
         <input type="text" id="emp-prod-nombre" class="input-dark" placeholder="¿Qué elaboraste? (Ej: Churros)">
         <div style="display:flex; gap:10px; margin-top:10px;">
             <input type="number" id="emp-prod-cant" class="input-dark" placeholder="Cantidad" style="flex:1">
@@ -339,35 +318,36 @@
                 <option value="Kilos">Kilos</option>
             </select>
         </div>
-        <button class="btn-gold" onclick="guardarProdEmpleado()" style="margin-top:20px;"><span class="material-symbols-outlined">send</span> ENVIAR REPORTE</button>
-        <button class="btn-del" onclick="document.getElementById('modal-prod-emp').style.display='none'" style="width:100%; margin-top:10px; padding:12px;">CANCELAR</button>
+        <button class="btn-success" onclick="guardarProdEmpleado()" style="margin-top:20px; width:100%;"><span class="material-symbols-outlined">send</span> ENVIAR REPORTE</button>
+        <button class="btn-del" onclick="cerrarModales()" style="width:100%; margin-top:10px; padding:12px;">CANCELAR</button>
     </div>
 </div>
 
 <div class="modal-overlay" id="modal-insumo">
     <div class="modal-content">
-        <h3 style="color:var(--gold); margin-top:0; text-align:center;">NUEVO INSUMO</h3>
+        <h3 style="color:var(--gold); margin-top:0; text-align:center;">DATOS INSUMO</h3>
         <input type="text" id="ins-nombre" class="input-dark" placeholder="Nombre (Ej: Harina)">
         <input type="number" id="ins-precio" class="input-dark" placeholder="Precio Total Pagado ($)">
         
-        <p style="font-size: 0.8rem; margin: 15px 0 5px 0; color: #aaa;">¿Cuánta cantidad trajiste?</p>
+        <p style="font-size: 0.8rem; margin: 15px 0 5px 0; color: #aaa;">¿Cuánta cantidad compraste?</p>
         <div style="display:flex; gap:10px;">
             <input type="number" id="ins-cant" class="input-dark" placeholder="Cantidad" style="flex:1">
             <select id="ins-unidad" class="input-dark" style="flex:1">
-                <option value="kg">Kilos (kg)</option>
+                <option value="kg">Kilogramos (kg)</option>
                 <option value="g">Gramos (g)</option>
                 <option value="lt">Litros (l)</option>
                 <option value="ml">Mililitros (ml)</option>
-                <option value="u">Unidades</option>
+                <option value="u">Unidades (u)</option>
             </select>
         </div>
         
-        <button class="btn-gold" onclick="guardarNuevoInsumo()" style="margin-top:25px;"><span class="material-symbols-outlined">save</span> GUARDAR INSUMO</button>
-        <button class="btn-del" onclick="document.getElementById('modal-insumo').style.display='none'" style="width:100%; margin-top:10px; padding:12px;">CANCELAR</button>
+        <button class="btn-success" onclick="guardarNuevoInsumo()" style="margin-top:25px; width:100%;"><span class="material-symbols-outlined">save</span> GUARDAR INSUMO</button>
+        <button class="btn-del" onclick="cerrarModales()" style="width:100%; margin-top:10px; padding:12px;">CANCELAR</button>
     </div>
 </div>
 
 <script>
+    // --- CONFIGURACIÓN FIREBASE ---
     const firebaseConfig = { 
         apiKey: "AIzaSyCQEzm6s__cJx2G6_UzBuxh4mmKrhNvAc0", 
         projectId: "churrerialaunica-a2888", 
@@ -376,252 +356,489 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.firestore();
 
+    // Habilitar persistencia offline
     db.enablePersistence().catch((err) => { console.log("Fallo persistencia:", err.code); });
 
-    let user = ""; let cart = [];
-    let db_local = { productos: [], ventas: [], gastos: [], produccion: [], gastos_fijos: [], staff: [], fichajes: [], insumos: [], reportes_emp: [] };
+    // --- ESTADO GLOBAL ---
+    let user = ""; 
+    let cart = [];
+    let ultTandaCalculada = { costo: 0, unidades: 0 };
+    
+    // Cache local de datos
+    let db_local = { 
+        productos: [], ventas: [], gastos: [], produccion: [], 
+        gastos_fijos: [], staff: [], fichajes: [], insumos: [], reportes_emp: [] 
+    };
 
+    // --- INICIALIZACIÓN ---
     function getHoyISO() { return new Date().toISOString().split('T')[0]; }
     document.getElementById('calendar-filter').value = getHoyISO();
 
+    // --- SNAPSHOTS EN TIEMPO REAL (ESCUCHADORES) ---
+    
+    // Datos base (Carga siempre para Login y Caja)
     db.collection("productos").onSnapshot(s => { 
         db_local.productos = s.docs.map(d => ({...d.data(), id: d.id})); 
         localStorage.setItem('productos_backup', JSON.stringify(db_local.productos)); 
-        renderProductos(); 
-        renderAdminLists(); 
+        if(user && user !== "Admin") renderProductos(); 
+        if(user === "Admin") renderMenuAdmin();
     });
     
     db.collection("staff").onSnapshot(s => { 
         db_local.staff = s.docs.map(d => ({...d.data(), id: d.id})); 
         localStorage.setItem('staff_backup', JSON.stringify(db_local.staff));
-        renderAdminLists(); 
+        if(user === "Admin") renderStaffList();
     });
-    
-    db.collection("insumos").onSnapshot(s => { db_local.insumos = s.docs.map(d => ({...d.data(), id: d.id})); renderInsumos(); renderRecetaInputs(); });
-    db.collection("fichajes").orderBy("ts", "desc").limit(200).onSnapshot(s => { db_local.fichajes = s.docs.map(d => ({...d.data(), id: d.id})); renderAdminLists(); });
-    db.collection("ventas").orderBy("ts", "desc").onSnapshot(s => { db_local.ventas = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
-    db.collection("gastos").orderBy("ts", "desc").onSnapshot(s => { db_local.gastos = s.docs.map(d => d.data()); if(user === "Admin") renderAllViews(); });
-    db.collection("produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.produccion = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
-    db.collection("gastos_fijos").onSnapshot(s => { db_local.gastos_fijos = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
-    db.collection("reportes_produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.reportes_emp = s.docs.map(d => ({...d.data(), id: d.id})); if(user === "Admin") renderAllViews(); });
 
+    db.collection("fichajes").orderBy("ts", "desc").limit(100).onSnapshot(s => { 
+        db_local.fichajes = s.docs.map(d => ({...d.data(), id: d.id})); 
+        if(user === "Admin") renderFichajesAdmin(); 
+    });
+
+    // Escuchadores condicionales para Admin (Para ahorrar lectura de datos)
+    let adminListenersAttached = false;
+    function attachAdminListeners() {
+        if(adminListenersAttached) return;
+        
+        db.collection("insumos").onSnapshot(s => { db_local.insumos = s.docs.map(d => ({...d.data(), id: d.id})); renderInsumos(); renderRecetaInputs(); });
+        db.collection("ventas").orderBy("ts", "desc").onSnapshot(s => { db_local.ventas = s.docs.map(d => d.data()); renderHistorialFinanciero(); });
+        db.collection("gastos").orderBy("ts", "desc").onSnapshot(s => { db_local.gastos = s.docs.map(d => d.data()); renderHistorialFinanciero(); });
+        db.collection("produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.produccion = s.docs.map(d => ({...d.data(), id: d.id})); renderHistorialFinanciero(); renderProduccionCostosList(); });
+        db.collection("gastos_fijos").onSnapshot(s => { db_local.gastos_fijos = s.docs.map(d => ({...d.data(), id: d.id})); renderGastosFijos(); renderHistorialFinanciero(); });
+        db.collection("reportes_produccion").orderBy("ts", "desc").limit(100).onSnapshot(s => { db_local.reportes_emp = s.docs.map(d => ({...d.data(), id: d.id})); renderProduccionStaffList(); });
+
+        adminListenersAttached = true;
+    }
+
+    // Usar backups si no hay internet al iniciar
     if (db_local.productos.length === 0) {
         let backupProds = localStorage.getItem('productos_backup');
         if (backupProds) db_local.productos = JSON.parse(backupProds);
     }
 
+    // --- UTILIDADES ---
+    
+    // Obtener Fecha (DD/MM/YYYY), Hora (HH:MM 24h) y Turno (M/T) actual de Argentina
+    function getDatosFechaActual() {
+        const ahora = new Date();
+        // Forzamos zona horaria de Argentina si es posible, sino usa la local
+        const options = { timeZone: 'America/Argentina/Buenos_Aires', hour12: false };
+        const fStr = ahora.toLocaleDateString('es-AR', { ...options, day: '2-digit', month: '2-digit', year: 'numeric' });
+        const hStr = ahora.toLocaleTimeString('es-AR', { ...options, hour: '2-digit', minute: '2-digit' });
+        const horaInt = parseInt(hStr.split(':')[0]);
+        const turno = horaInt < 14 ? "Mañana" : "Tarde";
+        return { fStr, hStr, turno };
+    }
+
+    // Helper para filtrar datos por fecha y rango (día, semana, mes)
     function isDateInRange(fStr, rango, fechaBaseISO) {
         if(!fStr) return false;
-        let [d, m, y] = fStr.split('/');
-        let docDate = new Date(y, m-1, d);
-        let [by, bm, bd] = fechaBaseISO.split('-');
-        let baseDate = new Date(by, bm-1, bd);
-        if (rango === 'dia') return docDate.getDate() === baseDate.getDate() && docDate.getMonth() === baseDate.getMonth() && docDate.getFullYear() === baseDate.getFullYear();
-        if (rango === 'semana') { let weekAgo = new Date(baseDate); weekAgo.setDate(baseDate.getDate() - 6); return docDate >= weekAgo && docDate <= baseDate; }
-        if (rango === 'mes') return docDate.getMonth() === baseDate.getMonth() && docDate.getFullYear() === baseDate.getFullYear();
+        try {
+            let [d, m, y] = fStr.split('/');
+            let docDate = new Date(y, m-1, d);
+            let [by, bm, bd] = fechaBaseISO.split('-');
+            let baseDate = new Date(by, bm-1, bd);
+            
+            if (rango === 'dia') return docDate.getTime() === baseDate.getTime();
+            
+            if (rango === 'semana') { 
+                let weekAgo = new Date(baseDate); 
+                weekAgo.setDate(baseDate.getDate() - 6); 
+                return docDate >= weekAgo && docDate <= baseDate; 
+            }
+            
+            if (rango === 'mes') return docDate.getMonth() === baseDate.getMonth() && docDate.getFullYear() === baseDate.getFullYear();
+        } catch(e) { return false; }
         return false;
     }
 
+    function cerrarModales() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+
+    // --- LÓGICA DE SESIÓN Y LOGIN ---
     window.handleLogin = function() {
         const pin = document.getElementById('pin-input').value;
+        if (!pin) return;
+
+        // Cargar staff de backup si es necesario
         if (db_local.staff.length === 0) {
             let backup = localStorage.getItem('staff_backup');
             if (backup) db_local.staff = JSON.parse(backup);
         }
 
         const found = db_local.staff.find(s => s.p === pin);
-        if(!found && pin !== "325606") return alert("PIN INCORRECTO");
         
-        user = (pin === "325606") ? "Admin" : found.n;
+        // PIN Maestro temporal o staff encontrado
+        if(pin === "325606") {
+            user = "Admin";
+        } else if (found) {
+            user = found.n;
+        } else {
+            alert("PIN INCORRECTO");
+            document.getElementById('pin-input').value = '';
+            return;
+        }
+        
+        // Login exitoso
+        document.getElementById('pin-input').value = '';
         document.getElementById('navbar').style.display = 'flex';
+        document.getElementById('view-login').style.display = 'none';
 
         if(user === "Admin") {
-            document.getElementById('nav-ventas-btn').style.display = 'none';
-            document.getElementById('nav-admin-btn').style.display = 'block';
+            document.getElementById('nav-ventas-btn').classList.add('hidden');
+            document.getElementById('nav-admin-btn').classList.remove('hidden');
+            attachAdminListeners();
             showView('view-admin');
             renderAllViews();
         } else {
-            document.getElementById('nav-admin-btn').style.display = 'none';
-            document.getElementById('nav-ventas-btn').style.display = 'block';
-            showView('view-ventas');
+            document.getElementById('nav-admin-btn').classList.add('hidden');
+            document.getElementById('nav-ventas-btn').classList.remove('hidden');
             document.getElementById('welcome-msg').innerText = "HOLA, " + user.toUpperCase();
-            
+            showView('view-ventas');
             renderProductos();
-
-            const hoy = new Date();
-            const fStr = hoy.getDate()+"/"+(hoy.getMonth()+1)+"/"+hoy.getFullYear();
-            const yaFicho = db_local.fichajes.some(f => f.u === user && f.f === fStr && f.tipo === "ENTRADA");
-            
-            if(!yaFicho) {
-                fichar("ENTRADA");
-            }
+            checkAndFicharEntrada(); // Intentar fichar entrada automáticamente
         }
     };
 
-    // --- CORRECCIÓN DE FICHAJE (TURNOS HORARIOS FIJOS) ---
-    function fichar(tipoForzado = null) {
-        if(user === "Admin") return;
-        const d = new Date();
-        const fStr = d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
-        // Forzamos 24 horas y aseguramos zona horaria de Argentina
-        const hStr = d.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit', hour12: false});
-        let tipo = tipoForzado;
+    window.cerrarSesion = () => { location.reload(); };
+
+    // --- LÓGICA DE FICHAJE (MEJORADA Y RESTRINGIDA) ---
+    
+    // Intenta fichar entrada. Solo lo hace si no existe una ENTRADA hoy en este turno.
+    async function checkAndFicharEntrada() {
+        if(user === "Admin" || !navigator.onLine) return;
         
-        // Asignamos el turno en el momento exacto y lo guardamos
-        let turnoFichaje = d.getHours() < 14 ? "Mañana" : "Tarde";
-        
-        db.collection("fichajes").add({ 
-            u: user, f: fStr, h: hStr, tipo: tipo, turno: turnoFichaje,
-            ts: firebase.firestore.FieldValue.serverTimestamp() 
-        }).then(() => {
-            const msj = `Hola Michel, soy ${user}. Acabo de marcar mi ${tipo} el día ${fStr} a las ${hStr} (Turno ${turnoFichaje}).`;
-            const urlWA = `https://wa.me/5491155135012?text=${encodeURIComponent(msj)}`;
-            window.open(urlWA, '_blank');
-            if(tipo === "SALIDA") setTimeout(() => location.reload(), 2000); 
-        });
+        const { fStr, hStr, turno } = getDatosFechaActual();
+
+        try {
+            // Consultar en Firebase si ya existe entrada para HOY, ESTE USUARIO y ESTE TURNO
+            const snap = await db.collection("fichajes")
+                .where("u", "==", user)
+                .where("f", "==", fStr)
+                .where("turno", "==", turno)
+                .where("tipo", "==", "ENTRADA")
+                .get();
+
+            if(snap.empty) {
+                // No hay entrada, procedemos a crearla
+                await registrarFichaje("ENTRADA", fStr, hStr, turno);
+                enviarWhatsAppFichaje("ENTRADA", fStr, hStr, turno);
+                console.log("Entrada registrada automáticamente.");
+            } else {
+                console.log("Ya existe entrada registrada para este turno hoy.");
+            }
+        } catch (error) {
+            console.error("Error chequeando entrada:", error);
+        }
     }
     
-    window.ficharSalida = () => { 
-        const hoy = new Date();
-        const fStr = hoy.getDate()+"/"+(hoy.getMonth()+1)+"/"+hoy.getFullYear();
-        const yaSalio = db_local.fichajes.some(f => f.u === user && f.f === fStr && f.tipo === "SALIDA");
-        
-        if(yaSalio) { return alert("Ya registraste tu salida hoy."); }
-        if(confirm("¿MARCAR SALIDA Y AVISAR A MICHEL?")) { fichar("SALIDA"); }
+    // Se ejecuta al tocar "Cerrar Turno". Solo si no hay SALIDA hoy en este turno.
+    window.ficharSalida = async () => { 
+        if(user === "Admin") return;
+        if(!navigator.onLine) return alert("❌ Necesitas internet para fichar salida.");
+
+        const { fStr, hStr, turno } = getDatosFechaActual();
+
+        if(!confirm(`¿Confirmar SALIDA del turno ${turno.toUpperCase()}?`)) return;
+
+        try {
+            // Consultar si ya fichó salida
+            const snap = await db.collection("fichajes")
+                .where("u", "==", user)
+                .where("f", "==", fStr)
+                .where("turno", "==", turno)
+                .where("tipo", "==", "SALIDA")
+                .get();
+
+            if(!snap.empty) {
+                alert(`⚠️ Ya registraste tu SALIDA del turno ${turno} hoy.`);
+                setTimeout(() => cerrarSesion(), 1000);
+                return;
+            }
+
+            // Registrar salida
+            await registrarFichaje("SALIDA", fStr, hStr, turno);
+            enviarWhatsAppFichaje("SALIDA", fStr, hStr, turno);
+            alert("SALIDA REGISTRADA ✅. Cerrando sesión...");
+            setTimeout(() => cerrarSesion(), 500);
+
+        } catch (error) {
+            console.error("Error fichando salida:", error);
+            alert("Error al registrar salida. Intenta nuevamente.");
+        }
+    };
+
+    // Función interna para guardar en DB
+    function registrarFichaje(tipo, f, h, turno) {
+        return db.collection("fichajes").add({ 
+            u: user, f, h, tipo, turno,
+            ts: firebase.firestore.FieldValue.serverTimestamp() 
+        });
+    }
+
+    function enviarWhatsAppFichaje(tipo, f, h, turno) {
+        const msj = `Hola Michel, soy ${user}. Registro mi ${tipo} el día ${f} a las ${h} (Turno ${turno}).`;
+        const urlWA = `https://wa.me/5491155135012?text=${encodeURIComponent(msj)}`;
+        window.open(urlWA, '_blank');
+    }
+
+    // --- LÓGICA DE VENTAS (CAJA) ---
+    window.renderProductos = () => { 
+        document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => 
+            `<div class="btn-item" onclick="addCart('${p.n}',${p.p})">
+                <span style="font-size:2.8rem; text-shadow: 0 0 15px rgba(255,105,180,0.5); margin-bottom:5px;">🍩</span>
+                <span style="font-weight:600; font-size:0.8rem; line-height:1.1; height:2.2em; overflow:hidden;">${p.n}</span>
+                <b style="color:var(--gold); font-size:1.1rem; margin-top:3px;">$${p.p}</b>
+            </div>`
+        ).join(''); 
+    };
+    
+    window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
+    
+    window.renderCart = () => { 
+        let t = cart.reduce((a,b)=>a+b.p,0); 
+        document.getElementById('cart-list').innerHTML = cart.map((it, i) => 
+            `<div class="list-item" style="padding:10px; margin-bottom:5px;">
+                <span style="font-size:0.85rem;">${it.n}</span> 
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <b>$${it.p}</b> 
+                    <button class="icon-btn delete" onclick="cart.splice(${i},1);renderCart()"><span class="material-symbols-outlined" style="font-size:1rem;">close</span></button>
+                </div>
+            </div>`
+        ).join(''); 
+        document.getElementById('total-val').innerText = "$"+t; 
+        calcVuelto(); 
+    };
+    
+    window.calcVuelto = () => { 
+        let t = cart.reduce((a,b)=>a+b.p,0); 
+        let paga = parseFloat(document.getElementById('paga-con').value) || 0; 
+        let v = paga - t; 
+        document.getElementById('vuelto-val').innerText = v >= 0 ? "$"+v : "$0"; 
     };
 
     window.confirmarVenta = () => { 
         if(!cart.length) return; 
         
-        const t = cart.reduce((a,b)=>a+b.p,0); 
-        const now = new Date(); 
-        const fStr = now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear();
-        const hStr = now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit', hour12:false});
-        const turno = now.getHours() < 14 ? "Mañana" : "Tarde";
+        const total = cart.reduce((a,b)=>a+b.p,0); 
+        const { fStr, hStr, turno } = getDatosFechaActual();
+        const mPago = document.getElementById('metodo-pago').value;
 
-        const datosDeLaVenta = { 
-            t, u: user, m: document.getElementById('metodo-pago').value, 
-            f: fStr, h: hStr, turno: turno, 
+        const datosVenta = { 
+            t: total, u: user, m: mPago, f: fStr, h: hStr, turno: turno, 
+            productos: cart.map(i=>i.n), // Guardamos referencia de qué se vendió
             ts: navigator.onLine ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString() 
         };
 
-        cart = []; renderCart(); document.getElementById('paga-con').value = ''; calcVuelto();
+        // Limpiar UI inmediatamente
+        cart = []; renderCart(); 
+        document.getElementById('paga-con').value = ''; 
+        document.getElementById('metodo-pago').value = 'Efectivo';
 
+        // Guardar (Online u Offline)
         setTimeout(() => {
-            try {
-                if (navigator.onLine) {
-                    db.collection("ventas").add(datosDeLaVenta).catch(err => console.log("Reintento:", err));
-                    alert("VENTA REGISTRADA ✅");
-                } else {
-                    let ventasOffline = [];
-                    let guardado = localStorage.getItem("ventasOffline");
-                    if (guardado) { try { ventasOffline = JSON.parse(guardado); } catch(e) { ventasOffline = []; } }
-                    ventasOffline.push(datosDeLaVenta);
-                    localStorage.setItem("ventasOffline", JSON.stringify(ventasOffline));
-                    alert("⚠️ SIN CONEXIÓN: Venta guardada en el dispositivo.");
-                }
-            } catch (error) { console.error(error); }
+            if (navigator.onLine) {
+                db.collection("ventas").add(datosVenta).catch(err => console.log("Reintento:", err));
+                alert("VENTA REGISTRADA ✅");
+            } else {
+                let ventasOffline = JSON.parse(localStorage.getItem("ventasOffline") || "[]");
+                ventasOffline.push(datosVenta);
+                localStorage.setItem("ventasOffline", JSON.stringify(ventasOffline));
+                alert("⚠️ SIN CONEXIÓN: Guardada localmente. Sincroniza luego.");
+            }
         }, 50); 
     };
 
     window.sincronizarVentasOffline = () => {
         if (!navigator.onLine) return alert("❌ Sin internet.");
-        let ventasOffline = JSON.parse(localStorage.getItem("ventasOffline")) || [];
-        if (ventasOffline.length === 0) return alert("Todo al día ✅");
+        let ventasOffline = JSON.parse(localStorage.getItem("ventasOffline") || "[]");
+        if (ventasOffline.length === 0) return alert("Todo sincronizado ✅");
 
         let promesas = ventasOffline.map(venta => {
+            // Corregir timestamp para Firebase
             venta.ts = firebase.firestore.FieldValue.serverTimestamp();
             return db.collection("ventas").add(venta);
         });
 
         Promise.all(promesas).then(() => {
             localStorage.removeItem("ventasOffline");
-            alert(`✅ ¡Listo! ${ventasOffline.length} ventas locales subidas.`);
-            renderAllViews();
-        }).catch(err => alert("Error sincronizando. Intenta nuevamente."));
+            alert(`✅ ¡Listo! ${ventasOffline.length} ventas sincronizadas.`);
+            renderHistorialFinanciero();
+        }).catch(err => alert("Error sincronizando."));
     };
 
-    window.renderAllViews = () => { renderHistorial(); renderProduccionList(); renderGastosFijos(); renderAdminLists(); };
-    
+    window.cargarGasto = () => {
+        let d=prompt("¿Concepto del gasto? (Ej: Bolsa Hielo)"); if(!d) return; 
+        let m=parseFloat(prompt("Monto:"));
+        if(m && m>0) { 
+            const { fStr, hStr, turno } = getDatosFechaActual();
+            db.collection("gastos").add({ 
+                desc: d.toUpperCase(), monto: m, u: user, f: fStr, h: hStr, turno: turno, 
+                ts: firebase.firestore.FieldValue.serverTimestamp() 
+            }).then(()=>alert("Gasto registrado.")); 
+        }
+    };
+
+    // --- REPORTE PRODUCCIÓN EMPLEADO ---
+    window.abrirModalReporteProd = () => {
+        cerrarModales();
+        document.getElementById('modal-prod-emp').style.display = 'flex';
+        document.getElementById('emp-prod-nombre').focus();
+    };
+
     window.guardarProdEmpleado = () => {
         const n = document.getElementById('emp-prod-nombre').value;
         const c = document.getElementById('emp-prod-cant').value;
         const tipoMedida = document.getElementById('emp-prod-tipo').value;
-        if(!n || !c) return alert("Completa producto y cantidad.");
-        const d = new Date();
-        const fStr = d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
+        
+        if(!n || !c || c<=0) return alert("Completa producto y cantidad válida.");
+        
+        const { fStr, turno } = getDatosFechaActual();
+        
         db.collection("reportes_produccion").add({
             u: user, n: n.toUpperCase(), c: parseFloat(c), tipo: tipoMedida,
-            turno: d.getHours() < 14 ? "Mañana" : "Tarde", f: fStr, ts: firebase.firestore.FieldValue.serverTimestamp()
+            turno: turno, f: fStr, ts: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
-            alert("REGISTRADO ✅");
-            document.getElementById('modal-prod-emp').style.display='none';
+            alert("REPORTE ENVIADO ✅");
+            cerrarModales();
             document.getElementById('emp-prod-nombre').value='';
             document.getElementById('emp-prod-cant').value='';
         });
     };
 
-    window.renderHistorial = function() {
-        const val = document.getElementById('calendar-filter').value;
+    // --- LÓGICA ADMINISTRADOR ---
+    
+    window.renderAllViews = () => { 
+        if(user !== "Admin") return;
+        renderHistorialFinanciero(); 
+        renderInsumos();
+        renderRecetaInputs();
+        renderProduccionCostosList(); 
+        renderProduccionStaffList();
+        renderGastosFijos(); 
+        renderStaffList();
+        renderFichajesAdmin();
+        renderMenuAdmin();
+    };
+
+    // NAVIGATION
+    window.showView = (id) => { 
+        document.querySelectorAll('.container, #view-login').forEach(v => v.style.display='none'); 
+        document.getElementById(id).style.display='block'; 
+        // Desactivar items nav
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        // Activar item actual
+        if(id === 'view-ventas') document.getElementById('nav-ventas-btn').classList.add('active');
+        if(id === 'view-admin') document.getElementById('nav-admin-btn').classList.add('active');
+    };
+    
+    window.switchAdminTab = (t) => { 
+        document.querySelectorAll('.admin-content').forEach(c => c.style.display='none'); 
+        document.getElementById('tab-'+t).style.display='block'; 
+        document.querySelectorAll('#main-admin-tabs .tab-btn').forEach(btn => btn.classList.remove('active')); 
+        document.getElementById('btn-tab-'+t).classList.add('active'); 
+    };
+    
+    window.switchSubTab = (t) => { 
+        document.getElementById('sub-precios').style.display = (t === 'precios') ? 'block' : 'none'; 
+        document.getElementById('sub-produccion').style.display = (t === 'produccion') ? 'block' : 'none'; 
+        document.getElementById('btn-sub-precios').classList.remove('active'); 
+        document.getElementById('btn-sub-produccion').classList.remove('active'); 
+        document.getElementById('btn-sub-'+t).classList.add('active'); 
+    };
+
+    // 1. TAB VENTAS: HISTORIAL Y BALANCE (INTEGRADO CON COSTOS PROD)
+    window.renderHistorialFinanciero = function() {
+        const fechaFiltro = document.getElementById('calendar-filter').value;
         const rango = document.getElementById('rango-tiempo').value;
-        if(!val) return;
-        const vD = db_local.ventas.filter(v => isDateInRange(v.f, rango, val));
-        const gD = db_local.gastos.filter(g => isDateInRange(g.f, rango, val));
-        const pD = db_local.produccion.filter(p => isDateInRange(p.f, rango, val));
-        let vM = 0, vT = 0, gT = 0, cP = 0;
-        let tabla = "<table><tr><th>Fecha/Hora</th><th>Movimiento</th><th>Monto</th></tr>";
-        vD.slice().reverse().forEach(v => { if(v.turno === "Mañana") vM += v.t; else vT += v.t; tabla += `<tr><td>${v.f} ${v.h}</td><td>Venta (${v.m})</td><td style="color:var(--success)">+$${v.t}</td></tr>`; });
-        gD.forEach(g => { gT += g.monto; tabla += `<tr><td>${g.f} ${g.h}</td><td>${g.desc}</td><td style="color:var(--danger)">-$${g.monto}</td></tr>`; });
-        pD.forEach(p => cP += (p.costoTanda || 0));
-        let diasFijos = parseInt(document.getElementById('dias-trabajo').value) || 24;
-        let cFijoDiario = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0) / diasFijos;
-        let multiplicadorFijo = rango === 'dia' ? 1 : (rango === 'semana' ? 7 : 30);
-        let cFijoAplicado = cFijoDiario * multiplicadorFijo;
-        let neto = (vM + vT) - gT - cP - cFijoAplicado;
+        if(!fechaFiltro) return;
+
+        // Filtrar datos locales por rango seleccionado
+        const vD = db_local.ventas.filter(v => isDateInRange(v.f, rango, fechaFiltro));
+        const gD = db_local.gastos.filter(g => isDateInRange(g.f, rango, fechaFiltro));
+        const pD = db_local.produccion.filter(p => isDateInRange(p.f, rango, fechaFiltro));
+        
+        let totVentasM = 0, totVentasT = 0, totGastos = 0, totCostoProd = 0;
+        
+        // Tabla detallada de movimientos
+        let tablaHtml = "<table><tr><th>Fecha/Hora</th><th>Movimiento</th><th>Monto</th></tr>";
+        
+        // Ventas (orden inverso para ver lo último primero)
+        vD.slice().reverse().forEach(v => { 
+            if(v.turno === "Mañana") totVentasM += v.t; else totVentasT += v.t; 
+            tablaHtml += `<tr><td>${v.f} <small>${v.h}</small></td><td>Venta (${v.m}) <small>${v.u}</small></td><td style="color:var(--success)">+$${v.t}</td></tr>`; 
+        });
+        
+        // Gastos Caja
+        gD.forEach(g => { 
+            totGastos += g.monto; 
+            tablaHtml += `<tr><td>${g.f} <small>${g.h}</small></td><td>${g.desc} <small>${g.u}</small></td><td style="color:var(--danger)">-$${g.monto}</td></tr>`; 
+        });
+        
+        // Costos de Producción Calculados (AQUÍ SE SUMAN LOS COSTOS DE MATERIA PRIMA)
+        pD.forEach(p => {
+            totCostoProd += (p.costoTanda || 0);
+            tablaHtml += `<tr style="background:rgba(255,107,107,0.05)"><td>${p.f}</td><td>Costo Fabric. ${p.n} <small>(Admin)</small></td><td style="color:var(--danger)">-$${p.costoTanda.toFixed(2)}</td></tr>`;
+        });
+        
+        let totVentas = totVentasM + totVentasT;
+
+        // Cálculo Gastos Fijos Prorrateados
+        let diasFijosMes = parseInt(document.getElementById('dias-trabajo').value) || 24;
+        let totFijosMensuales = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0);
+        let cFijoDiario = totFijosMensuales / diasFijosMes;
+        
+        // Determinar cuántos días aplicar según el rango
+        let diasAplicaFijo = 1;
+        if (rango === 'semana') diasAplicaFijo = 7;
+        if (rango === 'mes') diasAplicaFijo = diasFijosMes; // O los días transcurridos reales
+        
+        let cFijoAplicado = cFijoDiario * diasAplicaFijo;
+
+        // CÁLCULO NETO FINAL (Ventas - Gastos - Costo Producción Materia - Fijos)
+        let neto = totVentas - totGastos - totCostoProd - cFijoAplicado;
+        
         let colorNeto = neto >= 0 ? 'var(--success)' : 'var(--danger)';
-        let tituloRango = rango === 'dia' ? 'DÍA' : (rango === 'semana' ? 'SEMANA' : 'MES');
-        document.getElementById('stats-container').innerHTML = `<div class="stat-box" style="border-color:${colorNeto};"><div class="stat-label">GANANCIA OPERATIVA NETA (${tituloRango})</div><div class="stat-val" style="color:${colorNeto}">$${neto.toFixed(2)}</div><div style="font-size:0.65rem; color:#aaa; margin-top:5px;">Ventas: $${(vM+vT)} | Gastos: -$${gT} | Prod: -$${cP.toFixed(2)} | Fijos Prorr: -$${cFijoAplicado.toFixed(2)}</div></div>`;
-        document.getElementById('historial-list').innerHTML = tabla + "</table>";
+        let tituloRango = rango.toUpperCase();
+
+        // Renderizar Stats Boxes
+        document.getElementById('stats-container').innerHTML = `
+            <div class="stat-box" style="border-color:${colorNeto}; margin-bottom:15px; padding:15px;">
+                <div class="stat-label">GANANCIA OPERATIVA NETA (${tituloRango})</div>
+                <div class="stat-val" style="color:${colorNeto}; font-size:1.8rem;">$${neto.toFixed(2)}</div>
+                <div style="font-size:0.7rem; color:#aaa; margin-top:8px; line-height:1.4;">
+                    (+) Ventas Totales: $${totVentas.toFixed(2)}<br>
+                    (-) Gastos Caja/Prov: -$${totGastos.toFixed(2)}<br>
+                    <b style="color:white">(-) Costo Materia Prima (Prod): -$${totCostoProd.toFixed(2)}</b><br>
+                    (-) Fijos Prorrateados: -$${cFijoAplicado.toFixed(2)}
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <div class="stat-box" style="flex:1; border-color:#51CF66">
+                    <div class="stat-label">Ventas Mañana</div>
+                    <div class="stat-val" style="color:#51CF66">$${totVentasM.toFixed(2)}</div>
+                </div>
+                <div class="stat-box" style="flex:1; border-color:#FF6B6B">
+                    <div class="stat-label">Ventas Tarde</div>
+                    <div class="stat-val" style="color:#FF6B6B">$${totVentasT.toFixed(2)}</div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('historial-list').innerHTML = tablaHtml + "</table>" + (vD.length+gD.length+pD.length === 0 ? '<p style="text-align:center;font-size:0.8rem;opacity:0.5;">No hay movimientos</p>':'');
     };
 
-    window.renderProduccionList = function() {
-        const val = document.getElementById('calendar-filter').value;
-        const rango = document.getElementById('rango-tiempo').value;
-        const pD = db_local.produccion.filter(p => isDateInRange(p.f, rango, val));
-        document.getElementById('produccion-dia-list').innerHTML = pD.map(p => {
-            let cUni = p.unidades > 0 ? (p.costoTanda / p.unidades).toFixed(2) : 0;
-            let cDoc = p.unidades > 0 ? ((p.costoTanda / p.unidades) * 12).toFixed(2) : 0;
-            return `<div class="list-item"><div><b>${p.n}</b> <span style="font-size:0.7rem; color:#aaa">(${p.f})</span><br><small>${p.unidades} u. | <b style="color:var(--success)">$${cUni} c/u</b> | <b style="color:var(--gold)">$${cDoc} x docena</b></small></div><div style="display:flex; align-items:center; gap:8px;"><b style="color:var(--danger)">-$${p.costoTanda.toFixed(2)}</b><button class="icon-btn edit" onclick="editarCostoProduccion('${p.id}', '${p.n}', ${p.costoTanda})"><span class="material-symbols-outlined">edit</span></button><button class="icon-btn delete" onclick="borrarDoc('produccion','${p.id}')"><span class="material-symbols-outlined">delete</span></button></div></div>`;
-        }).join('') || '<p style="text-align:center; font-size:0.8rem;">No hay registros en esta fecha.</p>';
-        const empD = db_local.reportes_emp.filter(r => isDateInRange(r.f, rango, val));
-        document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => `<div class="list-item"><div><b>${r.n}</b> <span style="font-size:0.7rem; color:#aaa">(${r.f})</span><br><small style="color:var(--gold)">${r.u} (${r.turno})</small></div><div>${r.c} ${r.tipo}</div></div>`).join('');
-    };
+    // 2. TAB PRODUCCIÓN: INVENTARIO (INSUMOS) Y FABRICACIÓN
 
-    window.editarCostoProduccion = (id, nombre, costoActual) => {
-        let nuevoCosto = prompt(`Editar COSTO TOTAL de materia prima para la tanda de ${nombre}:\n(Se ajustará la ganancia neta automáticamente)`, costoActual);
-        if(nuevoCosto && !isNaN(nuevoCosto)) { db.collection("produccion").doc(id).update({ costoTanda: parseFloat(nuevoCosto) }); }
-    };
-
-    window.renderGastosFijos = function() {
-        let totalF = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0);
-        let dias = parseInt(document.getElementById('dias-trabajo').value) || 24;
-        let cD = totalF / dias;
-        document.getElementById('fijos-list').innerHTML = db_local.gastos_fijos.map(g => `<div class="list-item"><span>${g.n}</span><div style="display:flex; align-items:center; gap:10px;"><b>$${g.m}</b><button class="icon-btn edit" onclick="editarGastoFijo('${g.id}', '${g.n}', ${g.m})"><span class="material-symbols-outlined">edit</span></button><button class="icon-btn delete" onclick="borrarDoc('gastos_fijos','${g.id}')"><span class="material-symbols-outlined">delete</span></button></div></div>`).join('');
-        document.getElementById('fijos-resumen').innerHTML = `<div class="stat-box"><div class="stat-label">FIJO DIARIO PRORRATEADO</div><div class="stat-val">$${cD.toFixed(2)}</div></div>`;
-    };
-
-    window.editarGastoFijo = (id, nombreActual, montoActual) => {
-        let n = prompt("Editar nombre:", nombreActual); if (!n) return;
-        let m = parseFloat(prompt("Editar monto mensual:", montoActual));
-        if (m) db.collection("gastos_fijos").doc(id).update({ n: n.toUpperCase(), m: m });
-    };
-
-    // --- NUEVO SISTEMA DE INSUMOS ---
+    // -- SubTab Inventario --
     window.abrirModalInsumo = () => {
+        cerrarModales();
         document.getElementById('modal-insumo').style.display = 'flex';
+        // Limpiar campos
         document.getElementById('ins-nombre').value = '';
         document.getElementById('ins-precio').value = '';
         document.getElementById('ins-cant').value = '';
+        document.getElementById('ins-unidad').value = 'kg';
+        document.getElementById('ins-nombre').focus();
     };
 
     window.guardarNuevoInsumo = () => {
@@ -630,166 +847,370 @@
         let q = parseFloat(document.getElementById('ins-cant').value);
         let u = document.getElementById('ins-unidad').value;
 
-        if(!n || isNaN(p) || isNaN(q)) return alert("Completá todos los campos por favor.");
+        if(!n || isNaN(p) || isNaN(q) || q<=0) return alert("Completá todos los campos correctamente.");
 
+        // Definir Unidad Base para cálculos internos (Mínima unidad posible)
         let baseU = u;
-        let cuBase = p / q; 
+        let cuBase = p / q; // Costo por unidad ingresada
 
-        // Si compran por Kilo o Litro, sacamos el costo por gramo o mililitro
+        // Convertir Kilos/Litros a Gramos/Mililitros para precisión interna
         if (u === 'kg') { baseU = 'g'; cuBase = p / (q * 1000); }
         else if (u === 'lt') { baseU = 'ml'; cuBase = p / (q * 1000); }
 
         db.collection("insumos").add({
             n: n.toUpperCase(), 
-            p, q, u, 
-            baseU: baseU, 
-            cuBase: cuBase // Costo base absoluto (por 1g, 1ml, o 1u)
+            p, // Precio compra
+            q, // Cantidad compra
+            u, // Unidad compra
+            baseU: baseU, // Unidad base de cálculo (g, ml, u)
+            cuBase: cuBase // Costo x unidad base ($ por g, ml, o u)
         }).then(() => {
-            document.getElementById('modal-insumo').style.display = 'none';
+            cerrarModales();
         });
     };
 
     function renderInsumos() { 
         document.getElementById('insumos-list').innerHTML = db_local.insumos.map(i => { 
-            // Manejo de compatibilidad con insumos viejos
+            // Compatibilidad con datos viejos si los hubiera
             let base_u = i.baseU || (i.u === 'kg' ? 'g' : (i.u === 'lt' ? 'ml' : i.u));
-            let cu_base = i.cuBase || (i.u === 'kg' || i.u === 'lt' ? i.cu / 1000 : i.cu);
-            let costoOriginal = i.p || (i.cu * i.q);
-            let cantOriginal = i.q || 1;
-
+            let cu_base = i.cuBase || (i.p / i.q) / (i.u === 'kg' || i.u === 'lt' ? 1000 : 1);
+            
             return `<div class="list-item">
-                <span>${i.n}</span>
+                <div style="flex:1;">
+                    <b>${i.n}</b><br>
+                    <small style="color:#aaa;">Compra: $${i.p.toFixed(2)} x ${i.q}${i.u}</small>
+                </div>
                 <div style="text-align:right; margin-right:10px;">
-                    <b>$${costoOriginal.toFixed(2)} / ${cantOriginal}${i.u}</b><br>
-                    <small style="color:var(--gold); font-size:0.75rem;">$${cu_base.toFixed(2)} / ${base_u}</small>
+                    <b style="color:var(--gold);">$${cu_base.toFixed(4)}</b><br>
+                    <small style="color:#aaa;">por ${base_u}</small>
                 </div>
                 <button class="icon-btn delete" onclick="borrarDoc('insumos','${i.id}')"><span class="material-symbols-outlined">delete</span></button>
             </div>`; 
-        }).join(''); 
+        }).join('') || '<p style="text-align:center; font-size:0.8rem; opacity:0.5">Sin insumos cargados.</p>'; 
     }
 
-    // --- NUEVO SISTEMA DE RECETAS CON SELECTOR DINÁMICO ---
+    // -- SubTab Fabricación (Cálculo Recetas) --
+    
+    // Renderiza inputs para cada insumo existente
     function renderRecetaInputs() { 
         document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => { 
-            let base_u = i.baseU || (i.u === 'kg' ? 'g' : (i.u === 'lt' ? 'ml' : i.u));
-            let cu_base = i.cuBase || (i.u === 'kg' || i.u === 'lt' ? i.cu / 1000 : i.cu);
+            let base_u = i.baseU;
+            let cu_base = i.cuBase;
             
-            // Renderizamos las opciones según si es peso, volumen o unidades
+            // Opciones de selector dinámico según unidad base
             let options = '';
-            if (base_u === 'g') options = `<option value="g">Gramos (g)</option><option value="kg">Kilos (kg)</option>`;
-            else if (base_u === 'ml') options = `<option value="ml">Mililitros</option><option value="lt">Litros</option>`;
-            else options = `<option value="u">Unidades</option>`;
+            if (base_u === 'g') {
+                options = `<option value="g">g</option><option value="kg">kg</option>`;
+            } else if (base_u === 'ml') {
+                options = `<option value="ml">ml</option><option value="lt">lt</option>`;
+            } else {
+                options = `<option value="u">u</option>`;
+            }
 
-            return `<div class="receta-row" style="display:flex; gap:5px; margin-bottom:8px; align-items:center;">
-                <span style="flex:1.2; font-size:0.85rem">${i.n}</span>
-                <input type="number" step="0.001" class="input-dark receta-cant" data-id="${i.id}" data-cubase="${cu_base}" placeholder="Cant." style="flex:1; padding:8px; margin:0;">
-                <select class="input-dark receta-unidad" style="flex:1; padding:8px; margin:0; font-size:0.8rem;">
-                    ${options}
-                </select>
+            return `<div class="receta-row list-item" style="padding: 8px; margin-bottom:5px; border-left:none; background:rgba(255,255,255,0.01)">
+                <span style="flex:1.5; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis;">${i.n}</span>
+                <div style="display:flex; gap:3px; flex:2; align-items:center;">
+                    <input type="number" step="any" class="input-dark receta-cant" data-cubase="${cu_base}" placeholder="0" style="flex:1; padding:8px; margin:0; text-align:center; font-size:0.8rem;">
+                    <select class="input-dark receta-unidad" style="flex:1; padding:8px 3px; margin:0; font-size:0.75rem; background-position: right 3px center;">
+                        ${options}
+                    </select>
+                </div>
             </div>`; 
         }).join(''); 
     }
 
-    let ultC = 0, ultU = 0;
     window.calcularProduccion = () => {
-        let t = 0; 
+        let costoTotalMateria = 0; 
         const filas = document.querySelectorAll('.receta-row');
         
         filas.forEach(fila => {
             const inputVal = fila.querySelector('.receta-cant').value;
-            if(!inputVal) return; // Salta si está vacío
+            if(!inputVal || inputVal <= 0) return; // Saltar si está vacío o cero
             
-            const cantInput = parseFloat(inputVal) || 0;
+            const cantInput = parseFloat(inputVal);
             const cuBase = parseFloat(fila.querySelector('.receta-cant').dataset.cubase);
             const unidadElegida = fila.querySelector('.receta-unidad').value;
             
-            // Pasamos todo a la unidad mínima antes de multiplicar
+            // Convertir cantidad ingresada a UNIDAD BASE antes de multiplicar
             let cantEnBase = cantInput;
             if (unidadElegida === 'kg' || unidadElegida === 'lt') {
                 cantEnBase = cantInput * 1000;
             }
             
-            t += (cantEnBase * cuBase);
+            // Sumar al costo total: (Cantidad en base * Costo x Unidad Base)
+            costoTotalMateria += (cantEnBase * cuBase);
         });
 
-        ultU = parseFloat(document.getElementById('cant-producida').value)||0; 
-        ultC = t;
-        
-        document.getElementById('resultado-produccion').style.display = 'block';
-        document.getElementById('costo-tanda-total').innerText = "$"+t.toFixed(2);
-        if(ultU > 0) { 
-            document.getElementById('costo-por-unidad').innerText = "$"+(t/ultU).toFixed(2); 
-            document.getElementById('costo-por-docena').innerText = "$"+((t/ultU)*12).toFixed(2); 
+        // Cantidad producida obtenida
+        let cantObtenida = parseFloat(document.getElementById('cant-producida').value); 
+        let unidadObtenida = document.getElementById('unidad-producida').value; // Unidades o Docenas
+
+        if(!cantObtenida || cantObtenida <= 0) {
+            alert("Ingresa la cantidad total producida obtenida.");
+            document.getElementById('cant-producida').focus();
+            return;
         }
+        
+        // Normalizar a Unidades para cálculo unitario
+        let cantObtenidaEnUnidades = cantObtenida;
+        if(unidadObtenida === "Docenas") cantObtenidaEnUnidades = cantObtenida * 12;
+
+        // Guardar en estado global temporal
+        ultTandaCalculada.costo = costoTotalMateria;
+        ultTandaCalculada.unidades = cantObtenidaEnUnidades;
+        
+        // Mostrar resultados en UI
+        document.getElementById('resultado-produccion').style.display = 'block';
+        document.getElementById('costo-tanda-total').innerText = "$"+costoTotalMateria.toFixed(2);
+        
+        let cUni = costoTotalMateria / cantObtenidaEnUnidades;
+        document.getElementById('costo-por-unidad').innerText = "$"+cUni.toFixed(2); 
+        document.getElementById('costo-por-docena').innerText = "$"+(cUni * 12).toFixed(2); 
     };
 
     window.guardarProduccion = () => {
         let n = document.getElementById('nombre-produccion').value;
-        if(!n || ultC<=0 || ultU<=0) return alert("Falta calcular, nombre o unidades totales.");
-        const d = new Date();
-        db.collection("produccion").add({ n:n.toUpperCase(), costoTanda:ultC, unidades:ultU, f:d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear(), ts:firebase.firestore.FieldValue.serverTimestamp() })
-        .then(() => { alert("GUARDADO ✅"); document.getElementById('resultado-produccion').style.display='none'; document.getElementById('nombre-produccion').value=''; document.getElementById('cant-producida').value=''; document.querySelectorAll('.receta-cant').forEach(i=>i.value=''); });
+        if(!n || ultTandaCalculada.costo <= 0 || ultTandaCalculada.unidades <= 0) return alert("Falta calcular, nombre o unidades totales.");
+        
+        const { fStr } = getDatosFechaActual();
+        
+        db.collection("produccion").add({ 
+            n: n.toUpperCase(), 
+            costoTanda: ultTandaCalculada.costo, // COSTO MATERIA PRIMA TOTAL
+            unidades: ultTandaCalculada.unidades, // Cantidad en UNIDADES
+            f: fStr, 
+            ts: firebase.firestore.FieldValue.serverTimestamp() 
+        })
+        .then(() => { 
+            alert("GUARDADO ✅ (Integrado en Balance)"); 
+            // Limpiar formulario
+            document.getElementById('resultado-produccion').style.display='none'; 
+            document.getElementById('nombre-produccion').value=''; 
+            document.getElementById('cant-producida').value=''; 
+            document.querySelectorAll('.receta-cant').forEach(i=>i.value=''); 
+            ultTandaCalculada = { costo: 0, unidades: 0 };
+        });
     };
 
-    window.cargarGasto = () => {
-        let d=prompt("¿Qué se compró?"); if(!d) return; let m=parseFloat(prompt("Monto:"));
-        if(m) { const now = new Date(); db.collection("gastos").add({ desc: d.toUpperCase(), monto: m, u: user, f: now.getDate()+"/"+(now.getMonth()+1)+"/now.getFullYear()", h: now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit', hour12:false}), turno: now.getHours()<14?"Mañana":"Tarde", ts: firebase.firestore.FieldValue.serverTimestamp() }); }
-    };
-
-    window.exportarExcel = () => {
+    // -- Listados Producción --
+    
+    // Historial Costos Calculados por Admin
+    window.renderProduccionCostosList = function() {
         const val = document.getElementById('calendar-filter').value;
         const rango = document.getElementById('rango-tiempo').value;
-        let vD = db_local.ventas.filter(v => isDateInRange(v.f, rango, val));
-        let gD = db_local.gastos.filter(g => isDateInRange(g.f, rango, val));
-        let pD = db_local.produccion.filter(p => isDateInRange(p.f, rango, val));
-        let ws_ventas = XLSX.utils.json_to_sheet(vD.map(v => ({ Fecha: v.f, Hora: v.h, Monto: v.t, Metodo: v.m, Turno: v.turno, Vendedor: v.u })));
-        let ws_gastos = XLSX.utils.json_to_sheet(gD.map(g => ({ Fecha: g.f, Hora: g.h, Monto: g.monto, Descripcion: g.desc, Registro: g.u })));
-        let ws_prod = XLSX.utils.json_to_sheet(pD.map(p => ({ Fecha: p.f, Producto: p.n, UnidadesTotales: p.unidades, CostoMateriaTotal: p.costoTanda, CostoPorUnidad: (p.costoTanda/p.unidades).toFixed(2), CostoPorDocena: ((p.costoTanda/p.unidades)*12).toFixed(2) })));
-        let totalV = vD.reduce((acc, v) => acc + v.t, 0);
-        let totalG = gD.reduce((acc, g) => acc + g.monto, 0);
-        let totalP = pD.reduce((acc, p) => acc + (p.costoTanda||0), 0);
-        let diasFijos = parseInt(document.getElementById('dias-trabajo').value) || 24;
-        let cFijoDiario = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0) / diasFijos;
-        let diasRango = rango === 'dia' ? 1 : (rango === 'semana' ? 7 : 30); 
-        let cFijoTotal = cFijoDiario * diasRango;
-        let neto = totalV - totalG - totalP - cFijoTotal;
-        let ws_resumen = XLSX.utils.json_to_sheet([ { Concepto: "Ventas Totales", Monto: totalV }, { Concepto: "Gastos Operativos Diarios", Monto: -totalG }, { Concepto: "Costo Producción Total", Monto: -totalP }, { Concepto: "Gastos Fijos Prorrateados", Monto: -cFijoTotal }, { Concepto: "GANANCIA OPERATIVA NETA", Monto: neto } ]);
-        let wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws_resumen, "Resumen Ganancias");
-        XLSX.utils.book_append_sheet(wb, ws_ventas, "Ventas");
-        XLSX.utils.book_append_sheet(wb, ws_gastos, "Gastos Diarios");
-        XLSX.utils.book_append_sheet(wb, ws_prod, "Producción y Costos");
-        let tituloRango = rango === 'dia' ? 'Dia' : (rango === 'semana' ? 'Semana' : 'Mes');
-        XLSX.writeFile(wb, `Reporte_LaUnica_${tituloRango}_${val}.xlsx`);
+        const pD = db_local.produccion.filter(p => isDateInRange(p.f, rango, val));
+        
+        document.getElementById('produccion-dia-list').innerHTML = pD.map(p => {
+            let cUni = p.unidades > 0 ? (p.costoTanda / p.unidades) : 0;
+            return `<div class="list-item" style="font-size:0.8rem; border-left-color:var(--danger)">
+                <div>
+                    <b>${p.n}</b> <small style="color:#aaa">(${p.f})</small><br>
+                    <small>${p.unidades} u. | <b style="color:white">$${cUni.toFixed(2)} c/u</b> | <b style="color:var(--gold)">$${(cUni*12).toFixed(2)} x doc</b></small>
+                </div>
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <b style="color:var(--danger)">$${p.costoTanda.toFixed(2)}</b>
+                    <button class="icon-btn delete" onclick="borrarDoc('produccion','${p.id}')"><span class="material-symbols-outlined" style="font-size:1.1rem">delete</span></button>
+                </div>
+            </div>`;
+        }).join('') || '<p style="text-align:center; font-size:0.8rem; opacity:0.5;">No hay registros.</p>';
     };
 
-    window.showView = (id) => { document.querySelectorAll('.container, #view-login').forEach(v => v.style.display='none'); document.getElementById(id).style.display='block'; };
-    window.switchAdminTab = (t) => { document.querySelectorAll('.admin-content').forEach(c => c.style.display='none'); document.getElementById('tab-'+t).style.display='block'; document.querySelectorAll('#main-admin-tabs .tab-btn').forEach(btn => btn.classList.remove('active')); document.getElementById('btn-tab-'+t).classList.add('active'); };
-    window.switchSubTab = (t) => { document.getElementById('sub-precios').style.display = (t === 'precios') ? 'block' : 'none'; document.getElementById('sub-produccion').style.display = (t === 'produccion') ? 'block' : 'none'; document.getElementById('btn-sub-precios').classList.remove('active'); document.getElementById('btn-sub-produccion').classList.remove('active'); document.getElementById('btn-sub-'+t).classList.add('active'); };
-    window.renderProductos = () => { document.getElementById('grid-productos').innerHTML = db_local.productos.map(p => `<div class="btn-item" onclick="addCart('${p.n}',${p.p})"><span style="font-size:2.8rem; text-shadow: 0 0 15px rgba(255,105,180,0.6); margin-bottom:5px;">🍩</span><span style="font-weight:600; font-size:0.9rem;">${p.n}</span><b style="color:var(--gold); font-size:1.1rem; margin-top:3px;">$${p.p}</b></div>`).join(''); };
-    window.addCart = (n, p) => { cart.push({n, p}); renderCart(); };
-    window.renderCart = () => { let t = cart.reduce((a,b)=>a+b.p,0); document.getElementById('cart-list').innerHTML = cart.map((it, i) => `<div class="list-item">${it.n} <b>$${it.p}</b> <button class="icon-btn delete" onclick="cart.splice(${i},1);renderCart()"><span class="material-symbols-outlined">close</span></button></div>`).join(''); document.getElementById('total-val').innerText = "$"+t; calcVuelto(); };
-    window.calcVuelto = () => { let t = cart.reduce((a,b)=>a+b.p,0); let paga = parseFloat(document.getElementById('paga-con').value) || 0; let v = paga - t; document.getElementById('vuelto-val').innerText = v >= 0 ? "$"+v : "$0"; };
-    
-    window.renderAdminLists = () => {
-        document.getElementById('staff-list').innerHTML = db_local.staff.map(s => `<div class="list-item">${s.n} <button class="icon-btn delete" onclick="borrarDoc('staff','${s.id}')"><span class="material-symbols-outlined">delete</span></button></div>`).join('');
-        document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item">${p.n} ($${p.p}) <button class="icon-btn delete" onclick="borrarDoc('productos','${p.id}')"><span class="material-symbols-outlined">delete</span></button></div>`).join('');
+    // Reportes recibidos del Staff
+    window.renderProduccionStaffList = function() {
+        const val = document.getElementById('calendar-filter').value;
+        const rango = document.getElementById('rango-tiempo').value;
+        const empD = db_local.reportes_emp.filter(r => isDateInRange(r.f, rango, val));
         
+        document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => 
+            `<div class="list-item" style="padding:10px; margin-bottom:5px; border-left-color:var(--success); background:none;">
+                <div><b>${r.n}</b> <small style="color:#aaa">(${r.f})</small><br><small style="color:var(--gold)">${r.u} (${r.turno})</small></div>
+                <div style="font-weight:bold; color:var(--success);">${r.c} <small>${r.tipo}</small></div>
+            </div>`
+        ).join('') || '<p style="text-align:center; font-size:0.8rem; opacity:0.5;">Sin reportes hoy.</p>';
+    };
+
+
+    // 3. TAB FIJOS
+    window.renderGastosFijos = function() {
+        let totF = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0);
+        let dias = parseInt(document.getElementById('dias-trabajo').value) || 24;
+        let cD = dias > 0 ? totF / dias : 0;
+        
+        document.getElementById('fijos-list').innerHTML = db_local.gastos_fijos.map(g => 
+            `<div class="list-item">
+                <span>${g.n}</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <b>$${g.m.toFixed(2)}</b>
+                    <button class="icon-btn edit" onclick="editarGastoFijo('${g.id}', '${g.n}', ${g.m})"><span class="material-symbols-outlined">edit</span></button>
+                    <button class="icon-btn delete" onclick="borrarDoc('gastos_fijos','${g.id}')"><span class="material-symbols-outlined">delete</span></button>
+                </div>
+            </div>`
+        ).join('');
+        
+        document.getElementById('fijos-resumen').innerHTML = `
+            <div class="stat-box">
+                <div class="stat-label">GASTO FIJO MENSUAL TOTAL</div>
+                <div class="stat-val">$${totF.toFixed(2)}</div>
+            </div>
+            <div class="stat-box" style="margin-top:10px; border-color:#aaa">
+                <div class="stat-label">COSTO FIJO DIARIO (Prorrateado ${dias} días)</div>
+                <div class="stat-val" style="color:white; font-size:1.1rem;">$${cD.toFixed(2)} / día</div>
+            </div>
+        `;
+    };
+
+    window.nuevoGastoFijo = () => { 
+        let n=prompt("Concepto:"); if(!n) return; 
+        let m=parseFloat(prompt("Monto Mensual:")); 
+        if(m) db.collection("gastos_fijos").add({n:n.toUpperCase(), m}); 
+    };
+    window.editarGastoFijo = (id, nAct, mAct) => {
+        let n = prompt("Editar concepto:", nAct); if (!n) return;
+        let m = parseFloat(prompt("Editar monto:", mAct));
+        if (m) db.collection("gastos_fijos").doc(id).update({ n: n.toUpperCase(), m: m });
+    };
+
+    // 4. TAB STAFF Y FICHAJES
+    window.renderStaffList = () => {
+        document.getElementById('staff-list').innerHTML = db_local.staff.map(s => 
+            `<div class="list-item">
+                <span><b>${s.n}</b> <small style="color:#aaa; margin-left:10px;">PIN: ${s.p}</small></span> 
+                <button class="icon-btn delete" onclick="borrarDoc('staff','${s.id}')"><span class="material-symbols-outlined">delete</span></button>
+            </div>`
+        ).join('');
+    };
+
+    window.renderFichajesAdmin = () => {
         const val = document.getElementById('calendar-filter').value;
         const rango = document.getElementById('rango-tiempo').value;
         let fichajesFiltro = db_local.fichajes.filter(f => isDateInRange(f.f, rango, val));
         
-        // Ahora usamos f.turno directamente desde Firebase en lugar de partir el texto de la hora
-        let htmlMañana = fichajesFiltro.filter(f => (f.turno ? f.turno === "Mañana" : parseInt(f.h.split(':')[0]) < 14)).map(f => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;"><span>🕒 ${f.f} ${f.h} - <b>${f.u}</b></span><span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span></div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
-        let htmlTarde = fichajesFiltro.filter(f => (f.turno ? f.turno === "Tarde" : parseInt(f.h.split(':')[0]) >= 14)).map(f => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem;"><span>🕒 ${f.f} ${f.h} - <b>${f.u}</b></span><span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span></div>`).join('') || '<p style="font-size:0.75rem; color:#888; text-align:center;">Sin registros</p>';
+        const renderItemFichaje = (f) => `
+            <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.8rem;">
+                <span>${f.f} <small>${f.h}</small> - <b>${f.u}</b></span>
+                <span style="color:${f.tipo==='ENTRADA'?'var(--success)':'var(--danger)'}; font-weight:bold;">${f.tipo}</span>
+            </div>`;
+
+        let htmlMañana = fichajesFiltro.filter(f => f.turno === "Mañana").map(renderItemFichaje).join('') 
+            || '<p style="font-size:0.75rem; color:#888; text-align:center; margin:5px 0;">Sin registros mañana</p>';
         
-        document.getElementById('fichaje-list').innerHTML = `<div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px; margin-bottom:10px;"><h5 style="margin:0 0 10px 0; color:#51CF66;">🌤️ TURNO MAÑANA</h5>${htmlMañana}</div><div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px;"><h5 style="margin:0 0 10px 0; color:#FF6B6B;">🌙 TURNO TARDE</h5>${htmlTarde}</div>`;
+        let htmlTarde = fichajesFiltro.filter(f => f.turno === "Tarde").map(renderItemFichaje).join('') 
+            || '<p style="font-size:0.75rem; color:#888; text-align:center; margin:5px 0;">Sin registros tarde</p>';
+        
+        document.getElementById('fichaje-list').innerHTML = `
+            <div style="background:rgba(81, 207, 102, 0.05); padding:10px; border-radius:10px; margin-bottom:10px;">
+                <h5 style="margin:0 0 8px 0; color:#51CF66; text-align:center;">🌤️ TURNO MAÑANA</h5>${htmlMañana}
+            </div>
+            <div style="background:rgba(255, 107, 107, 0.05); padding:10px; border-radius:10px;">
+                <h5 style="margin:0 0 8px 0; color:#FF6B6B; text-align:center;">🌙 TURNO TARDE</h5>${htmlTarde}
+            </div>`;
     };
 
-    window.borrarDoc = (c, i) => confirm("¿ELIMINAR?") && db.collection(c).doc(i).delete();
-    window.nuevoEmp = () => { let n=prompt("Nombre:"); if(!n) return; let p=prompt("PIN:"); p && db.collection("staff").add({n:n.toUpperCase(), p}); };
-    window.nuevoProd = () => { let n=prompt("Prod:"); if(!n) return; let p=prompt("Precio:"); p && db.collection("productos").add({n:n.toUpperCase(), p:parseInt(p)}); };
-    window.iniciarReinicio = async () => { if(!confirm("⚠️ ¿BORRAR TODO?")) return; const cols = ['ventas', 'gastos', 'produccion', 'fichajes', 'reportes_produccion']; for(let c of cols) { let snap = await db.collection(c).get(); snap.docs.forEach(d => d.ref.delete()); } alert("SISTEMA LIMPIO ✅"); };
+    window.nuevoEmp = () => { 
+        let n=prompt("Nombre Empleado:"); if(!n) return; 
+        let p=prompt("PIN de acceso (numérico):"); 
+        if(n && p) db.collection("staff").add({n:n.toUpperCase(), p}); 
+    };
+
+    // 5. TAB MENÚ PROD
+    window.renderMenuAdmin = () => {
+        document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => 
+            `<div class="list-item">
+                <span>${p.n}</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <b>$${p.p}</b>
+                    <button class="icon-btn edit" onclick="editarProducto('${p.id}', '${p.n}', ${p.p})"><span class="material-symbols-outlined">edit</span></button>
+                    <button class="icon-btn delete" onclick="borrarDoc('productos','${p.id}')"><span class="material-symbols-outlined">delete</span></button>
+                </div>
+            </div>`
+        ).join('');
+    };
+    window.nuevoProd = () => { 
+        let n=prompt("Nombre Producto:"); if(!n) return; 
+        let p=prompt("Precio Venta:"); 
+        if(n && p) db.collection("productos").add({n:n.toUpperCase(), p:parseInt(p)}); 
+    };
+    window.editarProducto = (id, nAct, pAct) => {
+        let n = prompt("Editar nombre:", nAct); if (!n) return;
+        let p = parseInt(prompt("Editar precio:", pAct));
+        if (p) db.collection("productos").doc(id).update({ n: n.toUpperCase(), p: p });
+    };
+
+    // --- EXPORTAR EXCEL (MEJORADO CON COSTO PROD) ---
+    window.exportarExcel = () => {
+        const val = document.getElementById('calendar-filter').value;
+        const rango = document.getElementById('rango-tiempo').value;
+        
+        let vD = db_local.ventas.filter(v => isDateInRange(v.f, rango, val));
+        let gD = db_local.gastos.filter(g => isDateInRange(g.f, rango, val));
+        let pD = db_local.produccion.filter(p => isDateInRange(p.f, rango, val));
+        
+        // Hojas detalladas
+        let ws_ventas = XLSX.utils.json_to_sheet(vD.map(v => ({ Fecha: v.f, Hora: v.h, Monto: v.t, Metodo: v.m, Turno: v.turno, Vendedor: v.u })));
+        let ws_gastos = XLSX.utils.json_to_sheet(gD.map(g => ({ Fecha: g.f, Hora: g.h, Monto: g.monto, Descripcion: g.desc, Registro: g.u })));
+        let ws_prod = XLSX.utils.json_to_sheet(pD.map(p => ({ Fecha: p.f, Producto: p.n, UnidadesTotales: p.unidades, CostoMateriaTotal: p.costoTanda, CostoUni: (p.costoTanda/p.unidades).toFixed(2) })));
+        
+        // Hoja Resumen Financiero
+        let totalV = vD.reduce((acc, v) => acc + v.t, 0);
+        let totalG = gD.reduce((acc, g) => acc + g.monto, 0);
+        let totalP = pD.reduce((acc, p) => acc + (p.costoTanda||0), 0);
+        
+        let diasFijos = parseInt(document.getElementById('dias-trabajo').value) || 24;
+        let cFijoDiario = db_local.gastos_fijos.reduce((a,b)=>a+b.m,0) / diasFijos;
+        let diasRango = rango === 'dia' ? 1 : (rango === 'semana' ? 7 : 30); 
+        let cFijoTotal = cFijoDiario * diasRango;
+        
+        let neto = totalV - totalG - totalP - cFijoTotal;
+        
+        let dataResumen = [
+            { Concepto: `REPORTE LA ÚNICA (${rango.toUpperCase()})`, Valor: val },
+            {},
+            { Concepto: "(+) INGRESOS POR VENTAS", Valor: totalV },
+            { Concepto: "(-) GASTOS CAJA / PROVEEDORES", Valor: -totalG },
+            { Concepto: "(-) COSTO MATERIA PRIMA (Producción)", Valor: -totalP },
+            { Concepto: "(-) GASTOS FIJOS PRORRATEADOS", Valor: -cFijoTotal },
+            { Concepto: "=========================", Valor: "" },
+            { Concepto: "GANANCIA OPERATIVA NETA", Valor: neto }
+        ];
+        let ws_resumen = XLSX.utils.json_to_sheet(dataResumen, {skipHeader: true});
+
+        // Crear libro y añadir hojas
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws_resumen, "Resumen Ganancias");
+        XLSX.utils.book_append_sheet(wb, ws_ventas, "Detalle Ventas");
+        XLSX.utils.book_append_sheet(wb, ws_gastos, "Detalle Gastos");
+        XLSX.utils.book_append_sheet(wb, ws_prod, "Detalle Produccion");
+        
+        // Descargar
+        XLSX.writeFile(wb, `Reporte_LaUnica_${rango}_${val}.xlsx`);
+    };
+
+    // --- FUNCIONES DE BORRADO ---
+    window.borrarDoc = (coleccion, id) => {
+        if(coleccion === 'fichajes') return; // No permitir borrar fichajes por seguridad
+        if(confirm("¿Estás seguro de ELIMINAR este registro?")) {
+            db.collection(coleccion).doc(id).delete()
+            .then(() => console.log("Borrado"))
+            .catch(e => alert("Error al borrar"));
+        }
+    };
+
+    window.iniciarReinicio = async () => { 
+        if(!confirm("⚠️ ATENCIÓN: ¿BORRAR TODOS LOS DATOS HISTÓRICOS? \n(Ventas, Gastos, Producción, Fichajes, Reportes)")) return; 
+        if(prompt("Escribe 'BORRAR' para confirmar") !== 'BORRAR') return;
+        
+        const cols = ['ventas', 'gastos', 'produccion', 'fichajes', 'reportes_produccion']; 
+        alert("Iniciando borrado... esto puede tardar. No cierres la app.");
+        
+        for(let c of cols) { 
+            let snap = await db.collection(c).get(); 
+            let batch = db.batch();
+            snap.docs.forEach(d => batch.delete(d.ref)); 
+            await batch.commit();
+        } 
+        alert("SISTEMA REINICIADO ✅"); 
+        location.reload();
+    };
 </script>
 </body>
 </html>
