@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CHURRERÍA LA ÚNICA - CONTROL TOTAL V14.3</title>
+    <title>CHURRERÍA LA ÚNICA - CONTROL TOTAL V14.4</title>
     <link rel="manifest" href="./manifest.json">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -177,7 +177,7 @@
             </button>
         </div>
         <div id="stats-container"></div>
-        <div id="historial-list" class="glass-card"></div>
+        <div id="historial-list" class="glass-card" style="overflow-x: auto;"></div>
     </div>
 
     <div id="tab-g" class="admin-content" style="display:none">
@@ -258,10 +258,18 @@
         <button class="btn-gold" onclick="nuevoProd()"><span class="material-symbols-outlined">add_circle</span> AGREGAR AL MENÚ</button>
     </div>
 
-    <div style="margin-top:30px; padding:10px; border:1px solid rgba(255,107,107,0.2); border-radius:16px; text-align:center;">
-        <p style="color:var(--danger); font-size:0.8rem; margin-top:0;">Zona de Peligro</p>
+    <div style="margin-top:30px; padding:15px; border:1px solid rgba(255,107,107,0.3); border-radius:16px; text-align:center; background: rgba(255,107,107,0.05);">
+        <p style="color:var(--danger); font-size:0.85rem; font-weight:bold; margin-top:0;">ZONA DE PELIGRO: Limpieza de Datos</p>
+        <select id="opcion-borrado" class="input-dark" style="margin-bottom:10px; font-size: 0.85rem;">
+            <option value="ventas">Borrar SOLO Ventas de Caja</option>
+            <option value="gastos">Borrar SOLO Gastos de Caja</option>
+            <option value="produccion">Borrar SOLO Recetas (Admin)</option>
+            <option value="reportes_produccion">Borrar SOLO Producción (Staff)</option>
+            <option value="fichajes">Borrar SOLO Asistencias</option>
+            <option value="todo" style="color: var(--danger); font-weight: bold;">⚠️ BORRAR ABSOLUTAMENTE TODO</option>
+        </select>
         <button onclick="iniciarReinicio()" class="btn-del" style="width:100%; justify-content:center;">
-            <span class="material-symbols-outlined">warning</span> REINICIAR SISTEMA DE CERO
+            <span class="material-symbols-outlined">warning</span> EJECUTAR LIMPIEZA
         </button>
     </div>
 </div>
@@ -269,7 +277,7 @@
 <div id="view-ventas" class="container">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 id="welcome-msg" style="margin:0; font-size:1.1rem; color:var(--gold)"></h2>
-        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V14.3</span>
+        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V14.4</span>
     </div>
     <div style="text-align: center; margin-bottom: 15px;">
         <span style="color: rgba(255,255,255,0.1); font-weight: 800; font-size: 1.5rem; letter-spacing: 5px;">CHURRERÍA LA ÚNICA</span>
@@ -399,8 +407,9 @@
     function attachAdminListeners() {
         if(adminListenersAttached) return;
         db.collection("insumos").onSnapshot(s => { db_local.insumos = s.docs.map(d => ({...d.data(), id: d.id})); renderInsumos(); renderRecetaInputs(); });
-        db.collection("ventas").orderBy("ts", "desc").onSnapshot(s => { db_local.ventas = s.docs.map(d => d.data()); renderHistorialFinanciero(); });
-        db.collection("gastos").orderBy("ts", "desc").onSnapshot(s => { db_local.gastos = s.docs.map(d => d.data()); renderHistorialFinanciero(); });
+        // Modificación crucial: ahora las ventas y gastos recuperan su ID real
+        db.collection("ventas").orderBy("ts", "desc").onSnapshot(s => { db_local.ventas = s.docs.map(d => ({...d.data(), id: d.id})); renderHistorialFinanciero(); });
+        db.collection("gastos").orderBy("ts", "desc").onSnapshot(s => { db_local.gastos = s.docs.map(d => ({...d.data(), id: d.id})); renderHistorialFinanciero(); });
         db.collection("produccion").orderBy("ts", "desc").onSnapshot(s => { db_local.produccion = s.docs.map(d => ({...d.data(), id: d.id})); renderHistorialFinanciero(); renderProduccionCostosList(); renderProduccionStaffList(); });
         db.collection("gastos_fijos").onSnapshot(s => { db_local.gastos_fijos = s.docs.map(d => ({...d.data(), id: d.id})); renderGastosFijos(); renderHistorialFinanciero(); });
         db.collection("reportes_produccion").orderBy("ts", "desc").limit(100).onSnapshot(s => { db_local.reportes_emp = s.docs.map(d => ({...d.data(), id: d.id})); renderProduccionStaffList(); renderHistorialFinanciero(); });
@@ -443,7 +452,6 @@
 
     function cerrarModales() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
 
-    // Función segura para obtener costo (ignorando mayúsculas y espacios finales)
     function getLatestUnitCost(productName) {
         if (!productName) return 0;
         let pNameClean = productName.trim().toUpperCase();
@@ -651,7 +659,6 @@
     window.guardarProdEmpleado = () => {
         const n = document.getElementById('emp-prod-nombre').value.trim();
         const cVal = document.getElementById('emp-prod-cant').value;
-        // Solución comas
         const c = parseFloat(cVal.replace(',', '.'));
         const tipoMedida = document.getElementById('emp-prod-tipo').value;
         
@@ -666,6 +673,37 @@
             cerrarModales();
             document.getElementById('emp-prod-nombre').value=''; document.getElementById('emp-prod-cant').value='';
         });
+    };
+
+    // --- NUEVAS FUNCIONES DE EDICIÓN ---
+    window.editarVenta = (id, tAct) => {
+        let nuevoT = prompt("Editar MONTO TOTAL de la venta:", tAct);
+        if (nuevoT !== null) {
+            let tFormat = parseFloat(nuevoT.replace(',', '.'));
+            if (!isNaN(tFormat) && tFormat >= 0) {
+                db.collection("ventas").doc(id).update({ t: tFormat });
+            } else { alert("Monto inválido."); }
+        }
+    };
+
+    window.editarGastoCaja = (id, mAct) => {
+        let nuevoM = prompt("Editar MONTO del gasto:", mAct);
+        if (nuevoM !== null) {
+            let mFormat = parseFloat(nuevoM.replace(',', '.'));
+            if (!isNaN(mFormat) && mFormat >= 0) {
+                db.collection("gastos").doc(id).update({ monto: mFormat });
+            } else { alert("Monto inválido."); }
+        }
+    };
+
+    window.editarProdStaff = (id, cAct) => {
+        let nuevoC = prompt("Editar CANTIDAD producida (solo números):", cAct);
+        if (nuevoC !== null) {
+            let cFormat = parseFloat(nuevoC.replace(',', '.'));
+            if (!isNaN(cFormat) && cFormat >= 0) {
+                db.collection("reportes_produccion").doc(id).update({ c: cFormat });
+            } else { alert("Cantidad inválida."); }
+        }
     };
 
     // --- LÓGICA ADMINISTRADOR ---
@@ -711,24 +749,50 @@
         const empD = db_local.reportes_emp.filter(r => isDateInRange(r.f, rango, fechaFiltro));
         
         let totVentasM = 0, totVentasT = 0, totGastos = 0, totCostoProdAdmin = 0, totCostoStaff = 0;
-        let tablaHtml = "<table><tr><th>Fecha/Hora</th><th>Movimiento</th><th>Monto</th></tr>";
+        let tablaHtml = "<table style='min-width: 400px;'><tr><th>Hora</th><th>Detalle</th><th>Monto</th><th style='text-align:right'>Acción</th></tr>";
         
+        // Render Ventas
         vD.slice().reverse().forEach(v => { 
             if(v.turno === "Mañana") totVentasM += v.t; else totVentasT += v.t; 
-            tablaHtml += `<tr><td>${v.f} <small>${v.h}</small></td><td>Venta (${v.m}) <small>${v.u}</small></td><td style="color:var(--success)">+$${v.t}</td></tr>`; 
+            tablaHtml += `<tr>
+                <td>${v.f.substring(0,5)} <small>${v.h}</small></td>
+                <td>Venta (${v.m}) <small>${v.u}</small></td>
+                <td style="color:var(--success)">+$${v.t}</td>
+                <td style="text-align:right; white-space:nowrap;">
+                    <button class="icon-btn edit" onclick="editarVenta('${v.id}', ${v.t})"><span class="material-symbols-outlined" style="font-size:1.1rem">edit</span></button>
+                    <button class="icon-btn delete" onclick="borrarDoc('ventas','${v.id}')"><span class="material-symbols-outlined" style="font-size:1.1rem">delete</span></button>
+                </td>
+            </tr>`; 
         });
         
+        // Render Gastos
         gD.forEach(g => { 
             totGastos += g.monto; 
-            tablaHtml += `<tr><td>${g.f} <small>${g.h}</small></td><td>${g.desc} <small>${g.u}</small></td><td style="color:var(--danger)">-$${g.monto}</td></tr>`; 
+            tablaHtml += `<tr>
+                <td>${g.f.substring(0,5)} <small>${g.h}</small></td>
+                <td>${g.desc} <small>${g.u}</small></td>
+                <td style="color:var(--danger)">-$${g.monto}</td>
+                <td style="text-align:right; white-space:nowrap;">
+                    <button class="icon-btn edit" onclick="editarGastoCaja('${g.id}', ${g.monto})"><span class="material-symbols-outlined" style="font-size:1.1rem">edit</span></button>
+                    <button class="icon-btn delete" onclick="borrarDoc('gastos','${g.id}')"><span class="material-symbols-outlined" style="font-size:1.1rem">delete</span></button>
+                </td>
+            </tr>`; 
         });
         
+        // Render Producción (Recetas)
         pD.forEach(p => {
             totCostoProdAdmin += (p.costoTanda || 0);
-            tablaHtml += `<tr style="background:rgba(255,107,107,0.05)"><td>${p.f}</td><td>Calc. Receta: ${p.n} <small>(Admin)</small></td><td style="color:var(--danger)">-$${(p.costoTanda||0).toFixed(2)}</td></tr>`;
+            tablaHtml += `<tr style="background:rgba(255,107,107,0.05)">
+                <td>${p.f.substring(0,5)}</td>
+                <td>Receta: ${p.n} <small>(Admin)</small></td>
+                <td style="color:var(--danger)">-$${(p.costoTanda||0).toFixed(2)}</td>
+                <td style="text-align:right; white-space:nowrap;">
+                    <button class="icon-btn delete" onclick="borrarDoc('produccion','${p.id}')"><span class="material-symbols-outlined" style="font-size:1.1rem">delete</span></button>
+                </td>
+            </tr>`;
         });
 
-        // CORRECCIÓN BUGS HISTORIAL BOLITAS: Ahora muestra TODO, tenga o no receta armada
+        // Render Producción Staff
         empD.forEach(r => {
             let unitCost = getLatestUnitCost(r.n);
             let units = r.tipo === "Docenas" ? r.c * 12 : r.c;
@@ -736,9 +800,25 @@
             totCostoStaff += cost;
 
             if(unitCost > 0) {
-                tablaHtml += `<tr style="background:rgba(81, 207, 102, 0.05)"><td>${r.f}</td><td>Staff Fabricó: ${r.n} <small>(${r.u})</small></td><td style="color:var(--danger)">-$${cost.toFixed(2)}</td></tr>`;
+                tablaHtml += `<tr style="background:rgba(81, 207, 102, 0.05)">
+                    <td>${r.f.substring(0,5)}</td>
+                    <td>Staff: ${r.n} <small>(${r.u})</small></td>
+                    <td style="color:var(--danger)">-$${cost.toFixed(2)}</td>
+                    <td style="text-align:right; white-space:nowrap;">
+                        <button class="icon-btn edit" onclick="editarProdStaff('${r.id}', ${r.c})"><span class="material-symbols-outlined" style="font-size:1.1rem">edit</span></button>
+                        <button class="icon-btn delete" onclick="borrarDoc('reportes_produccion','${r.id}')"><span class="material-symbols-outlined" style="font-size:1.1rem">delete</span></button>
+                    </td>
+                </tr>`;
             } else {
-                tablaHtml += `<tr style="background:rgba(81, 207, 102, 0.05)"><td>${r.f}</td><td>Staff Fabricó: ${r.n} <small>(${r.u})</small></td><td style="color:var(--info); font-size:0.75rem;">$0.00 (Falta Receta)</td></tr>`;
+                tablaHtml += `<tr style="background:rgba(81, 207, 102, 0.05)">
+                    <td>${r.f.substring(0,5)}</td>
+                    <td>Staff: ${r.n} <small>(${r.u})</small></td>
+                    <td style="color:var(--info); font-size:0.75rem;">$0.00 (Falta Receta)</td>
+                    <td style="text-align:right; white-space:nowrap;">
+                        <button class="icon-btn edit" onclick="editarProdStaff('${r.id}', ${r.c})"><span class="material-symbols-outlined" style="font-size:1.1rem">edit</span></button>
+                        <button class="icon-btn delete" onclick="borrarDoc('reportes_produccion','${r.id}')"><span class="material-symbols-outlined" style="font-size:1.1rem">delete</span></button>
+                    </td>
+                </tr>`;
             }
         });
         
@@ -836,7 +916,6 @@
 
             let options = `<option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="lt">l</option><option value="u">u</option>`;
             
-            // CORRECCIÓN VISUAL: Mostramos el costo base al lado del nombre para alertar si el admin cargó mal el precio original
             return `<div class="receta-row list-item" style="padding: 8px; margin-bottom:5px; border-left:none; background:rgba(255,255,255,0.01)">
                 <span style="flex:1.5; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis;">
                     ${i.n}<br>
@@ -858,7 +937,6 @@
             const inputVal = fila.querySelector('.receta-cant').value;
             if(!inputVal) return; 
             
-            // CORRECCIÓN MATEMÁTICA: Reemplaza coma por punto (1,4 kg ahora funciona perfecto)
             const cantInput = parseFloat(inputVal.replace(',', '.'));
             if(isNaN(cantInput) || cantInput <= 0) return;
 
@@ -951,6 +1029,10 @@
                 <div style="text-align:right;">
                     <div style="font-weight:bold; color:var(--success); font-size:1rem;">${r.c} <small>${r.tipo}</small></div>
                     <div style="margin-top:2px;">${displayCost}</div>
+                    <div style="margin-top:5px;">
+                        <button class="icon-btn edit" onclick="editarProdStaff('${r.id}', ${r.c})"><span class="material-symbols-outlined" style="font-size:1rem">edit</span></button>
+                        <button class="icon-btn delete" onclick="borrarDoc('reportes_produccion','${r.id}')"><span class="material-symbols-outlined" style="font-size:1rem">delete</span></button>
+                    </div>
                 </div>
             </div>`;
         }).join('') || '<p style="text-align:center; font-size:0.8rem; opacity:0.5;">Sin reportes.</p>';
@@ -1062,25 +1144,37 @@
 
     window.borrarDoc = (coleccion, id) => {
         if(coleccion === 'fichajes') return; 
-        if(confirm("¿Estás seguro de ELIMINAR este registro?")) {
+        if(confirm("¿Estás seguro de ELIMINAR este registro? Esto recalculará las ganancias automáticamente.")) {
             db.collection(coleccion).doc(id).delete().catch(e => alert("Error al borrar"));
         }
     };
 
     window.iniciarReinicio = async () => { 
-        if(!confirm("⚠️ ATENCIÓN: ¿BORRAR TODOS LOS DATOS HISTÓRICOS?")) return; 
-        if(prompt("Escribe 'BORRAR' para confirmar") !== 'BORRAR') return;
+        const coleccionElegida = document.getElementById('opcion-borrado').value;
+        let nombreColeccion = coleccionElegida === "todo" ? "TODOS LOS DATOS HISTÓRICOS" : `los registros de ${coleccionElegida.toUpperCase()}`;
+
+        if(!confirm(`⚠️ ATENCIÓN: ¿Estás seguro de BORRAR ${nombreColeccion}?`)) return; 
+        if(prompt("Escribe 'BORRAR' para confirmar la limpieza:") !== 'BORRAR') {
+            alert("Operación cancelada.");
+            return;
+        }
         
-        const cols = ['ventas', 'gastos', 'produccion', 'fichajes', 'reportes_produccion']; 
-        alert("Iniciando borrado... No cierres la app.");
+        const cols = coleccionElegida === "todo" ? ['ventas', 'gastos', 'produccion', 'fichajes', 'reportes_produccion'] : [coleccionElegida]; 
+        alert("Iniciando borrado... Por favor, no cierres la app.");
         
-        for(let c of cols) { 
-            let snap = await db.collection(c).get(); 
-            let batch = db.batch();
-            snap.docs.forEach(d => batch.delete(d.ref)); 
-            await batch.commit();
-        } 
-        alert("SISTEMA REINICIADO ✅"); location.reload();
+        try {
+            for(let c of cols) { 
+                let snap = await db.collection(c).get(); 
+                let batch = db.batch();
+                snap.docs.forEach(d => batch.delete(d.ref)); 
+                await batch.commit();
+            } 
+            alert("LIMPIEZA REALIZADA CON ÉXITO ✅"); 
+            location.reload();
+        } catch (e) {
+            alert("Hubo un error al borrar los datos.");
+            console.error(e);
+        }
     };
 </script>
 </body>
