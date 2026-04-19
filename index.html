@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CHURRERÍA LA ÚNICA - CONTROL TOTAL V14.2</title>
+    <title>CHURRERÍA LA ÚNICA - CONTROL TOTAL V14.3</title>
     <link rel="manifest" href="./manifest.json">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -269,7 +269,7 @@
 <div id="view-ventas" class="container">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 id="welcome-msg" style="margin:0; font-size:1.1rem; color:var(--gold)"></h2>
-        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V14.2</span>
+        <span style="font-size: 0.7rem; opacity: 0.5;">CAJA V14.3</span>
     </div>
     <div style="text-align: center; margin-bottom: 15px;">
         <span style="color: rgba(255,255,255,0.1); font-weight: 800; font-size: 1.5rem; letter-spacing: 5px;">CHURRERÍA LA ÚNICA</span>
@@ -443,12 +443,13 @@
 
     function cerrarModales() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
 
-    // Función para obtener el último costo calculado por el Admin de un producto específico
+    // Función segura para obtener costo (ignorando mayúsculas y espacios finales)
     function getLatestUnitCost(productName) {
-        let records = db_local.produccion.filter(p => p.n.toUpperCase() === productName.toUpperCase());
+        if (!productName) return 0;
+        let pNameClean = productName.trim().toUpperCase();
+        let records = db_local.produccion.filter(p => p.n && p.n.trim().toUpperCase() === pNameClean);
         if(records.length === 0) return 0;
         
-        // Ordenar por fecha descendente (lo más nuevo primero)
         records.sort((a, b) => {
             let timeA = a.ts ? (a.ts.seconds ? a.ts.seconds : new Date(a.ts).getTime()/1000) : 0;
             let timeB = b.ts ? (b.ts.seconds ? b.ts.seconds : new Date(b.ts).getTime()/1000) : 0;
@@ -577,7 +578,7 @@
         if(!cart.length) return; 
         
         const btn = document.getElementById('btn-finalizar-venta');
-        btn.disabled = true; // Bloquea para evitar doble toque rápido
+        btn.disabled = true;
 
         const total = cart.reduce((a,b)=>a+b.p,0); 
         const { fStr, hStr, turno } = getDatosFechaActual();
@@ -585,16 +586,14 @@
 
         const datosVenta = { 
             t: total, u: user, m: mPago, f: fStr, h: hStr, turno: turno, 
-            productos: cart.map(i=>i.n)
+            productos: cart.map(i=>i.n.trim())
         };
 
-        // 1. Limpiar UI Inmediatamente antes del alert o guardado (soluciona problema de acumulación)
         cart = []; 
         renderCart(); 
         document.getElementById('paga-con').value = ''; 
         document.getElementById('metodo-pago').value = 'Efectivo';
 
-        // 2. Proceso de guardado (Con o sin internet)
         if (navigator.onLine) {
             datosVenta.ts = firebase.firestore.FieldValue.serverTimestamp();
             db.collection("ventas").add(datosVenta).then(() => {
@@ -640,7 +639,7 @@
         let m=parseFloat(prompt("Monto:"));
         if(m && m>0) { 
             const { fStr, hStr, turno } = getDatosFechaActual();
-            db.collection("gastos").add({ desc: d.toUpperCase(), monto: m, u: user, f: fStr, h: hStr, turno: turno, ts: firebase.firestore.FieldValue.serverTimestamp() }).then(()=>alert("Gasto registrado.")); 
+            db.collection("gastos").add({ desc: d.trim().toUpperCase(), monto: m, u: user, f: fStr, h: hStr, turno: turno, ts: firebase.firestore.FieldValue.serverTimestamp() }).then(()=>alert("Gasto registrado.")); 
         }
     };
 
@@ -650,15 +649,17 @@
     };
 
     window.guardarProdEmpleado = () => {
-        const n = document.getElementById('emp-prod-nombre').value;
-        const c = document.getElementById('emp-prod-cant').value;
+        const n = document.getElementById('emp-prod-nombre').value.trim();
+        const cVal = document.getElementById('emp-prod-cant').value;
+        // Solución comas
+        const c = parseFloat(cVal.replace(',', '.'));
         const tipoMedida = document.getElementById('emp-prod-tipo').value;
         
-        if(!n || !c || c<=0) return alert("Completa producto y cantidad válida.");
+        if(!n || isNaN(c) || c<=0) return alert("Completa producto y cantidad válida.");
         const { fStr, turno } = getDatosFechaActual();
         
         db.collection("reportes_produccion").add({
-            u: user, n: n.toUpperCase(), c: parseFloat(c), tipo: tipoMedida,
+            u: user, n: n.toUpperCase(), c: c, tipo: tipoMedida,
             turno: turno, f: fStr, ts: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
             alert("REPORTE ENVIADO ✅");
@@ -722,20 +723,22 @@
             tablaHtml += `<tr><td>${g.f} <small>${g.h}</small></td><td>${g.desc} <small>${g.u}</small></td><td style="color:var(--danger)">-$${g.monto}</td></tr>`; 
         });
         
-        // Costo de las pruebas de Admin
         pD.forEach(p => {
             totCostoProdAdmin += (p.costoTanda || 0);
-            tablaHtml += `<tr style="background:rgba(255,107,107,0.05)"><td>${p.f}</td><td>Calc. Receta: ${p.n} <small>(Admin)</small></td><td style="color:var(--danger)">-$${p.costoTanda.toFixed(2)}</td></tr>`;
+            tablaHtml += `<tr style="background:rgba(255,107,107,0.05)"><td>${p.f}</td><td>Calc. Receta: ${p.n} <small>(Admin)</small></td><td style="color:var(--danger)">-$${(p.costoTanda||0).toFixed(2)}</td></tr>`;
         });
 
-        // NUEVO: Costo de lo que reportó el Staff restado del balance
+        // CORRECCIÓN BUGS HISTORIAL BOLITAS: Ahora muestra TODO, tenga o no receta armada
         empD.forEach(r => {
             let unitCost = getLatestUnitCost(r.n);
+            let units = r.tipo === "Docenas" ? r.c * 12 : r.c;
+            let cost = units * unitCost;
+            totCostoStaff += cost;
+
             if(unitCost > 0) {
-                let units = r.tipo === "Docenas" ? r.c * 12 : r.c;
-                let cost = units * unitCost;
-                totCostoStaff += cost;
                 tablaHtml += `<tr style="background:rgba(81, 207, 102, 0.05)"><td>${r.f}</td><td>Staff Fabricó: ${r.n} <small>(${r.u})</small></td><td style="color:var(--danger)">-$${cost.toFixed(2)}</td></tr>`;
+            } else {
+                tablaHtml += `<tr style="background:rgba(81, 207, 102, 0.05)"><td>${r.f}</td><td>Staff Fabricó: ${r.n} <small>(${r.u})</small></td><td style="color:var(--info); font-size:0.75rem;">$0.00 (Falta Receta)</td></tr>`;
             }
         });
         
@@ -749,7 +752,6 @@
         if (rango === 'mes') diasAplicaFijo = diasFijosMes; 
         let cFijoAplicado = cFijoDiario * diasAplicaFijo;
 
-        // CÁLCULO NETO FINAL (Se restan ambas producciones)
         let neto = totVentas - totGastos - totCostoProdAdmin - totCostoStaff - cFijoAplicado;
         
         let colorNeto = neto >= 0 ? 'var(--success)' : 'var(--danger)';
@@ -791,10 +793,13 @@
     };
 
     window.guardarNuevoInsumo = () => {
-        let n = document.getElementById('ins-nombre').value;
-        let p = parseFloat(document.getElementById('ins-precio').value);
-        let q = parseFloat(document.getElementById('ins-cant').value);
+        let n = document.getElementById('ins-nombre').value.trim();
+        let pStr = document.getElementById('ins-precio').value;
+        let qStr = document.getElementById('ins-cant').value;
         let u = document.getElementById('ins-unidad').value;
+
+        let p = parseFloat(pStr.replace(',', '.'));
+        let q = parseFloat(qStr.replace(',', '.'));
 
         if(!n || isNaN(p) || isNaN(q) || q<=0) return alert("Completá todos los campos correctamente.");
         let baseU = u;
@@ -825,13 +830,18 @@
 
     function renderRecetaInputs() { 
         document.getElementById('receta-inputs').innerHTML = db_local.insumos.map(i => { 
-            // CORRECCIÓN NAN: Si cuBase es erróneo, recalcula para no arrastrar el error
             let cu_base = parseFloat(i.cuBase);
             if (isNaN(cu_base)) cu_base = (parseFloat(i.p) / parseFloat(i.q)) / (i.u === 'kg' || i.u === 'lt' ? 1000 : 1);
+            let base_u = i.baseU || (i.u === 'kg' ? 'g' : (i.u === 'lt' ? 'ml' : i.u));
 
             let options = `<option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="lt">l</option><option value="u">u</option>`;
+            
+            // CORRECCIÓN VISUAL: Mostramos el costo base al lado del nombre para alertar si el admin cargó mal el precio original
             return `<div class="receta-row list-item" style="padding: 8px; margin-bottom:5px; border-left:none; background:rgba(255,255,255,0.01)">
-                <span style="flex:1.5; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis;">${i.n}</span>
+                <span style="flex:1.5; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis;">
+                    ${i.n}<br>
+                    <small style="color:var(--gold)">$${cu_base.toFixed(4)} x ${base_u}</small>
+                </span>
                 <div style="display:flex; gap:3px; flex:2; align-items:center;">
                     <input type="number" step="any" class="input-dark receta-cant" data-cubase="${cu_base}" placeholder="0" style="flex:1; padding:8px; margin:0; text-align:center; font-size:0.8rem;">
                     <select class="input-dark receta-unidad" style="flex:1; padding:8px 3px; margin:0; font-size:0.75rem;">${options}</select>
@@ -846,13 +856,16 @@
         
         filas.forEach(fila => {
             const inputVal = fila.querySelector('.receta-cant').value;
-            if(!inputVal || inputVal <= 0) return; 
+            if(!inputVal) return; 
             
-            const cantInput = parseFloat(inputVal);
+            // CORRECCIÓN MATEMÁTICA: Reemplaza coma por punto (1,4 kg ahora funciona perfecto)
+            const cantInput = parseFloat(inputVal.replace(',', '.'));
+            if(isNaN(cantInput) || cantInput <= 0) return;
+
             const cuBase = parseFloat(fila.querySelector('.receta-cant').dataset.cubase);
             const unidadElegida = fila.querySelector('.receta-unidad').value;
             
-            if (isNaN(cantInput) || isNaN(cuBase)) return; // Evita calculos inválidos
+            if (isNaN(cuBase)) return; 
             
             let cantEnBase = cantInput;
             if (unidadElegida === 'kg' || unidadElegida === 'lt') cantEnBase = cantInput * 1000;
@@ -860,11 +873,12 @@
             costoTotalMateria += (cantEnBase * cuBase);
         });
 
-        let cantObtenida = parseFloat(document.getElementById('cant-producida').value); 
+        let cantObVal = document.getElementById('cant-producida').value;
+        let cantObtenida = parseFloat(cantObVal.replace(',', '.')); 
         let unidadObtenida = document.getElementById('unidad-producida').value; 
 
-        if(!cantObtenida || cantObtenida <= 0) {
-            alert("Ingresa la cantidad total producida obtenida.");
+        if(isNaN(cantObtenida) || cantObtenida <= 0) {
+            alert("Ingresa la cantidad total producida obtenida (ej: 100).");
             document.getElementById('cant-producida').focus(); return;
         }
         
@@ -883,7 +897,7 @@
     };
 
     window.guardarProduccion = () => {
-        let n = document.getElementById('nombre-produccion').value;
+        let n = document.getElementById('nombre-produccion').value.trim();
         if(!n || ultTandaCalculada.costo <= 0 || ultTandaCalculada.unidades <= 0) return alert("Falta calcular, nombre o unidades totales.");
         
         const { fStr } = getDatosFechaActual();
@@ -908,7 +922,7 @@
             return `<div class="list-item" style="font-size:0.8rem; border-left-color:var(--danger)">
                 <div><b>${p.n}</b> <small style="color:#aaa">(${p.f})</small><br>
                 <small>${p.unidades} u. | <b style="color:white">$${cUni.toFixed(2)} c/u</b> | <b style="color:var(--gold)">$${(cUni*12).toFixed(2)} x doc</b></small></div>
-                <div style="display:flex; align-items:center; gap:5px;"><b style="color:var(--danger)">$${p.costoTanda.toFixed(2)}</b>
+                <div style="display:flex; align-items:center; gap:5px;"><b style="color:var(--danger)">$${(p.costoTanda||0).toFixed(2)}</b>
                 <button class="icon-btn delete" onclick="borrarDoc('produccion','${p.id}')"><span class="material-symbols-outlined" style="font-size:1.1rem">delete</span></button></div>
             </div>`;
         }).join('') || '<p style="text-align:center; font-size:0.8rem; opacity:0.5;">No hay registros.</p>';
@@ -920,7 +934,7 @@
         const empD = db_local.reportes_emp.filter(r => isDateInRange(r.f, rango, val));
         
         document.getElementById('produccion-empleados-list').innerHTML = empD.map(r => {
-            const unitCost = getLatestUnitCost(r.n); // Buscamos el costo de tu receta
+            const unitCost = getLatestUnitCost(r.n);
             let displayCost = '<span style="color:#aaa; font-size:0.75rem;">(Debes calc. receta en Admin)</span>';
             
             if (unitCost > 0) {
@@ -960,8 +974,8 @@
         document.getElementById('fijos-resumen').innerHTML = `<div class="stat-box"><div class="stat-label">GASTO FIJO MENSUAL</div><div class="stat-val">$${totF.toFixed(2)}</div></div><div class="stat-box" style="margin-top:10px; border-color:#aaa"><div class="stat-label">COSTO FIJO DIARIO (Prorrateado ${dias} días)</div><div class="stat-val" style="color:white; font-size:1.1rem;">$${cD.toFixed(2)} / día</div></div>`;
     };
 
-    window.nuevoGastoFijo = () => { let n=prompt("Concepto:"); if(!n) return; let m=parseFloat(prompt("Monto Mensual:")); if(m) db.collection("gastos_fijos").add({n:n.toUpperCase(), m}); };
-    window.editarGastoFijo = (id, nAct, mAct) => { let n = prompt("Editar concepto:", nAct); if (!n) return; let m = parseFloat(prompt("Editar monto:", mAct)); if (m) db.collection("gastos_fijos").doc(id).update({ n: n.toUpperCase(), m: m }); };
+    window.nuevoGastoFijo = () => { let n=prompt("Concepto:"); if(!n) return; let m=parseFloat(prompt("Monto Mensual:").replace(',','.')); if(m) db.collection("gastos_fijos").add({n:n.trim().toUpperCase(), m}); };
+    window.editarGastoFijo = (id, nAct, mAct) => { let n = prompt("Editar concepto:", nAct); if (!n) return; let m = parseFloat(prompt("Editar monto:", mAct).replace(',','.')); if (m) db.collection("gastos_fijos").doc(id).update({ n: n.trim().toUpperCase(), m: m }); };
 
     // 4. TAB STAFF
     window.renderStaffList = () => {
@@ -981,12 +995,12 @@
         document.getElementById('fichaje-list').innerHTML = `<div style="background:rgba(81, 207, 102, 0.05); padding:10px; border-radius:10px; margin-bottom:10px;"><h5 style="margin:0 0 8px 0; color:#51CF66; text-align:center;">🌤️ TURNO MAÑANA</h5>${htmlMañana}</div><div style="background:rgba(255, 107, 107, 0.05); padding:10px; border-radius:10px;"><h5 style="margin:0 0 8px 0; color:#FF6B6B; text-align:center;">🌙 TURNO TARDE</h5>${htmlTarde}</div>`;
     };
 
-    window.nuevoEmp = () => { let n=prompt("Nombre Empleado:"); if(!n) return; let p=prompt("PIN numérico:"); if(n && p) db.collection("staff").add({n:n.toUpperCase(), p}); };
+    window.nuevoEmp = () => { let n=prompt("Nombre Empleado:"); if(!n) return; let p=prompt("PIN numérico:"); if(n && p) db.collection("staff").add({n:n.trim().toUpperCase(), p}); };
 
     // 5. TAB MENÚ PROD
     window.renderMenuAdmin = () => { document.getElementById('prod-admin-list').innerHTML = db_local.productos.map(p => `<div class="list-item"><span>${p.n}</span><div style="display:flex; align-items:center; gap:10px;"><b>$${p.p}</b><button class="icon-btn edit" onclick="editarProducto('${p.id}', '${p.n}', ${p.p})"><span class="material-symbols-outlined">edit</span></button><button class="icon-btn delete" onclick="borrarDoc('productos','${p.id}')"><span class="material-symbols-outlined">delete</span></button></div></div>`).join(''); };
-    window.nuevoProd = () => { let n=prompt("Nombre Producto:"); if(!n) return; let p=prompt("Precio Venta:"); if(n && p) db.collection("productos").add({n:n.toUpperCase(), p:parseInt(p)}); };
-    window.editarProducto = (id, nAct, pAct) => { let n = prompt("Editar nombre:", nAct); if (!n) return; let p = parseInt(prompt("Editar precio:", pAct)); if (p) db.collection("productos").doc(id).update({ n: n.toUpperCase(), p: p }); };
+    window.nuevoProd = () => { let n=prompt("Nombre Producto:"); if(!n) return; let p=prompt("Precio Venta:"); if(n && p) db.collection("productos").add({n:n.trim().toUpperCase(), p:parseInt(p)}); };
+    window.editarProducto = (id, nAct, pAct) => { let n = prompt("Editar nombre:", nAct); if (!n) return; let p = parseInt(prompt("Editar precio:", pAct)); if (p) db.collection("productos").doc(id).update({ n: n.trim().toUpperCase(), p: p }); };
 
     // --- EXCEL ---
     window.exportarExcel = () => {
@@ -1000,9 +1014,8 @@
         
         let ws_ventas = XLSX.utils.json_to_sheet(vD.map(v => ({ Fecha: v.f, Hora: v.h, Monto: v.t, Metodo: v.m, Turno: v.turno, Vendedor: v.u })));
         let ws_gastos = XLSX.utils.json_to_sheet(gD.map(g => ({ Fecha: g.f, Hora: g.h, Monto: g.monto, Descripcion: g.desc, Registro: g.u })));
-        let ws_prod_admin = XLSX.utils.json_to_sheet(pD.map(p => ({ Fecha: p.f, Producto: p.n, UnidadesTotales: p.unidades, CostoMateriaTotal: p.costoTanda, CostoUni: (p.costoTanda/p.unidades).toFixed(2) })));
+        let ws_prod_admin = XLSX.utils.json_to_sheet(pD.map(p => ({ Fecha: p.f, Producto: p.n, UnidadesTotales: p.unidades, CostoMateriaTotal: p.costoTanda, CostoUni: p.unidades > 0 ? (p.costoTanda/p.unidades).toFixed(2) : 0 })));
         
-        // Calcular costo staff para excel
         let totCostoStaff = 0;
         let ws_prod_staff_data = empD.map(r => {
             let unitCost = getLatestUnitCost(r.n);
